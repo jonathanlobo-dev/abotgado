@@ -167,6 +167,38 @@ NOMBRES_CORRECTOS = {
     # ── Registro de Antecedentes Penales ─────────────────────────────────────
     "ley-regist-20220728163728.pdf":
         "Ley de Registro de Antecedentes Penales",
+
+    # ── COPP ─────────────────────────────────────────────────────────────────
+    "codigo-organico-procesal-penal.pdf":
+        "Código Orgánico Procesal Penal (COPP)",
+
+    # ── Procesos Electorales ─────────────────────────────────────────────────
+    "ley-organi-20220131131037.pdf":
+        "Ley Orgánica de Procesos Electorales",
+
+    # ── INDEPABIS / Consumidor ───────────────────────────────────────────────
+    "ley-indepabis.pdf":
+        "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+
+    # ── Sector Bancario ─────────────────────────────────────────────────────
+    "ley-de-ref-20220117174750.pdf":
+        "Ley de Instituciones del Sector Bancario",
+
+    # ── Seguro Social ────────────────────────────────────────────────────────
+    "ley-del-seguro-social.pdf":
+        "Ley del Seguro Social",
+
+    # ── ISLR ─────────────────────────────────────────────────────────────────
+    "isrl.pdf":
+        "Ley de Impuesto Sobre la Renta (ISLR)",
+
+    # ── Delitos Informáticos ─────────────────────────────────────────────────
+    "ley-especial-contra-los-delitos-informaticos.pdf":
+        "Ley Especial contra los Delitos Informáticos",
+
+    # ── Simplificación de Trámites ───────────────────────────────────────────
+    "Ley-Organica-de-Simplificacion-de-Tramites.pdf":
+        "Ley Orgánica de Simplificación de Trámites Administrativos",
 }
 
 

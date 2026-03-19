@@ -439,23 +439,33 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cmd_stats_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
-    s = db.stats_globales()
 
-    texto = (
-        "📊 <b>Estadisticas globales</b>\n\n"
-        f"Total usuarios: <b>{s['total_usuarios']}</b>\n"
-        f"Consultas hoy: <b>{s['consultas_hoy']}</b>\n"
-        f"Consultas esta semana: <b>{s['consultas_semana']}</b>\n"
-        f"Consultas este mes: <b>{s['consultas_mes']}</b>\n\n"
+    su = db.stats_usuarios()
+    sc = db.obtener_stats()
+
+    texto = "📊 <b>Estadísticas de aBOTgado</b>\n\n"
+
+    texto += (
+        f"👥 Usuarios: <b>{su['total']}</b> total\n"
+        f"  🆓 Gratis: {su['gratis']}\n"
+        f"  ⭐ Pionero: {su['pionero']}\n"
+        f"  💎 Premium: {su['premium']}\n"
+        f"  🟢 Activos hoy: {su['activos_hoy']}\n\n"
     )
 
-    texto += "<b>Por plan:</b>\n"
-    for plan_id, count in s["por_plan"].items():
-        info = config.PLANES.get(plan_id, config.PLANES[0])
-        texto += f"  {info['icono']} {info['nombre']}: {count}\n"
+    texto += (
+        f"📈 <b>Consultas:</b>\n"
+        f"  Hoy: {sc['consultas_hoy']}\n"
+        f"  Últimos 7 días: {sc['consultas_7d']}\n"
+        f"  Total: {sc['consultas_total']}\n\n"
+    )
 
-    if s["usuario_mas_activo"]:
-        texto += f"\nMas activo (semana): ID {s['usuario_mas_activo'][0]} ({s['usuario_mas_activo'][1]} consultas)"
+    if sc["temas_top"]:
+        texto += "🔥 <b>Temas más consultados (últimos 7 días):</b>\n"
+        for i, (tema, count) in enumerate(sc["temas_top"], 1):
+            texto += f"  {i}. {tema} ({count} consultas)\n"
+    else:
+        texto += "🔥 <b>Temas más consultados:</b> Sin datos aún\n"
 
     await enviar_respuesta(update.message, texto)
 

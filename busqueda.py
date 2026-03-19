@@ -1121,8 +1121,8 @@ def es_consulta_no_legal(pregunta: str) -> bool:
 
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
-def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str]:
-    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado)."""
+def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
+    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados)."""
 
     pregunta_juridica = reformular(pregunta)
     logger.info(f"  Original:    {pregunta}")
@@ -1177,7 +1177,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str]:
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
 
     if not relevantes_finales:
-        return [], ""
+        return [], "", temas_detectados
 
     # Formato numerado
     contexto = "LISTA DE ARTÍCULOS DISPONIBLES (SOLO puedes citar de esta lista):\n\n"
@@ -1209,7 +1209,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str]:
                 contexto += GUIAS_INSTITUCIONALES[tema]
                 break
 
-    return relevantes_finales, contexto
+    return relevantes_finales, contexto, temas_detectados
 
 
 def buscar_y_responder(pregunta: str, historial: list[dict] = None,
@@ -1245,6 +1245,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
     es_premium = user_id and db.es_premium(user_id)
     seguimiento = es_premium and historial and es_seguimiento(pregunta)
+    temas_detectados = []
 
     if seguimiento:
         logger.info(f"  → Pregunta de seguimiento detectada")
@@ -1256,15 +1257,22 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             contexto = contexto_previo
         else:
             # Si no hay contexto previo, buscar normalmente
-            _, contexto = buscar_articulos_nuevos(pregunta)
+            _, contexto, temas_detectados = buscar_articulos_nuevos(pregunta)
             if not contexto:
                 return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
                         "⚠️ Consulta con un abogado.")
     else:
-        relevantes, contexto = buscar_articulos_nuevos(pregunta)
+        relevantes, contexto, temas_detectados = buscar_articulos_nuevos(pregunta)
         if not relevantes:
             return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
                     "⚠️ Consulta con un abogado.")
+
+    # Registrar métricas de la consulta
+    if user_id:
+        try:
+            db.registrar_consulta_metrica(user_id, temas_detectados)
+        except Exception as e:
+            logger.error(f"Error registrando métrica: {e}")
 
     if es_premium:
         db.guardar_contexto(user_id, contexto)

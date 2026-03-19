@@ -121,6 +121,16 @@ def inicializar_db():
             )
         """)
 
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS metricas (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id   INTEGER,
+                fecha     TEXT,
+                temas     TEXT,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
     # Log de ruta para diagnóstico
     import logging
     logger = logging.getLogger(__name__)
@@ -611,3 +621,83 @@ def guardar_ticket_soporte(user_id: int, mensaje: str, direccion: str = "user_to
             "INSERT INTO soporte (user_id, mensaje, direccion) VALUES (?, ?, ?)",
             (user_id, mensaje, direccion)
         )
+
+
+# ─── MÉTRICAS DE CONSULTAS ──────────────────────────────────────────────────
+
+def registrar_consulta_metrica(user_id: int, temas: list[str]):
+    """Registra una consulta con los temas detectados para métricas."""
+    hoy = date.today().isoformat()
+    temas_str = ",".join(temas) if temas else ""
+    with get_db() as con:
+        con.execute(
+            "INSERT INTO metricas (user_id, fecha, temas) VALUES (?, ?, ?)",
+            (user_id, hoy, temas_str)
+        )
+
+
+def obtener_stats() -> dict:
+    """Estadísticas de consultas: hoy, últimos 7 días, total y temas top."""
+    hoy = date.today().isoformat()
+    with get_db() as con:
+        consultas_hoy_total = con.execute(
+            "SELECT COUNT(*) FROM metricas WHERE fecha = ?", (hoy,)
+        ).fetchone()[0]
+
+        consultas_7d = con.execute(
+            "SELECT COUNT(*) FROM metricas WHERE fecha >= date(?, '-7 days')",
+            (hoy,)
+        ).fetchone()[0]
+
+        consultas_total = con.execute(
+            "SELECT COUNT(*) FROM metricas"
+        ).fetchone()[0]
+
+        # Temas más consultados en últimos 7 días
+        filas = con.execute(
+            "SELECT temas FROM metricas WHERE fecha >= date(?, '-7 days') AND temas != ''",
+            (hoy,)
+        ).fetchall()
+
+    # Contar temas
+    conteo_temas = {}
+    for (temas_str,) in filas:
+        for tema in temas_str.split(","):
+            tema = tema.strip()
+            if tema:
+                conteo_temas[tema] = conteo_temas.get(tema, 0) + 1
+
+    temas_top = sorted(conteo_temas.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    return {
+        "consultas_hoy": consultas_hoy_total,
+        "consultas_7d": consultas_7d,
+        "consultas_total": consultas_total,
+        "temas_top": temas_top,
+    }
+
+
+def stats_usuarios() -> dict:
+    """Estadísticas de usuarios: total, por plan, activos hoy."""
+    hoy = date.today().isoformat()
+    with get_db() as con:
+        total = con.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+
+        planes = con.execute(
+            "SELECT plan_id, COUNT(*) FROM usuarios GROUP BY plan_id"
+        ).fetchall()
+
+        activos_hoy = con.execute(
+            "SELECT COUNT(DISTINCT user_id) FROM consultas_diarias WHERE fecha = ? AND cantidad > 0",
+            (hoy,)
+        ).fetchone()[0]
+
+    por_plan = {r[0]: r[1] for r in planes}
+
+    return {
+        "total": total,
+        "gratis": por_plan.get(0, 0),
+        "pionero": por_plan.get(1, 0),
+        "premium": por_plan.get(2, 0),
+        "activos_hoy": activos_hoy,
+    }
