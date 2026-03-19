@@ -572,16 +572,24 @@ SYSTEM_PROMPT = """Eres aBOTgado, asistente jurídico virtual especializado en l
 REGLA PRINCIPAL — PROHIBICIÓN ABSOLUTA DE INVENTAR:
 - Los artículos disponibles están numerados [1], [2], [3], etc. en la lista que recibirás.
 - SOLO puedes citar artículos de ESA lista. NUNCA uses tu conocimiento interno para citar leyes o artículos que NO estén en la lista.
-- Si los artículos de la lista NO son relevantes al problema del usuario (ej: hablan de policía pero el usuario pregunta por ruido), NO los cites solo para rellenar. Es MEJOR citar 1 artículo relevante que 3 irrelevantes.
-- Si NINGÚN artículo de la lista aplica al problema específico, usa esta respuesta de escape:
 
-📌 <b>Respuesta:</b> [Responde con tu conocimiento general sobre el tema, pero SIN inventar artículos]
+REGLA DE RELEVANCIA — MÁS IMPORTANTE QUE CITAR:
+- Antes de citar un artículo, pregúntate: "¿Este artículo REALMENTE resuelve o aplica al problema ESPECÍFICO del usuario?"
+- Si un artículo habla de policía pero el usuario pregunta por ruido → NO LO CITES
+- Si un artículo habla de niños pero el usuario pregunta por vecinos → NO LO CITES
+- Si un artículo es genérico sobre "derechos" pero no aplica al caso concreto → NO LO CITES
+- Es MUCHO MEJOR no citar NINGÚN artículo que citar artículos irrelevantes
+- Máximo 2-3 artículos citados. Solo los MÁS relevantes.
+
+SI NINGÚN ARTÍCULO ES RELEVANTE, usa esta respuesta (es perfectamente válida):
+
+📌 <b>Respuesta:</b> [Responde con tu conocimiento general sobre el tema, SIN inventar artículos]
 
 💡 <b>Qué hacer:</b> [Pasos concretos con instituciones]
 
 ⚠️ <i>No tengo artículos específicos sobre este tema en mi base. Consulta con un abogado para orientación precisa.</i>
 
-- NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista proporcionada en el contexto.
+- NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 
 ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
@@ -902,23 +910,29 @@ def reformular(pregunta: str) -> str:
         return pregunta
 
 
-def buscar_bm25(query: str, top_n: int = 15) -> list[dict]:
+def buscar_bm25(query: str, top_n: int = 10) -> list[dict]:
     tokens = tokenizar(query)
     scores = bm25.get_scores(tokens)
     top    = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_n]
+    # Filtrar: solo artículos con score significativo (> 10% del máximo)
+    max_score = max(scores[i] for i in top) if top else 0
+    umbral = max_score * 0.15 if max_score > 0 else 0
     return [{"texto": docs_bm25[i], "ley": metadatas[i]["ley"],
-             "articulo": metadatas[i]["articulo"]} for i in top if scores[i] > 0]
+             "articulo": metadatas[i]["articulo"], "score_bm25": scores[i]}
+            for i in top if scores[i] > umbral]
 
 
-def buscar_embedding(query: str, top_n: int = 15) -> list[dict]:
+def buscar_embedding(query: str, top_n: int = 10) -> list[dict]:
     emb = embeddings.generar_embedding(query)
     r   = coleccion.query(
         query_embeddings=[emb], n_results=top_n,
         include=["documents", "metadatas", "distances"]
     )
+    # Filtro más estricto: solo artículos con distancia < 0.75 (antes 0.95)
     return [{"texto": r["documents"][0][i], "ley": r["metadatas"][0][i]["ley"],
-             "articulo": r["metadatas"][0][i]["articulo"]}
-            for i in range(len(r["documents"][0])) if r["distances"][0][i] < 0.95]
+             "articulo": r["metadatas"][0][i]["articulo"],
+             "distancia": r["distances"][0][i]}
+            for i in range(len(r["documents"][0])) if r["distances"][0][i] < 0.75]
 
 
 def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
@@ -1070,9 +1084,39 @@ PALABRAS_SEGUIMIENTO = [
 def es_seguimiento(pregunta: str) -> bool:
     """Detecta si la pregunta es un seguimiento de la conversación anterior."""
     pregunta_lower = pregunta.lower().strip()
-    if len(pregunta_lower.split()) <= 5:
+    # Solo considerar seguimiento si tiene palabras clave de seguimiento
+    # (antes: cualquier pregunta corta era seguimiento, causando resultados raros)
+    if any(p in pregunta_lower for p in PALABRAS_SEGUIMIENTO):
         return True
-    return any(p in pregunta_lower for p in PALABRAS_SEGUIMIENTO)
+    # Pregunta muy corta Y no parece ser tema nuevo
+    if len(pregunta_lower.split()) <= 4 and not _tiene_tema_legal(pregunta_lower):
+        return True
+    return False
+
+
+def _tiene_tema_legal(texto: str) -> bool:
+    """Detecta si el texto contiene un tema legal específico."""
+    temas_legales = [
+        "despido", "trabajo", "robo", "policía", "policia", "detener", "detenido",
+        "desalojo", "alquiler", "divorcio", "custodia", "pensión", "pension",
+        "impuesto", "empresa", "herencia", "accidente", "denuncia", "demanda",
+        "violencia", "maltrato", "vecino", "ruido", "banco", "estafa", "hackeo",
+        "arrendamiento", "contrato", "deuda", "multa", "licencia",
+    ]
+    return any(t in texto for t in temas_legales)
+
+
+def es_consulta_no_legal(pregunta: str) -> bool:
+    """Detecta saludos y preguntas no legales que no necesitan búsqueda RAG."""
+    pregunta_lower = pregunta.lower().strip()
+    patrones_no_legal = [
+        r"^(hola|hey|buenas?|saludos|hi|hello|buenos?\s+d[ií]as?|buenas?\s+tardes?|buenas?\s+noches?)[\s!.?]*$",
+        r"^(gracias|thanks?|ok|vale|entendido|perfecto|listo|genial)[\s!.?]*$",
+        r"^(qu[ée]\s+(?:tal|onda|hubo)|c[oó]mo\s+est[aá]s?)[\s!.?]*$",
+        r"^(adi[oó]s|chao|bye|hasta\s+luego|nos\s+vemos)[\s!.?]*$",
+        r"^(qui[eé]n\s+eres|qu[eé]\s+eres|qu[eé]\s+haces|c[oó]mo\s+te\s+llamas)[\s!.?]*$",
+    ]
+    return any(re.match(p, pregunta_lower) for p in patrones_no_legal)
 
 
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
@@ -1105,26 +1149,29 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str]:
     agregar(arts_clave)
 
     # 2. Embeddings (Semántica pura)
-    agregar(buscar_embedding(pregunta_juridica, top_n=15))
+    agregar(buscar_embedding(pregunta_juridica, top_n=10))
 
     # 3. BM25 (Palabras exactas) - complemento
-    agregar(buscar_bm25(pregunta_juridica, top_n=10))
-    agregar(buscar_bm25(pregunta, top_n=10))
+    agregar(buscar_bm25(pregunta_juridica, top_n=8))
+    agregar(buscar_bm25(pregunta, top_n=5))
 
-    # 4. Filtro de Diversidad (Máx 5 por ley, máx 15 total)
+    # 4. Filtro de Diversidad (Máx 4 por ley, máx 10 total)
+    # Priorizar artículos clave (keyword match) sobre BM25/embeddings
     por_ley = {}
     relevantes_finales = []
+    MAX_POR_LEY = 4
+    MAX_TOTAL = 10
 
     for art in relevantes:
         ley = art["ley"]
         if ley not in por_ley:
             por_ley[ley] = 0
 
-        if por_ley[ley] < 5:
+        if por_ley[ley] < MAX_POR_LEY:
             relevantes_finales.append(art)
             por_ley[ley] += 1
 
-        if len(relevantes_finales) >= 15:
+        if len(relevantes_finales) >= MAX_TOTAL:
             break
 
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
@@ -1177,23 +1224,42 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
     pregunta = sanitizar_input(pregunta)
 
+    # Si es un saludo o pregunta no legal, responder sin búsqueda RAG
+    if es_consulta_no_legal(pregunta):
+        logger.info(f"  → Consulta no legal, respondiendo sin RAG")
+        try:
+            response = groq_client.chat.completions.create(
+                model=config.LLM_MODEL,
+                messages=[
+                    {"role": "system", "content": "Eres aBOTgado, asistente jurídico venezolano en Telegram. "
+                     "El usuario te saluda o hace una pregunta casual. Responde breve y amigable en español venezolano, "
+                     "e invítalo a hacer su consulta legal. NO cites artículos ni leyes. Máximo 2 líneas."},
+                    {"role": "user", "content": pregunta}
+                ],
+                max_tokens=100,
+                temperature=0.3,
+            )
+            return response.choices[0].message.content
+        except Exception:
+            return "¡Hola! Soy aBOTgado, tu asistente jurídico. ¿En qué te puedo ayudar?"
+
     es_premium = user_id and db.es_premium(user_id)
     seguimiento = es_premium and historial and es_seguimiento(pregunta)
 
     if seguimiento:
         logger.info(f"  → Pregunta de seguimiento detectada")
         contexto_previo = db.cargar_contexto(user_id)
-        _, contexto_nuevo = buscar_articulos_nuevos(pregunta)
 
         if contexto_previo:
+            # Para seguimiento, usar SOLO el contexto previo
+            # No hacer búsqueda nueva que trae artículos irrelevantes
             contexto = contexto_previo
-            if contexto_nuevo:
-                contexto += "\nARTÍCULOS ADICIONALES:\n\n" + contexto_nuevo
-        elif contexto_nuevo:
-            contexto = contexto_nuevo
         else:
-            return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                    "⚠️ Consulta con un abogado.")
+            # Si no hay contexto previo, buscar normalmente
+            _, contexto = buscar_articulos_nuevos(pregunta)
+            if not contexto:
+                return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
+                        "⚠️ Consulta con un abogado.")
     else:
         relevantes, contexto = buscar_articulos_nuevos(pregunta)
         if not relevantes:
