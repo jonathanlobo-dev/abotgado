@@ -79,14 +79,23 @@ ARTICULOS_CLAVE = {
                      "detencion", "arrestar", "arrestado", "arrestaron", "preso",
                      "presa", "policía", "policia", "abuso", "golpear", "golpearon",
                      "maltratar", "maltrataron",
-                     "teléfono", "telefono", "comunicaciones", "privacidad",
                      "allanar", "allanamiento", "allanaron", "registro", "requisar",
                      "requisaron", "tortura",
                      "comisaría", "comisaria", "funcionario", "derechos humanos",
-                     "whatsapp", "chats", "mensajes", "revisar celular",
                      "calabozo", "encerrar", "encerrado", "libertad"],
         "ley": "Constitución de la República Bolivariana de Venezuela",
-        "articulos": [44, 45, 46, 47, 48, 49, 50, 55, 60, 139]
+        "articulos": [44, 45, 46, 47, 49, 50, 55, 60, 139]
+    },
+    "comunicaciones": {
+        "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
+                     "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
+                     "revisar telefono", "galería", "galeria", "fotos", "correo",
+                     "interceptar", "pinchar", "espiar", "grabar conversación",
+                     "grabar conversacion", "revisar mi teléfono", "pedir mi teléfono"],
+        "ley": "Constitución de la República Bolivariana de Venezuela",
+        # Art 48 = inviolabilidad comunicaciones (PRIORIDAD para casos de teléfono)
+        # Art 47 = inviolabilidad del hogar, Art 60 = protección honor/privacidad
+        "articulos": [48, 47, 60, 44]
     },
     "vivienda_cc": {
         "keywords": ["casero", "arrendador", "inquilino", "arrendatario", "alquiler",
@@ -610,8 +619,9 @@ REGLAS DE FORMATO Y REDACCIÓN:
 - Usa <i>itálica HTML</i> solo para el disclaimer final.
 - NO uses asteriscos (*) para formato. SOLO usa etiquetas HTML: <b> para negritas, <i> para itálica.
 - Sé breve y directo. PROHIBIDO: "es importante", "debes considerar", "debes solicitar asesoramiento legal".
-- NO repitas el mismo artículo dos veces.
+- NO repitas el mismo artículo dos veces. NO cites el artículo y su parágrafo como si fueran dos citas distintas.
 - Si mencionas un artículo, DEBES decir qué dice.
+- PROHIBIDO inventar montos de multas, penas de cárcel, tarifas o porcentajes si NO están expresamente escritos en el artículo citado.
 - En "Qué hacer": USA LA INFORMACIÓN DE LA GUÍA INSTITUCIONAL. Incluye instituciones REALES, teléfonos, plazos legales, documentos que debe llevar. NUNCA digas solo "busca un abogado" o "acude a la autoridad competente". Sé ESPECÍFICO: nombre de la institución, qué llevar, qué pedir, y si hay teléfono o web, inclúyelos."""
 
 PROMPT_EXPLICAR_ARTICULO = """Eres aBOTgado, asistente jurídico venezolano. El usuario quiere entender un artículo de ley.
