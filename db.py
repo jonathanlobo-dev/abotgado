@@ -149,8 +149,14 @@ def _setup_admins():
                         (config.PLAN_PREMIUM, admin_id)
                     )
             else:
-                # Admin no existe aún, se registrará cuando use /start
-                pass
+                # Admin no existe aún → crearlo como Premium
+                con.execute(
+                    "INSERT INTO usuarios (user_id, nombre, username, plan_id, premium) "
+                    "VALUES (?, 'Admin', '', ?, 1)",
+                    (admin_id, config.PLAN_PREMIUM)
+                )
+                import logging
+                logging.getLogger(__name__).info(f"Admin {admin_id} creado como Premium")
 
 
 # ─── USUARIOS ─────────────────────────────────────────────────────────────────
