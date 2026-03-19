@@ -938,8 +938,8 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             update.message,
             f"⏰ <b>Limite diario alcanzado</b>\n\n"
             f"Has usado tus {limite} consultas de hoy.\n\n"
-            "<b>Plan Pionero</b> ($2/mes): 5 consultas + memoria + 1 doc/mes\n"
-            "<b>Plan Premium</b> ($5/mes): ilimitado + memoria + docs ilimitados\n\n"
+            "Escribe /referir para invitar amigos y obtener\n"
+            "Plan Pionero gratis por 2 semanas.\n\n"
             "Escribe /estado para ver tu plan."
         )
         return
@@ -989,11 +989,17 @@ def main():
 
     # Notificar admins que el bot arrancó
     async def post_init(application):
+        usuarios = db.listar_usuarios()
         for admin_id in config.ADMIN_IDS:
             try:
                 await application.bot.send_message(
                     chat_id=admin_id,
-                    text=f"✅ aBOTgado iniciado\nArticulos: {busqueda.coleccion.count()}"
+                    text=(
+                        f"✅ aBOTgado iniciado\n"
+                        f"Articulos: {busqueda.coleccion.count()}\n"
+                        f"Usuarios: {len(usuarios)}\n"
+                        f"DB: {config.SQLITE_DB_FILE}"
+                    )
                 )
             except Exception:
                 pass

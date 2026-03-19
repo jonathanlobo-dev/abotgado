@@ -121,6 +121,37 @@ def inicializar_db():
             )
         """)
 
+    # Log de ruta para diagnóstico
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"DB inicializada en: {config.SQLITE_DB_FILE}")
+
+    # Verificar cuántos usuarios hay
+    with get_db() as con:
+        count = con.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+        logger.info(f"Usuarios en DB: {count}")
+
+    # Auto-setup: admins siempre son Premium
+    _setup_admins()
+
+
+def _setup_admins():
+    """Asegura que todos los admin IDs estén registrados como Premium."""
+    with get_db() as con:
+        for admin_id in config.ADMIN_IDS:
+            cur = con.execute("SELECT plan_id FROM usuarios WHERE user_id = ?", (admin_id,))
+            fila = cur.fetchone()
+            if fila:
+                # Admin existe, asegurar Premium
+                if fila[0] != config.PLAN_PREMIUM:
+                    con.execute(
+                        "UPDATE usuarios SET plan_id = ?, premium = 1 WHERE user_id = ?",
+                        (config.PLAN_PREMIUM, admin_id)
+                    )
+            else:
+                # Admin no existe aún, se registrará cuando use /start
+                pass
+
 
 # ─── USUARIOS ─────────────────────────────────────────────────────────────────
 
