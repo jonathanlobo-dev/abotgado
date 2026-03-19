@@ -240,20 +240,14 @@ ARTICULOS_CLAVE = {
         "ley": "Código Penal",
         "articulos": [405, 406, 407, 413, 414, 415, 451, 453, 455, 457, 458, 460, 462, 464]
     },
-    "justicia_paz": {
-        "keywords": ["vecino", "vecinos", "vecina", "ruido", "bulla", "música alta",
-                     "musica alta", "ladra", "ladrar", "ladrido", "perro ladra",
-                     "perro del vecino", "basura del vecino", "cerca", "lindero",
-                     "medianera", "conflicto vecinal", "pelea con vecino",
-                     "juez de paz", "justicia de paz", "conciliación", "conciliacion",
-                     "mediación vecinal", "mediacion vecinal", "gimnasio clandestino",
-                     "fiesta", "escándalo", "escandalo", "molestia", "perturbación",
-                     "perturbacion"],
-        "ley": "Ley de Justicia de Paz Comunal",
-        # Excluir arts 1-8 (son reforma: "Se modifica el título/artículo...")
-        # Arts 9+ contienen el texto sustantivo reformado
-        "articulos": list(range(9, 50))
-    },
+    # NOTA: JP desactivada temporalmente — el PDF es una ley de reforma parcial,
+    # TODOS sus artículos son "Se modifica..." sin contenido sustantivo.
+    # Se necesita el PDF consolidado. La guía institucional sigue funcionando.
+    # "justicia_paz": {
+    #     "keywords": ["vecino", "vecinos", ...],
+    #     "ley": "Ley de Justicia de Paz Comunal",
+    #     "articulos": list(range(9, 50))
+    # },
     "faltas_penales": {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
                      "musica alta", "perturbación", "perturbacion", "escándalo",
@@ -261,8 +255,8 @@ ARTICULOS_CLAVE = {
                      "gimnasio clandestino", "fiesta ruidosa", "gritos"],
         "ley": "Código Penal",
         # 502 = perturbación del sosiego, 503-508 = otras faltas
-        # 501 es sobre agencias/empresas, va al final
-        "articulos": [502, 503, 504, 505, 506, 507, 508, 501]
+        # 501 excluido: es sobre agencias/empresas, no ruido
+        "articulos": [502, 503, 504, 505, 506, 507, 508]
     },
     "adultos_mayores": {
         "keywords": ["abuelo", "abuela", "anciano", "anciana", "adulto mayor",
