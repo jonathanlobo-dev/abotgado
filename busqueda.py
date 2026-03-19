@@ -583,6 +583,8 @@ REGLA DE RELEVANCIA:
   → Código Penal (faltas/perturbaciones) para ruido excesivo
   → LOTTT para cualquier problema laboral
 - Máximo 3-4 artículos citados. Los MÁS relevantes al caso.
+- IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
+- Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
 - Si REALMENTE ningún artículo de la lista tiene relación con el tema, responde sin citar.
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
@@ -1269,7 +1271,13 @@ def debug_busqueda(pregunta: str) -> str:
     for a in bm[:5]:
         lineas.append(f"  • {a['ley']}, Art. {a['articulo']}")
 
-    # 7. Listar leyes únicas en la DB
+    # 7. Contenido de artículos clave enviados al LLM (primeros 5)
+    lineas.append(f"\n📄 CONTENIDO de artículos clave (lo que ve el LLM):")
+    for i, a in enumerate(arts_clave[:8]):
+        texto_corto = a['texto'][:150].replace('\n', ' ')
+        lineas.append(f"  [{i+1}] {a['ley']}, Art. {a['articulo']}: {texto_corto}...")
+
+    # 8. Listar leyes únicas en la DB
     try:
         all_meta = coleccion.get(include=["metadatas"], limit=10000)
         leyes = set(m["ley"] for m in all_meta["metadatas"])
