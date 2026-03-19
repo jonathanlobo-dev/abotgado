@@ -246,9 +246,19 @@ ARTICULOS_CLAVE = {
                      "perro del vecino", "basura del vecino", "cerca", "lindero",
                      "medianera", "conflicto vecinal", "pelea con vecino",
                      "juez de paz", "justicia de paz", "conciliación", "conciliacion",
-                     "mediación vecinal", "mediacion vecinal"],
+                     "mediación vecinal", "mediacion vecinal", "gimnasio clandestino",
+                     "fiesta", "escándalo", "escandalo", "molestia", "perturbación",
+                     "perturbacion"],
         "ley": "Ley de Justicia de Paz Comunal",
         "articulos": [1, 2, 3, 4, 5, 6, 8, 36, 37, 38, 39, 40]
+    },
+    "faltas_penales": {
+        "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
+                     "musica alta", "perturbación", "perturbacion", "escándalo",
+                     "escandalo", "desorden", "alboroto", "molestia",
+                     "gimnasio clandestino", "fiesta ruidosa", "gritos"],
+        "ley": "Código Penal",
+        "articulos": [501, 502, 503, 504, 505, 506, 507, 508]
     },
     "adultos_mayores": {
         "keywords": ["abuelo", "abuela", "anciano", "anciana", "adulto mayor",
@@ -437,11 +447,20 @@ Responde con 5-10 términos jurídicos clave, sin explicaciones."""
 
 SYSTEM_PROMPT = """Eres aBOTgado, asistente jurídico virtual especializado en leyes venezolanas para Telegram. Tono profesional, accesible y en español venezolano.
 
-REGLAS SOBRE ARTÍCULOS:
+REGLA PRINCIPAL — PROHIBICIÓN ABSOLUTA DE INVENTAR:
 - Los artículos disponibles están numerados [1], [2], [3], etc. en la lista que recibirás.
-- SOLO cita artículos de esa lista. NUNCA inventes artículos ni leyes.
-- Cuando cites, usa el nombre y número EXACTOS de la lista.
-- SIEMPRE intenta responder con los artículos de la lista. Aunque un artículo sea general (ej: "derecho a la privacidad"), APLÍCALO a la situación específica del usuario (ej: "por eso no pueden revisar tu teléfono sin orden judicial"). Solo di "no tengo artículos" si REALMENTE ninguno tiene relación con la pregunta.
+- SOLO puedes citar artículos de ESA lista. NUNCA uses tu conocimiento interno para citar leyes o artículos que NO estén en la lista.
+- Si los artículos de la lista NO son relevantes al problema del usuario (ej: hablan de policía pero el usuario pregunta por ruido), NO los cites solo para rellenar. Es MEJOR citar 1 artículo relevante que 3 irrelevantes.
+- Si NINGÚN artículo de la lista aplica al problema específico, usa esta respuesta de escape:
+
+📌 <b>Respuesta:</b> [Responde con tu conocimiento general sobre el tema, pero SIN inventar artículos]
+
+💡 <b>Qué hacer:</b> [Pasos concretos con instituciones]
+
+⚠️ <i>No tengo artículos específicos sobre este tema en mi base. Consulta con un abogado para orientación precisa.</i>
+
+- NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista (como el COPP si no está en el contexto).
+- Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 
 ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 
@@ -450,7 +469,7 @@ ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 📖 <b>Qué dice la ley:</b>
 - <b>Ley, Art. N:</b> "[cita breve — máx 2 líneas]"
 - <b>Ley, Art. N:</b> "[cita breve — máx 2 líneas]"
-(2-3 artículos DIFERENTES. NO repitas el mismo artículo.)
+(SOLO artículos de la lista que sean RELEVANTES al problema. Si solo 1 aplica, cita solo 1. Si ninguno aplica, OMITE esta sección.)
 
 💡 <b>Qué hacer:</b>
 1. [PASO CONCRETO con institución, teléfono o web si los tienes]
