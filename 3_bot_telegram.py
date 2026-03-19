@@ -85,7 +85,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     try:
                         await context.bot.send_message(
                             chat_id=referidor_id,
-                            text=f"🎉 Tu amigo {user.first_name} se registro con tu link.\nTienes 1 documento de regalo. Usa /documento",
+                            text=f"🎉 Tu amigo {user.first_name} se registro con tu link. Gracias por compartir aBOTgado!",
                             parse_mode="HTML"
                         )
                     except Exception:
@@ -106,8 +106,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• <i>¿Me pueden quitar el carro en una alcabala?</i>\n"
         "• <i>Me despidieron sin pagarme, ¿qué hago?</i>\n"
         "• <i>Mi esposo me maltrata, qué puedo hacer?</i>\n\n"
-        "📄 <b>Documentos:</b> /documento\n"
-        "Genera contratos, cartas, poderes y más.\n\n"
+        "📄 <b>Documentos legales:</b> proximamente\n\n"
         "⚠️ <i>Soy informativo, no reemplazo a un abogado.</i>"
     )
 
@@ -126,12 +125,12 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto += "/estado — Tu plan y consultas\n"
     texto += "/stats — Tus estadisticas\n"
     texto += "/opinion — Dejar tu opinion\n"
-    texto += "/referir — Invita amigos y gana docs\n"
+    texto += "/referir — Invita amigos\n"
     texto += "/soporte — Contactar soporte\n\n"
 
     # Comandos premium/tester
     if plan_id >= config.PLAN_TESTER:
-        texto += "<b>Funciones avanzadas:</b>\n"
+        texto += "<b>Funciones Pionero/Premium:</b>\n"
         texto += "/comparar — Comparar dos articulos\n"
         if con_memoria:
             texto += "/nuevo — Borrar historial\n"
@@ -139,14 +138,8 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             texto += "/mis_consultas — Ver favoritos guardados\n"
         texto += "\n"
 
-    # Documentos
-    docs = db.docs_disponibles(user_id)
-    if docs > 0:
-        texto += "<b>Documentos:</b>\n"
-        texto += "/documento — Generar documento legal\n"
-        texto += "/cancelar — Cancelar documento en proceso\n\n"
-    else:
-        texto += "<b>Documentos:</b> disponible desde Plan Pionero\n\n"
+    # Documentos (desactivados temporalmente)
+    texto += "📄 <b>Documentos legales:</b> proximamente\n\n"
 
     # Admin
     if es_admin(user_id):
@@ -157,7 +150,6 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/premium_on ID — Activar Premium\n"
             "/premium_off ID — Desactivar Premium\n"
             "/tester ID — Activar Pionero\n"
-            "/regalar_doc ID [n] — Regalar documentos\n"
             "/regalar_memoria ID — Regalar memoria\n"
             "/anuncio MSG — Broadcast a todos\n"
             "/mensaje ID MSG — Mensaje directo a 1 usuario\n"
@@ -189,19 +181,21 @@ async def estado(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         texto += "❌ Sin memoria de conversación\n"
 
-    if plan_info["docs_mes"] == -1:
-        texto += "✅ Documentos ilimitados\n"
-    elif docs > 0:
-        texto += f"📄 Documentos disponibles: <b>{docs}</b>\n"
-    else:
-        texto += "❌ Sin documentos disponibles\n"
+    texto += "📄 Documentos legales: <i>proximamente</i>\n"
 
+    if plan_id == config.PLAN_GRATIS:
+        texto += (
+            "\n<b>Plan Pionero</b> (gratis para testers):\n"
+            "• Memoria de conversacion\n"
+            "• Comparador de articulos\n"
+            "• Explicacion de articulos con /ley\n"
+            "Escribe /soporte para ser tester!\n"
+        )
     if plan_id < config.PLAN_PREMIUM:
         texto += (
-            "\n<b>Plan Premium</b> ($5/mes):\n"
+            "\n<b>Plan Premium</b>:\n"
             "• Consultas ilimitadas\n"
-            "• Memoria de conversación\n"
-            "• Documentos legales ilimitados\n"
+            "• Memoria de conversacion\n"
             "• Comparador de articulos\n"
         )
 
@@ -538,11 +532,10 @@ async def cmd_referir(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await enviar_respuesta(
         update.message,
-        "🎁 <b>Invita amigos y gana documentos</b>\n\n"
+        "🎁 <b>Invita amigos a aBOTgado</b>\n\n"
         f"Tu link personal:\n<code>{link}</code>\n\n"
-        "Cuando alguien se registre con tu link:\n"
-        "• Tu amigo recibe 1 documento de regalo\n"
-        "• Tu recibes 1 documento de regalo\n\n"
+        "Comparte este link para que tus amigos\n"
+        "tambien tengan acceso a consultas legales.\n\n"
         f"Amigos referidos: <b>{refs}</b>"
     )
 
@@ -783,6 +776,17 @@ async def cmd_usuarios(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ─── HANDLERS DE DOCUMENTOS ─────────────────────────────────────────────────
 
 async def cmd_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Documentos desactivados temporalmente
+    if not config.DOCS_HABILITADOS:
+        await enviar_respuesta(
+            update.message,
+            "📄 <b>Documentos Legales</b>\n\n"
+            "Esta funcion estara disponible proximamente.\n"
+            "Estamos preparando plantillas revisadas por abogados.\n\n"
+            "Te avisaremos cuando este listo!"
+        )
+        return
+
     try:
         user_id = update.effective_user.id
         db.registrar_usuario(user_id, update.effective_user.first_name,
@@ -794,8 +798,6 @@ async def cmd_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update.message,
                 "<b>Generador de Documentos</b>\n\n"
                 "No tienes documentos disponibles.\n\n"
-                "<b>Plan Pionero</b> ($2/mes): 1 documento/mes + 5 consultas + memoria\n"
-                "<b>Plan Premium</b> ($5/mes): documentos ilimitados + consultas ilimitadas\n\n"
                 "Escribe /estado para ver tu plan actual."
             )
             return

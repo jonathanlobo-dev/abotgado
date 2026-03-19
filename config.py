@@ -51,9 +51,12 @@ PLAN_TESTER  = 1
 PLAN_PREMIUM = 2
 
 PLANES = {
-    PLAN_GRATIS:  {"nombre": "Gratis",     "icono": "\U0001f193", "consultas": 3,  "memoria": False, "docs_mes": 0},
-    PLAN_TESTER:  {"nombre": "Pionero",    "icono": "\u2b50",     "consultas": 5,  "memoria": True,  "docs_mes": 1},
-    PLAN_PREMIUM: {"nombre": "Premium",    "icono": "\U0001f48e", "consultas": -1, "memoria": True,  "docs_mes": -1},
+    PLAN_GRATIS:  {"nombre": "Gratis",     "icono": "\U0001f193", "consultas": 5,  "memoria": False, "docs_mes": 0},
+    PLAN_TESTER:  {"nombre": "Pionero",    "icono": "\u2b50",     "consultas": 5,  "memoria": True,  "docs_mes": 0},
+    PLAN_PREMIUM: {"nombre": "Premium",    "icono": "\U0001f48e", "consultas": -1, "memoria": True,  "docs_mes": 0},
 }
+
+# Documentos desactivados temporalmente hasta tener plantillas revisadas
+DOCS_HABILITADOS = False
 
 MAX_HISTORIAL = 10
