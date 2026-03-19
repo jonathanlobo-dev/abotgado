@@ -1,0 +1,42 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite (se genera en el Volume de Railway)
+*.db
+*.db-shm
+*.db-wal
+
+# ChromaDB (se genera en Railway al indexar)
+abotgado_db/
+
+# Indice de leyes procesadas
+indice_leyes.json
+
+# Carpeta duplicada de leyes
+Biblioteca de Leyes_-20260317/
+
+# Claude settings
+.claude/
+
+# Documentos generados por usuarios
+documentos_generados/
+
+# Archivos auxiliares de desarrollo
+diagnostico.py
+ver_pdf.py
+3_bot_telegram.txt
+config.txt
+db.txt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
