@@ -131,6 +131,21 @@ def inicializar_db():
             )
         """)
 
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS abogados (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre         TEXT NOT NULL,
+                cedula         TEXT NOT NULL,
+                inpreabogado   TEXT NOT NULL,
+                especialidad   TEXT NOT NULL,
+                telefono       TEXT NOT NULL,
+                estado         TEXT NOT NULL,
+                notas          TEXT DEFAULT '',
+                activo         INTEGER DEFAULT 1,
+                timestamp      TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
     # Log de ruta para diagnóstico
     import logging
     logger = logging.getLogger(__name__)
@@ -621,6 +636,83 @@ def guardar_ticket_soporte(user_id: int, mensaje: str, direccion: str = "user_to
             "INSERT INTO soporte (user_id, mensaje, direccion) VALUES (?, ?, ?)",
             (user_id, mensaje, direccion)
         )
+
+
+# ─── DIRECTORIO DE ABOGADOS ─────────────────────────────────────────────────
+
+ESPECIALIDADES_VALIDAS = [
+    "Penal", "Civil", "Laboral", "Mercantil", "Familia",
+    "Tránsito", "Administrativo", "Tributario", "Inmobiliario",
+    "Migratorio", "Electoral", "Ambiental", "Otro"
+]
+
+
+def agregar_abogado(nombre: str, cedula: str, inpreabogado: str,
+                    especialidad: str, telefono: str, estado: str,
+                    notas: str = "") -> int:
+    """Agrega un abogado al directorio. Retorna el ID."""
+    with get_db() as con:
+        cur = con.execute("""
+            INSERT INTO abogados (nombre, cedula, inpreabogado, especialidad,
+                                  telefono, estado, notas)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (nombre, cedula, inpreabogado, especialidad, telefono, estado, notas))
+        return cur.lastrowid
+
+
+def listar_abogados(especialidad: str = None, estado: str = None,
+                    solo_activos: bool = True) -> list[dict]:
+    """Lista abogados con filtros opcionales."""
+    query = "SELECT * FROM abogados WHERE 1=1"
+    params = []
+
+    if solo_activos:
+        query += " AND activo = 1"
+    if especialidad:
+        query += " AND LOWER(especialidad) LIKE ?"
+        params.append(f"%{especialidad.lower()}%")
+    if estado:
+        query += " AND LOWER(estado) LIKE ?"
+        params.append(f"%{estado.lower()}%")
+
+    query += " ORDER BY nombre ASC"
+
+    with get_db() as con:
+        cur = con.execute(query, params)
+        cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, row)) for row in cur.fetchall()]
+
+
+def obtener_abogado(abogado_id: int) -> dict | None:
+    """Obtiene un abogado por ID."""
+    with get_db() as con:
+        cur = con.execute("SELECT * FROM abogados WHERE id = ?", (abogado_id,))
+        cols = [d[0] for d in cur.description]
+        row = cur.fetchone()
+        return dict(zip(cols, row)) if row else None
+
+
+def desactivar_abogado(abogado_id: int) -> bool:
+    """Desactiva un abogado (no lo borra). Retorna True si existía."""
+    with get_db() as con:
+        cur = con.execute("UPDATE abogados SET activo = 0 WHERE id = ?", (abogado_id,))
+        return cur.rowcount > 0
+
+
+def activar_abogado(abogado_id: int) -> bool:
+    """Reactiva un abogado. Retorna True si existía."""
+    with get_db() as con:
+        cur = con.execute("UPDATE abogados SET activo = 1 WHERE id = ?", (abogado_id,))
+        return cur.rowcount > 0
+
+
+def contar_abogados(solo_activos: bool = True) -> int:
+    """Cuenta abogados en el directorio."""
+    query = "SELECT COUNT(*) FROM abogados"
+    if solo_activos:
+        query += " WHERE activo = 1"
+    with get_db() as con:
+        return con.execute(query).fetchone()[0]
 
 
 # ─── MÉTRICAS DE CONSULTAS ──────────────────────────────────────────────────

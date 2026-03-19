@@ -73,6 +73,7 @@ async def enviar_respuesta(message, texto: str):
 feedback_pendiente = set()
 soporte_pendiente  = set()
 ultima_respuesta   = {}  # user_id -> {"pregunta": ..., "respuesta": ...}
+registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
 
 
 # ─── COMANDOS GENERALES ─────────────────────────────────────────────────────
@@ -158,6 +159,14 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Documentos (desactivados temporalmente)
     texto += "📄 <b>Documentos legales:</b> proximamente\n\n"
 
+    # Anuncio para abogados
+    texto += (
+        "👨‍⚖️ <b>¿Eres abogado?</b>\n"
+        "Estamos construyendo un directorio de abogados verificados. "
+        "Si deseas aparecer en el directorio, escribe /soporte "
+        "y cuéntanos tu especialidad y datos de contacto.\n\n"
+    )
+
     # Admin
     if es_admin(user_id):
         texto += (
@@ -171,7 +180,12 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/anuncio MSG — Broadcast a todos\n"
             "/mensaje ID MSG — Mensaje directo a 1 usuario\n"
             "/feedback — Ver opiniones\n"
-            "/responder ID MSG — Responder soporte\n"
+            "/responder ID MSG — Responder soporte\n\n"
+            "<b>Directorio:</b>\n"
+            "/add_abogado — Registrar abogado\n"
+            "/abogados — Ver directorio\n"
+            "/del_abogado ID — Desactivar abogado\n"
+            "/activar_abogado ID — Reactivar abogado\n"
         )
 
     texto += "\nO escribeme tu consulta juridica."
@@ -869,14 +883,196 @@ async def cmd_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cmd_cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = update.effective_user.id
-        # También cancelar feedback/soporte pendiente
+        # También cancelar feedback/soporte/registro pendiente
         feedback_pendiente.discard(user_id)
         soporte_pendiente.discard(user_id)
+        if user_id in registro_abogado:
+            del registro_abogado[user_id]
         msg = documentos.cancelar_documento(user_id)
         await update.message.reply_text(msg)
     except Exception as e:
         logger.error(f"Error en cmd_cancelar: {e}", exc_info=True)
         await update.message.reply_text(f"Error: {e}")
+
+
+# ─── DIRECTORIO DE ABOGADOS (ADMIN) ────────────────────────────────────────
+
+PASOS_ABOGADO = [
+    ("nombre",        "📝 <b>Paso 1/6</b> — Nombre completo del abogado:\n\n<i>Ej: Abg. Juan Pérez</i>"),
+    ("cedula",        "🪪 <b>Paso 2/6</b> — Cédula de identidad:\n\n<i>Ej: V-12345678</i>"),
+    ("inpreabogado",  "📋 <b>Paso 3/6</b> — Número de INPREABOGADO:\n\n<i>Ej: 185432</i>"),
+    ("especialidad",  "⚖️ <b>Paso 4/6</b> — Especialidad:\n\n"
+                      + "\n".join(f"  • {e}" for e in db.ESPECIALIDADES_VALIDAS)
+                      + "\n\n<i>Escribe una o varias separadas por coma</i>"),
+    ("telefono",      "📱 <b>Paso 5/6</b> — Teléfono de contacto:\n\n<i>Ej: +58 412-1234567</i>"),
+    ("estado",        "📍 <b>Paso 6/6</b> — Estado/Ciudad:\n\n<i>Ej: Caracas, Zulia, Carabobo</i>"),
+]
+
+
+async def cmd_add_abogado(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Inicia el flujo conversacional para registrar un abogado."""
+    user_id = update.effective_user.id
+    if not es_admin(user_id):
+        return
+
+    registro_abogado[user_id] = {"paso": 0, "datos": {}}
+    _, mensaje = PASOS_ABOGADO[0]
+    await enviar_respuesta(
+        update.message,
+        "👨‍⚖️ <b>Registrar abogado en el directorio</b>\n\n"
+        f"{mensaje}\n\n"
+        "Escribe /cancelar para salir."
+    )
+
+
+def procesar_paso_abogado(user_id: int, texto: str) -> tuple[str | None, bool]:
+    """Procesa un paso del registro de abogado.
+    Retorna (mensaje_siguiente, completado)."""
+    if user_id not in registro_abogado:
+        return None, False
+
+    reg = registro_abogado[user_id]
+
+    # Si ya preguntamos las notas, este texto son las notas
+    if reg.get("esperando_notas"):
+        notas = texto.strip() if texto.strip() != "-" else ""
+        datos = reg["datos"]
+
+        abogado_id = db.agregar_abogado(
+            nombre=datos["nombre"],
+            cedula=datos["cedula"],
+            inpreabogado=datos["inpreabogado"],
+            especialidad=datos["especialidad"],
+            telefono=datos["telefono"],
+            estado=datos["estado"],
+            notas=notas,
+        )
+
+        del registro_abogado[user_id]
+
+        resumen = (
+            f"✅ <b>Abogado registrado</b> (ID: {abogado_id})\n\n"
+            f"👤 {datos['nombre']}\n"
+            f"🪪 C.I.: {datos['cedula']}\n"
+            f"📋 INPREABOGADO: {datos['inpreabogado']}\n"
+            f"⚖️ {datos['especialidad']}\n"
+            f"📱 {datos['telefono']}\n"
+            f"📍 {datos['estado']}\n"
+        )
+        if notas:
+            resumen += f"📝 {notas}\n"
+
+        return resumen, True
+
+    paso_actual = reg["paso"]
+    campo, _ = PASOS_ABOGADO[paso_actual]
+
+    # Guardar dato del paso actual
+    reg["datos"][campo] = texto.strip()
+    reg["paso"] += 1
+
+    # ¿Hay más pasos?
+    if reg["paso"] < len(PASOS_ABOGADO):
+        _, siguiente_msg = PASOS_ABOGADO[reg["paso"]]
+        return siguiente_msg, False
+
+    # Todos los pasos completados — preguntar por notas
+    reg["esperando_notas"] = True
+    return ("📝 <b>Notas adicionales</b> (opcional):\n\n"
+            "<i>Email, horario, precio de consulta, idiomas, etc.\n"
+            "Escribe \"-\" para omitir.</i>"), False
+
+
+async def cmd_abogados(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Lista abogados. Filtro opcional: /abogados penal o /abogados Caracas."""
+    user_id = update.effective_user.id
+    if not es_admin(user_id):
+        return
+
+    filtro = " ".join(context.args) if context.args else None
+
+    # Intentar filtrar por especialidad o estado
+    abogados = []
+    if filtro:
+        abogados = db.listar_abogados(especialidad=filtro)
+        if not abogados:
+            abogados = db.listar_abogados(estado=filtro)
+    if not abogados:
+        abogados = db.listar_abogados()
+
+    total = db.contar_abogados()
+
+    if not abogados:
+        await enviar_respuesta(
+            update.message,
+            "👨‍⚖️ <b>Directorio de Abogados</b>\n\n"
+            "No hay abogados registrados.\n"
+            "Usa /add_abogado para agregar uno."
+        )
+        return
+
+    texto = f"👨‍⚖️ <b>Directorio de Abogados</b> ({total} registrados)\n\n"
+
+    for a in abogados:
+        texto += (
+            f"<b>#{a['id']}</b> — {a['nombre']}\n"
+            f"  🪪 C.I.: {a['cedula']}\n"
+            f"  📋 INPREABOGADO: {a['inpreabogado']}\n"
+            f"  ⚖️ {a['especialidad']}\n"
+            f"  📱 {a['telefono']}\n"
+            f"  📍 {a['estado']}\n"
+        )
+        if a['notas']:
+            texto += f"  📝 {a['notas']}\n"
+        estado_txt = "🟢 Activo" if a['activo'] else "🔴 Inactivo"
+        texto += f"  {estado_txt}\n\n"
+
+    texto += "<i>/del_abogado ID — desactivar\n/activar_abogado ID — reactivar</i>"
+    await enviar_respuesta(update.message, texto)
+
+
+async def cmd_del_abogado(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Desactiva un abogado por ID."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /del_abogado <ID>")
+        return
+    try:
+        abogado_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El ID debe ser un número.")
+        return
+
+    abogado = db.obtener_abogado(abogado_id)
+    if not abogado:
+        await update.message.reply_text(f"No existe abogado con ID {abogado_id}.")
+        return
+
+    db.desactivar_abogado(abogado_id)
+    await update.message.reply_text(f"🔴 Abogado #{abogado_id} ({abogado['nombre']}) desactivado.")
+
+
+async def cmd_activar_abogado(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Reactiva un abogado por ID."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /activar_abogado <ID>")
+        return
+    try:
+        abogado_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El ID debe ser un número.")
+        return
+
+    abogado = db.obtener_abogado(abogado_id)
+    if not abogado:
+        await update.message.reply_text(f"No existe abogado con ID {abogado_id}.")
+        return
+
+    db.activar_abogado(abogado_id)
+    await update.message.reply_text(f"🟢 Abogado #{abogado_id} ({abogado['nombre']}) reactivado.")
 
 
 # ─── HANDLER PRINCIPAL ──────────────────────────────────────────────────────
@@ -890,6 +1086,13 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     db.registrar_usuario(user_id, user.first_name, user.username or "")
+
+    # ── Registro de abogado (flujo conversacional admin) ────────────────
+    if user_id in registro_abogado:
+        mensaje, completado = procesar_paso_abogado(user_id, pregunta)
+        if mensaje:
+            await enviar_respuesta(update.message, mensaje)
+        return
 
     # ── Feedback pendiente ───────────────────────────────────────────────
     if user_id in feedback_pendiente:
@@ -1048,6 +1251,10 @@ def main():
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
+    app.add_handler(CommandHandler("add_abogado",     cmd_add_abogado))
+    app.add_handler(CommandHandler("abogados",        cmd_abogados))
+    app.add_handler(CommandHandler("del_abogado",     cmd_del_abogado))
+    app.add_handler(CommandHandler("activar_abogado", cmd_activar_abogado))
 
     # Mensajes normales
     app.add_handler(MessageHandler(
