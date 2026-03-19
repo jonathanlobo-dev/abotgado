@@ -250,7 +250,9 @@ ARTICULOS_CLAVE = {
                      "fiesta", "escándalo", "escandalo", "molestia", "perturbación",
                      "perturbacion"],
         "ley": "Ley de Justicia de Paz Comunal",
-        "articulos": [1, 2, 3, 4, 5, 6, 8, 36, 37, 38, 39, 40]
+        # Excluir arts 1-8 (son reforma: "Se modifica el título/artículo...")
+        # Arts 9+ contienen el texto sustantivo reformado
+        "articulos": list(range(9, 50))
     },
     "faltas_penales": {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
@@ -258,7 +260,9 @@ ARTICULOS_CLAVE = {
                      "escandalo", "desorden", "alboroto", "molestia",
                      "gimnasio clandestino", "fiesta ruidosa", "gritos"],
         "ley": "Código Penal",
-        "articulos": [501, 502, 503, 504, 505, 506, 507, 508]
+        # 502 = perturbación del sosiego, 503-508 = otras faltas
+        # 501 es sobre agencias/empresas, va al final
+        "articulos": [502, 503, 504, 505, 506, 507, 508, 501]
     },
     "adultos_mayores": {
         "keywords": ["abuelo", "abuela", "anciano", "anciana", "adulto mayor",
@@ -934,7 +938,8 @@ def buscar_embedding(query: str, top_n: int = 10) -> list[dict]:
 
 
 def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
-    """Retorna (artículos, temas_detectados)."""
+    """Retorna (artículos, temas_detectados).
+    Si un tema tiene muchos artículos (>10), usa embedding para ordenar por relevancia."""
     pregunta_norm = normalizar(pregunta)
     articulos      = []
     ids_vistos     = set()
@@ -943,10 +948,37 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
         if any(normalizar(k) in pregunta_norm for k in cfg["keywords"]):
             logger.info(f"  Tema detectado: {tema}")
             temas.append(tema)
+
+            arts_lista = cfg["articulos"]
+
+            # Si hay muchos artículos, usar embedding para encontrar los más relevantes
+            if len(arts_lista) > 10:
+                try:
+                    query_emb = embeddings.get_embedding(pregunta)
+                    resultado = coleccion.query(
+                        query_embeddings=[query_emb],
+                        n_results=6,
+                        where={"ley": {"$eq": cfg["ley"]}},
+                        include=["documents", "metadatas", "distances"]
+                    )
+                    for i in range(len(resultado["documents"][0])):
+                        clave = f"{resultado['metadatas'][0][i]['ley']}_{resultado['metadatas'][0][i]['articulo']}"
+                        if clave not in ids_vistos:
+                            articulos.append({
+                                "texto":    resultado["documents"][0][i],
+                                "ley":      resultado["metadatas"][0][i]["ley"],
+                                "articulo": resultado["metadatas"][0][i]["articulo"],
+                            })
+                            ids_vistos.add(clave)
+                    continue
+                except Exception as e:
+                    logger.warning(f"  Embedding fallback para {tema}: {e}")
+
+            # Para listas cortas, buscar directamente
             resultado = coleccion.get(
                 where={"$and": [
                     {"ley":      {"$eq": cfg["ley"]}},
-                    {"articulo": {"$in": cfg["articulos"]}}
+                    {"articulo": {"$in": arts_lista}}
                 ]},
                 include=["documents", "metadatas"]
             )
