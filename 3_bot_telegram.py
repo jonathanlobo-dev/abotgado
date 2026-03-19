@@ -895,6 +895,31 @@ async def cmd_cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Error: {e}")
 
 
+# ─── DEBUG (ADMIN) ─────────────────────────────────────────────────────────
+
+async def cmd_debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Diagnóstico del pipeline de búsqueda para una consulta."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /debug <consulta>\nEj: /debug Mi vecino puso un gimnasio y pone música alta")
+        return
+
+    consulta = " ".join(context.args)
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action="typing"
+    )
+
+    resultado = await asyncio.to_thread(busqueda.debug_busqueda, consulta)
+
+    # Dividir si es muy largo
+    if len(resultado) > 4096:
+        for i in range(0, len(resultado), 4096):
+            await update.message.reply_text(resultado[i:i+4096])
+    else:
+        await update.message.reply_text(resultado)
+
+
 # ─── DIRECTORIO DE ABOGADOS (ADMIN) ────────────────────────────────────────
 
 PASOS_ABOGADO = [
@@ -1251,6 +1276,7 @@ def main():
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
+    app.add_handler(CommandHandler("debug",           cmd_debug))
     app.add_handler(CommandHandler("add_abogado",     cmd_add_abogado))
     app.add_handler(CommandHandler("abogados",        cmd_abogados))
     app.add_handler(CommandHandler("del_abogado",     cmd_del_abogado))

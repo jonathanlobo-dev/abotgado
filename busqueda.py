@@ -1212,6 +1212,81 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
     return relevantes_finales, contexto, temas_detectados
 
 
+def debug_busqueda(pregunta: str) -> str:
+    """Diagnóstico completo del pipeline de búsqueda para una pregunta."""
+    lineas = [f"🔍 DEBUG: \"{pregunta}\"\n"]
+
+    # 1. Reformulación
+    pregunta_juridica = reformular(pregunta)
+    lineas.append(f"📝 Reformulada: {pregunta_juridica}\n")
+
+    # 2. Artículos Clave (keywords)
+    arts_clave, temas = buscar_articulos_clave(pregunta)
+    lineas.append(f"🏷️ Temas detectados: {temas if temas else 'NINGUNO'}")
+    lineas.append(f"📋 Artículos clave: {len(arts_clave)}")
+    for a in arts_clave[:5]:
+        lineas.append(f"  • {a['ley']}, Art. {a['articulo']}")
+
+    # 3. Verificar si existen artículos de Justicia de Paz en ChromaDB
+    try:
+        jp = coleccion.get(
+            where={"ley": {"$eq": "Ley de Justicia de Paz Comunal"}},
+            include=["metadatas"],
+            limit=5
+        )
+        if jp["metadatas"]:
+            arts_jp = [m["articulo"] for m in jp["metadatas"]]
+            lineas.append(f"\n⚖️ Justicia de Paz en DB: SÍ ({len(jp['metadatas'])}+ arts)")
+            lineas.append(f"  Ejemplo arts: {arts_jp}")
+        else:
+            lineas.append(f"\n⚖️ Justicia de Paz en DB: NO ENCONTRADA")
+    except Exception as e:
+        lineas.append(f"\n⚖️ Error buscando JP: {e}")
+
+    # 4. Verificar Código Penal faltas (501-508)
+    try:
+        cp = coleccion.get(
+            where={"$and": [
+                {"ley": {"$eq": "Código Penal"}},
+                {"articulo": {"$in": [501, 502, 503, 504, 505, 506, 507, 508]}}
+            ]},
+            include=["metadatas"]
+        )
+        if cp["metadatas"]:
+            arts_cp = [m["articulo"] for m in cp["metadatas"]]
+            lineas.append(f"🔨 CP Faltas (501-508): {arts_cp}")
+        else:
+            lineas.append(f"🔨 CP Faltas (501-508): NO ENCONTRADOS")
+    except Exception as e:
+        lineas.append(f"🔨 Error buscando CP faltas: {e}")
+
+    # 5. Embeddings
+    emb = buscar_embedding(pregunta_juridica, top_n=10)
+    lineas.append(f"\n🧠 Embeddings: {len(emb)} resultados")
+    for a in emb[:5]:
+        dist = a.get('distancia', '?')
+        lineas.append(f"  • {a['ley']}, Art. {a['articulo']} (dist: {dist:.3f})")
+
+    # 6. BM25
+    bm = buscar_bm25(pregunta_juridica, top_n=8)
+    lineas.append(f"\n📊 BM25: {len(bm)} resultados")
+    for a in bm[:5]:
+        lineas.append(f"  • {a['ley']}, Art. {a['articulo']}")
+
+    # 7. Listar leyes únicas en la DB
+    try:
+        all_meta = coleccion.get(include=["metadatas"], limit=10000)
+        leyes = set(m["ley"] for m in all_meta["metadatas"])
+        lineas.append(f"\n📚 Leyes en DB ({len(leyes)}):")
+        for ley in sorted(leyes):
+            count = sum(1 for m in all_meta["metadatas"] if m["ley"] == ley)
+            lineas.append(f"  • {ley} ({count} arts)")
+    except Exception as e:
+        lineas.append(f"\n📚 Error listando leyes: {e}")
+
+    return "\n".join(lineas)
+
+
 def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        user_id: int = None) -> str:
     """Pipeline híbrido con seguimiento de conversación para premium."""
