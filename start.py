@@ -24,15 +24,32 @@ def main():
 
     # Verificar si ChromaDB ya existe
     chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
+
+    # Contar PDFs actuales para detectar leyes nuevas
+    pdf_count_file = os.path.join(str(config.DATA_DIR), ".pdf_count")
+    pdfs_actuales = len([f for f in os.listdir(config.PDF_FOLDER) if f.endswith(".pdf")]) if os.path.exists(config.PDF_FOLDER) else 0
+    pdfs_anteriores = 0
+    if os.path.exists(pdf_count_file):
+        try:
+            pdfs_anteriores = int(open(pdf_count_file).read().strip())
+        except (ValueError, IOError):
+            pass
+
+    hay_leyes_nuevas = pdfs_actuales > pdfs_anteriores
     forzar_reindex = os.getenv("REINDEX", "").lower() in ("1", "true", "si")
 
-    if not chroma_existe or forzar_reindex:
-        razon = "REINDEX=1 activado" if forzar_reindex else "ChromaDB no encontrada"
+    if not chroma_existe or forzar_reindex or hay_leyes_nuevas:
+        if hay_leyes_nuevas:
+            razon = f"Leyes nuevas detectadas ({pdfs_anteriores} → {pdfs_actuales})"
+        elif forzar_reindex:
+            razon = "REINDEX=1 activado"
+        else:
+            razon = "ChromaDB no encontrada"
         print(f"\n[!] {razon}. Indexando leyes...")
         print("    Esto toma ~10-15 minutos.\n")
 
-        # Borrar ChromaDB vieja si existe (para reindex limpio)
-        if forzar_reindex and chroma_existe:
+        # Borrar ChromaDB vieja para reindex limpio
+        if chroma_existe:
             import shutil
             shutil.rmtree(config.DB_PATH)
             print("    ChromaDB anterior eliminada.")
@@ -43,9 +60,13 @@ def main():
         indexador = import_module("1_procesar_leyes")
         indexador.main()
 
+        # Guardar contador de PDFs para próxima vez
+        with open(pdf_count_file, "w") as f:
+            f.write(str(pdfs_actuales))
+
         print("\n[OK] Indexación completada.\n")
     else:
-        print(f"\n[OK] ChromaDB encontrada en {config.DB_PATH}")
+        print(f"\n[OK] ChromaDB encontrada en {config.DB_PATH} ({pdfs_actuales} PDFs)")
 
     # Crear carpeta de documentos generados
     docs_dir = os.path.join(str(config.DATA_DIR), "documentos_generados")
