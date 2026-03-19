@@ -24,10 +24,18 @@ def main():
 
     # Verificar si ChromaDB ya existe
     chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
+    forzar_reindex = os.getenv("REINDEX", "").lower() in ("1", "true", "si")
 
-    if not chroma_existe:
-        print("\n[!] ChromaDB no encontrada. Indexando leyes...")
-        print("    Esto toma ~10-15 minutos la primera vez.\n")
+    if not chroma_existe or forzar_reindex:
+        razon = "REINDEX=1 activado" if forzar_reindex else "ChromaDB no encontrada"
+        print(f"\n[!] {razon}. Indexando leyes...")
+        print("    Esto toma ~10-15 minutos.\n")
+
+        # Borrar ChromaDB vieja si existe (para reindex limpio)
+        if forzar_reindex and chroma_existe:
+            import shutil
+            shutil.rmtree(config.DB_PATH)
+            print("    ChromaDB anterior eliminada.")
 
         # Importar y ejecutar el indexador
         from importlib import import_module

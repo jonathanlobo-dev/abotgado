@@ -298,6 +298,81 @@ ARTICULOS_CLAVE = {
         "ley": "Código Orgánico Tributario",
         "articulos": [1, 2, 3, 13, 14, 22, 23, 25, 36, 55, 91, 99, 109, 115, 116, 117]
     },
+    "procesal_penal": {
+        "keywords": ["fiscalía", "fiscalia", "fiscal", "ministerio público",
+                     "ministerio publico", "imputado", "acusado", "audiencia",
+                     "preliminar", "juicio oral", "tribunal penal", "flagrancia",
+                     "orden de aprehensión", "orden de aprehension", "medida cautelar",
+                     "medida privativa", "privativa de libertad", "boleta de excarcelación",
+                     "boleta de excarcelacion", "sobreseimiento", "archivo fiscal",
+                     "acusación", "acusacion", "investigación penal", "investigacion penal",
+                     "defensor público", "defensor publico", "víctima", "victima",
+                     "querella", "presentación", "presentacion", "48 horas",
+                     "procedimiento abreviado", "flagrante"],
+        "ley": "Código Orgánico Procesal Penal (COPP)",
+        "articulos": [1, 8, 9, 10, 12, 44, 49, 111, 112, 113, 120, 127, 132, 133, 236, 237, 242, 243, 250, 262, 263, 280, 300, 308, 309, 356, 373, 374]
+    },
+    "consumidor": {
+        "keywords": ["consumidor", "compré", "compre", "producto defectuoso",
+                     "garantía", "garantia", "devolución", "devolucion", "devolver",
+                     "reclamo", "reclamar", "indepabis", "sundde", "precios",
+                     "especulación", "especulacion", "precio justo", "cobrar de más",
+                     "cobrar de mas", "estafa comercial", "publicidad engañosa",
+                     "publicidad enganosa", "tienda", "vendedor", "proveedor",
+                     "servicio deficiente", "no me quieren devolver"],
+        "ley": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+        "articulos": [1, 2, 3, 4, 5, 7, 8, 16, 17, 18, 31, 32, 35, 44, 65, 66, 73, 74, 75, 76, 77]
+    },
+    "bancario": {
+        "keywords": ["banco", "bancos", "cuenta bancaria", "tarjeta", "crédito",
+                     "credito", "débito", "debito", "préstamo bancario",
+                     "prestamo bancario", "intereses", "comisión bancaria",
+                     "comision bancaria", "sudeban", "superintendencia de bancos",
+                     "cajero", "transferencia", "bloqueo de cuenta",
+                     "fraude bancario", "clonación", "clonacion", "punto de venta"],
+        "ley": "Ley de Instituciones del Sector Bancario",
+        "articulos": [1, 2, 3, 5, 6, 44, 45, 46, 62, 63, 64, 65, 76, 77, 78, 79, 172, 173]
+    },
+    "seguro_social": {
+        "keywords": ["seguro social", "ivss", "pensión ivss", "pension ivss",
+                     "cotizaciones", "jubilación", "jubilacion", "pensionado",
+                     "incapacidad", "reposo", "maternidad ivss", "paro forzoso",
+                     "seguro de paro", "cuenta individual", "semanas cotizadas"],
+        "ley": "Ley del Seguro Social",
+        "articulos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    },
+    "islr": {
+        "keywords": ["islr", "impuesto sobre la renta", "declaración de renta",
+                     "declaracion de renta", "renta", "ganancias", "enriquecimiento",
+                     "desgravámenes", "desgravamenes", "rebaja de impuesto",
+                     "exención islr", "exencion islr", "retención islr",
+                     "retencion islr", "persona natural", "persona jurídica",
+                     "persona juridica", "unidad tributaria"],
+        "ley": "Ley de Impuesto Sobre la Renta (ISLR)",
+        "articulos": [1, 2, 3, 4, 5, 14, 27, 31, 55, 56, 57, 59, 60, 79, 80, 81, 86, 87, 88]
+    },
+    "delitos_informaticos": {
+        "keywords": ["hacker", "hackeo", "hackearon", "hackear", "virus",
+                     "malware", "ciberdelito", "informático", "informatico",
+                     "cuenta hackeada", "robaron mi cuenta", "phishing",
+                     "suplantación de identidad", "suplantacion de identidad",
+                     "pornografía infantil", "pornografia infantil", "ciberacoso",
+                     "grooming", "espionaje", "datos personales", "privacidad digital",
+                     "acceso indebido", "sabotaje informático", "sabotaje informatico",
+                     "clonaron mi tarjeta", "estafa por internet", "estafa online"],
+        "ley": "Ley Especial contra los Delitos Informáticos",
+        "articulos": [1, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+    },
+    "tramites": {
+        "keywords": ["trámite", "tramite", "trámites", "tramites", "burocracia",
+                     "papelería", "papeleria", "requisitos", "ventanilla",
+                     "simplificación", "simplificacion", "papeleo",
+                     "documento apostillado", "apostilla", "legalización",
+                     "legalizacion", "certificación", "certificacion",
+                     "funcionario no me atiende", "no me quieren atender"],
+        "ley": "Ley Orgánica de Simplificación de Trámites Administrativos",
+        "articulos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 35, 36, 37, 38]
+    },
 }
 
 
@@ -389,15 +464,51 @@ ALIAS_LEYES = {
     "ley de residuos": "Ley de Residuos y Desechos Sólidos",
     # Odio
     "ley contra el odio": "Ley Constitucional contra el Odio",
+    # COPP
+    "copp": "Código Orgánico Procesal Penal (COPP)",
+    "codigo organico procesal penal": "Código Orgánico Procesal Penal (COPP)",
+    "procesal penal": "Código Orgánico Procesal Penal (COPP)",
+    # Consumidor / INDEPABIS
+    "indepabis": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    "ley del consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    "consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    "proteccion al consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    # Sector Bancario
+    "ley de bancos": "Ley de Instituciones del Sector Bancario",
+    "sector bancario": "Ley de Instituciones del Sector Bancario",
+    "ley bancaria": "Ley de Instituciones del Sector Bancario",
+    # Seguro Social
+    "seguro social": "Ley del Seguro Social",
+    "ley del seguro social": "Ley del Seguro Social",
+    "ivss": "Ley del Seguro Social",
+    # ISLR
+    "islr": "Ley de Impuesto Sobre la Renta (ISLR)",
+    "impuesto sobre la renta": "Ley de Impuesto Sobre la Renta (ISLR)",
+    "ley de islr": "Ley de Impuesto Sobre la Renta (ISLR)",
+    "renta": "Ley de Impuesto Sobre la Renta (ISLR)",
+    # Delitos Informáticos
+    "delitos informaticos": "Ley Especial contra los Delitos Informáticos",
+    "ley de delitos informaticos": "Ley Especial contra los Delitos Informáticos",
+    "ciberdelitos": "Ley Especial contra los Delitos Informáticos",
+    # Simplificación de Trámites
+    "simplificacion de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
+    "ley de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
+    "tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
+    # Procesos Electorales
+    "procesos electorales": "Ley Orgánica de Procesos Electorales",
+    "ley electoral": "Ley Orgánica de Procesos Electorales",
+    "elecciones": "Ley Orgánica de Procesos Electorales",
+    "voto": "Ley Orgánica de Procesos Electorales",
 }
 
 # Catálogo agrupado para /leyes (nombre_mostrar → [alias])
 CATALOGO_LEYES = {
-    "Bases": [
+    "Codigos y Bases": [
         ("Constitución", "CRBV, constitucion"),
         ("Código Civil", "CC, codigo civil"),
         ("Código de Procedimiento Civil", "CPC"),
         ("Código Penal", "CP, codigo penal"),
+        ("Código Orgánico Procesal Penal", "COPP, procesal penal"),
         ("Código de Comercio", "codigo de comercio"),
         ("Código Orgánico Tributario", "COT"),
         ("LOTTT (Trabajo)", "LOTTT, ley del trabajo"),
@@ -417,10 +528,18 @@ CATALOGO_LEYES = {
         ("Discapacidad", "discapacidad"),
         ("Trabajadores Residenciales", "trabajadores residenciales"),
     ],
+    "Economia y Finanzas": [
+        ("Impuesto Sobre la Renta (ISLR)", "ISLR, renta"),
+        ("Seguro Social (IVSS)", "IVSS, seguro social"),
+        ("Sector Bancario", "ley de bancos, sector bancario"),
+        ("Consumidor (INDEPABIS)", "INDEPABIS, consumidor"),
+    ],
     "Estado y Justicia": [
         ("Ley contra la Corrupcion", "corrupcion"),
         ("Poder Publico Municipal", "ley municipal"),
         ("Justicia de Paz Comunal", "justicia de paz"),
+        ("Procesos Electorales", "ley electoral, elecciones"),
+        ("Simplificacion de Tramites", "tramites"),
         ("Antecedentes Penales", "antecedentes penales"),
         ("Zonas Economicas Especiales", "zonas economicas"),
         ("Ley del Ambiente", "ley del ambiente"),
@@ -432,6 +551,9 @@ CATALOGO_LEYES = {
         ("Ley de Comunas", "ley de comunas"),
         ("Consejos Comunales", "consejos comunales"),
         ("Justicia Militar", "codigo de justicia militar"),
+    ],
+    "Tecnologia": [
+        ("Delitos Informaticos", "delitos informaticos, ciberdelitos"),
     ],
 }
 
@@ -459,7 +581,7 @@ REGLA PRINCIPAL — PROHIBICIÓN ABSOLUTA DE INVENTAR:
 
 ⚠️ <i>No tengo artículos específicos sobre este tema en mi base. Consulta con un abogado para orientación precisa.</i>
 
-- NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista (como el COPP si no está en el contexto).
+- NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista proporcionada en el contexto.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 
 ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
@@ -655,6 +777,60 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ARRENDAMIENTO COMERCIAL:
 - Tribunal de Municipio: Para demandas por desalojo de local comercial, cobro de cánones, etc.
 - Prórroga legal comercial: Depende de la antigüedad (6 meses a 3 años).
 - Si te quieren subir el canon: Debe hacerse según los parámetros del SUNDDE.
+""",
+    "procesal_penal": """
+INSTITUCIONES Y PASOS CONCRETOS PARA PROCESO PENAL:
+- Fiscalía del Ministerio Público: Inicia la investigación penal. Presenta denuncia con cédula y evidencia.
+- Defensa Pública: Si no tienes abogado, tienes derecho a un defensor público GRATUITO.
+- Tribunal de Control: Audiencia de presentación (dentro de 48 horas si hay detención). Decide medidas cautelares.
+- Tribunal de Juicio: Fase de juicio oral y público.
+- Si te detuvieron en flagrancia: Deben presentarte ante un juez en máximo 48 horas. Tienes derecho a llamar a un abogado o familiar.
+- Medidas cautelares sustitutivas (Art. 242 COPP): Presentación periódica, prohibición de salida del país, etc. Son alternativas a la prisión.
+""",
+    "consumidor": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DEFENSA DEL CONSUMIDOR:
+- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Denuncia por precios abusivos, especulación, acaparamiento. Web: sundde.gob.ve. Línea: 0800-SUNDDE-0.
+- INDEPABIS: Reclamos por productos defectuosos, garantías incumplidas, publicidad engañosa.
+- Si compraste algo defectuoso: Tienes derecho a reparación, reposición o devolución del dinero.
+- Guarda siempre: factura, ticket, fotos del producto, conversaciones con el vendedor.
+""",
+    "bancario": """
+INSTITUCIONES Y PASOS CONCRETOS PARA PROBLEMAS BANCARIOS:
+- SUDEBAN (Superintendencia de Bancos): Reclamos contra bancos. Web: sudeban.gob.ve. Si el banco no resuelve tu reclamo en 20 días, acude a SUDEBAN.
+- Defensor del Cliente Bancario: Cada banco tiene uno, es tu primer recurso.
+- Si clonaron tu tarjeta o hubo fraude: Reporta inmediatamente al banco, solicita bloqueo y apertura de reclamo por escrito. Denuncia en el CICPC.
+- Comisiones ilegales: Los bancos NO pueden cobrar comisiones no autorizadas por SUDEBAN. Denuncia si lo hacen.
+""",
+    "seguro_social": """
+INSTITUCIONES Y PASOS CONCRETOS PARA SEGURO SOCIAL:
+- IVSS (Instituto Venezolano de los Seguros Sociales): Para pensiones, reposos, incapacidad. Web: ivss.gob.ve
+- Pensión de vejez: Hombres 60 años con 750 cotizaciones, Mujeres 55 años con 750 cotizaciones.
+- Reposo médico: Tu médico lo emite, debe ser validado por el IVSS.
+- Paro forzoso: Si te despidieron, tienes derecho a 5 meses de prestación. Acude al IVSS con carta de despido.
+- Sistema Patria: Para registrar pensiones y beneficios sociales.
+""",
+    "islr": """
+INSTITUCIONES Y PASOS CONCRETOS PARA IMPUESTO SOBRE LA RENTA:
+- SENIAT: Declaración y pago de ISLR. Web: seniat.gob.ve. Portal fiscal: declaraciones.seniat.gob.ve
+- Plazo personas naturales: Hasta el 31 de marzo de cada año.
+- Quiénes declaran: Personas naturales con ingresos superiores a 1.000 Unidades Tributarias anuales.
+- Desgravámenes: Gastos de salud, educación, vivienda principal que reducen la base imponible.
+- Si te multaron: Recurso jerárquico ante el SENIAT (25 días hábiles) o recurso contencioso ante el Tribunal Superior Tributario.
+""",
+    "delitos_informaticos": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS INFORMÁTICOS:
+- CICPC - División contra Delitos Informáticos: Denuncia hackeos, estafas online, suplantación de identidad. Línea: 0800-CICPC-00.
+- Fiscalía del Ministerio Público: Denuncia formal para iniciar investigación.
+- Si hackearon tu cuenta: Cambia contraseñas inmediatamente, activa verificación en 2 pasos, guarda capturas de pantalla como evidencia.
+- Si es estafa online: Guarda TODA la evidencia (capturas, conversaciones, comprobantes de pago, URLs).
+- CONATEL: Si el delito involucra telecomunicaciones o contenido ilegal en internet.
+""",
+    "tramites": """
+INSTITUCIONES Y PASOS CONCRETOS PARA TRÁMITES:
+- La Ley de Simplificación de Trámites PROHÍBE que las oficinas públicas te pidan documentos que ya reposan en otra oficina del Estado.
+- Si te piden requisitos excesivos o innecesarios: Exige por escrito qué ley obliga ese requisito. Denuncia ante la Contraloría o la Defensoría del Pueblo.
+- Derecho a respuesta: Toda petición ante la administración pública debe ser respondida en máximo 20 días hábiles.
+- Si no te atienden: Denuncia ante la Defensoría del Pueblo (0800-DEFENSORIA) o la Contraloría General.
 """,
 }
 
