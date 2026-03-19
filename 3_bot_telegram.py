@@ -41,6 +41,20 @@ async def notificar_admins(context, texto: str):
             pass
 
 
+def resolver_targets(args: list[str]) -> tuple[list[int], list[str]]:
+    """Resuelve una lista de IDs/@usernames a user_ids.
+    Retorna (ids_resueltos, errores)."""
+    ids = []
+    errores = []
+    for arg in args:
+        uid = db.resolver_usuario(arg)
+        if uid:
+            ids.append(uid)
+        else:
+            errores.append(arg)
+    return ids, errores
+
+
 async def enviar_respuesta(message, texto: str):
     """Formatea la respuesta a HTML y envía con fallback a texto plano."""
     texto = busqueda.formatear_respuesta(texto)
@@ -80,12 +94,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 referidor_id = int(context.args[0][4:])
                 if referidor_id != user_id:
                     db.registrar_referido(user_id, referidor_id)
-                    db.regalar_documento(user_id, 1)
-                    db.regalar_documento(referidor_id, 1)
+                    # Ambos reciben tester por 2 semanas
+                    db.activar_tester_temporal(user_id, dias=14)
+                    db.activar_tester_temporal(referidor_id, dias=14)
                     try:
                         await context.bot.send_message(
                             chat_id=referidor_id,
-                            text=f"🎉 Tu amigo {user.first_name} se registro con tu link. Gracias por compartir aBOTgado!",
+                            text=f"🎉 Tu amigo {user.first_name} se registro con tu link.\n"
+                                 f"Ambos tienen <b>Plan Pionero gratis por 2 semanas!</b>\n"
+                                 f"Memoria, comparador de articulos y mas.",
                             parse_mode="HTML"
                         )
                     except Exception:
@@ -200,6 +217,17 @@ async def estado(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     await enviar_respuesta(update.message, texto)
+
+
+async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Verifica que el bot está vivo."""
+    articulos = busqueda.coleccion.count()
+    usuarios = len(db.listar_usuarios())
+    await update.message.reply_text(
+        f"Bot activo\n"
+        f"Articulos: {articulos}\n"
+        f"Usuarios: {usuarios}"
+    )
 
 
 async def nuevo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -534,8 +562,10 @@ async def cmd_referir(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.message,
         "🎁 <b>Invita amigos a aBOTgado</b>\n\n"
         f"Tu link personal:\n<code>{link}</code>\n\n"
-        "Comparte este link para que tus amigos\n"
-        "tambien tengan acceso a consultas legales.\n\n"
+        "Cuando alguien se registre con tu link:\n"
+        "• Ambos reciben <b>Plan Pionero gratis por 2 semanas</b>\n"
+        "• Memoria de conversacion\n"
+        "• Comparador de articulos\n\n"
         f"Amigos referidos: <b>{refs}</b>"
     )
 
@@ -624,45 +654,48 @@ async def cmd_premium_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
     if not context.args:
-        await update.message.reply_text("Uso: /premium_on <user_id>")
+        await update.message.reply_text("Uso: /premium_on <ID o @username> [mas...]")
         return
-    try:
-        target_id = int(context.args[0])
-    except ValueError:
-        await update.message.reply_text("El user_id debe ser un numero.")
-        return
-    db.activar_premium(target_id)
-    await update.message.reply_text(f"Premium activado para {target_id}")
+    ids, errores = resolver_targets(context.args)
+    resultado = []
+    for uid in ids:
+        db.activar_premium(uid)
+        resultado.append(f"Premium activado: {uid}")
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
 
 
 async def cmd_premium_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
     if not context.args:
-        await update.message.reply_text("Uso: /premium_off <user_id>")
+        await update.message.reply_text("Uso: /premium_off <ID o @username> [mas...]")
         return
-    try:
-        target_id = int(context.args[0])
-    except ValueError:
-        await update.message.reply_text("El user_id debe ser un numero.")
-        return
-    db.desactivar_premium(target_id)
-    await update.message.reply_text(f"Premium desactivado para {target_id}")
+    ids, errores = resolver_targets(context.args)
+    resultado = []
+    for uid in ids:
+        db.desactivar_premium(uid)
+        resultado.append(f"Premium desactivado: {uid}")
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
 
 
 async def cmd_tester(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
     if not context.args:
-        await update.message.reply_text("Uso: /tester <user_id>")
+        await update.message.reply_text("Uso: /tester <ID o @username> [mas...]")
         return
-    try:
-        target_id = int(context.args[0])
-    except ValueError:
-        await update.message.reply_text("El user_id debe ser un numero.")
-        return
-    db.cambiar_plan(target_id, config.PLAN_TESTER)
-    await update.message.reply_text(f"Plan Pionero activado para {target_id}")
+    ids, errores = resolver_targets(context.args)
+    resultado = []
+    for uid in ids:
+        db.cambiar_plan(uid, config.PLAN_TESTER)
+        resultado.append(f"Pionero activado: {uid}")
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
 
 
 async def cmd_regalar_doc(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -697,27 +730,26 @@ async def cmd_regalar_memoria(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not es_admin(update.effective_user.id):
         return
     if not context.args:
-        await update.message.reply_text("Uso: /regalar_memoria <user_id>")
+        await update.message.reply_text("Uso: /regalar_memoria <ID o @username> [mas...]")
         return
-    try:
-        target_id = int(context.args[0])
-    except ValueError:
-        await update.message.reply_text("El user_id debe ser un numero.")
-        return
-
-    db.activar_bono_memoria(target_id)
-    await update.message.reply_text(f"Memoria activada para {target_id}")
-
-    try:
-        await context.bot.send_message(
-            chat_id=target_id,
-            text="🎉 <b>Memoria de conversacion activada!</b>\n\n"
-                 "Ahora puedo recordar nuestras conversaciones anteriores.\n"
-                 "Escribe /estado para ver tus beneficios.",
-            parse_mode="HTML"
-        )
-    except Exception:
-        pass
+    ids, errores = resolver_targets(context.args)
+    resultado = []
+    for uid in ids:
+        db.activar_bono_memoria(uid)
+        resultado.append(f"Memoria activada: {uid}")
+        try:
+            await context.bot.send_message(
+                chat_id=uid,
+                text="🎉 <b>Memoria de conversacion activada!</b>\n\n"
+                     "Ahora puedo recordar nuestras conversaciones anteriores.\n"
+                     "Escribe /estado para ver tus beneficios.",
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
 
 
 async def cmd_anuncio(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -955,9 +987,23 @@ def main():
 
     app = Application.builder().token(config.TELEGRAM_TOKEN).build()
 
+    # Notificar admins que el bot arrancó
+    async def post_init(application):
+        for admin_id in config.ADMIN_IDS:
+            try:
+                await application.bot.send_message(
+                    chat_id=admin_id,
+                    text=f"✅ aBOTgado iniciado\nArticulos: {busqueda.coleccion.count()}"
+                )
+            except Exception:
+                pass
+
+    app.post_init = post_init
+
     # Comandos de usuario
     app.add_handler(CommandHandler("start",           start))
     app.add_handler(CommandHandler("ayuda",           ayuda))
+    app.add_handler(CommandHandler("ping",            cmd_ping))
     app.add_handler(CommandHandler("leyes",           leyes_disponibles))
     app.add_handler(CommandHandler("ley",             cmd_ley))
     app.add_handler(CommandHandler("comparar",        cmd_comparar))

@@ -659,6 +659,47 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ARRENDAMIENTO COMERCIAL:
 }
 
 
+# ─── PROTECCIÓN CONTRA PROMPT INJECTION ──────────────────────────────────────
+
+_PATRONES_INJECTION = [
+    r"ignora\s+(todas?\s+)?(las\s+)?instrucciones",
+    r"ignore\s+(all\s+)?(previous\s+)?instructions",
+    r"olvida\s+(todo|tus\s+instrucciones)",
+    r"forget\s+(everything|your\s+instructions)",
+    r"ahora\s+eres\s+",
+    r"you\s+are\s+now\s+",
+    r"nuevo\s+rol\s*:",
+    r"new\s+role\s*:",
+    r"system\s*prompt\s*:",
+    r"actua\s+como\s+(si\s+fueras|un)\s+",
+    r"act\s+as\s+(if\s+you\s+were|a)\s+",
+    r"responde\s+sin\s+restricciones",
+    r"modo\s+(sin\s+filtro|desarrollador|admin)",
+    r"developer\s+mode",
+    r"jailbreak",
+    r"DAN\s+mode",
+]
+
+import re as _re
+_REGEX_INJECTION = _re.compile(
+    "|".join(_PATRONES_INJECTION), _re.IGNORECASE
+)
+
+
+def sanitizar_input(texto: str) -> str:
+    """Sanitiza el input del usuario contra prompt injection."""
+    # Limitar longitud (500 chars es más que suficiente para una pregunta legal)
+    texto = texto[:500]
+    # Remover intentos de inyección de roles/instrucciones
+    texto = _REGEX_INJECTION.sub("[filtrado]", texto)
+    return texto.strip()
+
+
+def es_prompt_injection(texto: str) -> bool:
+    """Detecta si el texto contiene intento de prompt injection."""
+    return bool(_REGEX_INJECTION.search(texto))
+
+
 # ─── FUNCIONES DE BÚSQUEDA ──────────────────────────────────────────────────
 
 def normalizar(texto: str) -> str:
@@ -952,6 +993,13 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        user_id: int = None) -> str:
     """Pipeline híbrido con seguimiento de conversación para premium."""
     import db  # import aquí para evitar circular
+
+    # Protección contra prompt injection
+    if es_prompt_injection(pregunta):
+        logger.warning(f"  ⚠️ Prompt injection detectado de user {user_id}")
+        return "No puedo procesar esa solicitud. Escribe tu consulta legal y te ayudo."
+
+    pregunta = sanitizar_input(pregunta)
 
     es_premium = user_id and db.es_premium(user_id)
     seguimiento = es_premium and historial and es_seguimiento(pregunta)

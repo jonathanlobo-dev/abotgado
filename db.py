@@ -87,6 +87,9 @@ def inicializar_db():
         if "referidos_count" not in columnas:
             con.execute("ALTER TABLE usuarios ADD COLUMN referidos_count INTEGER DEFAULT 0")
 
+        if "tester_expira" not in columnas:
+            con.execute("ALTER TABLE usuarios ADD COLUMN tester_expira TEXT DEFAULT ''")
+
         # ── Tablas nuevas ────────────────────────────────────────────────
         con.execute("""
             CREATE TABLE IF NOT EXISTS feedback (
@@ -134,8 +137,34 @@ def registrar_usuario(user_id: int, nombre: str, username: str) -> bool:
         return True  # nuevo usuario
 
 
+def buscar_por_username(username: str) -> int | None:
+    """Busca user_id por username (sin @). Retorna None si no existe."""
+    username = username.lstrip("@").strip().lower()
+    if not username:
+        return None
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT user_id FROM usuarios WHERE LOWER(username) = ?",
+            (username,)
+        )
+        fila = cur.fetchone()
+        return fila[0] if fila else None
+
+
+def resolver_usuario(texto: str) -> int | None:
+    """Resuelve un identificador a user_id. Acepta ID numérico o @username."""
+    texto = texto.strip()
+    if texto.startswith("@"):
+        return buscar_por_username(texto)
+    try:
+        return int(texto)
+    except ValueError:
+        return buscar_por_username(texto)
+
+
 def obtener_plan(user_id: int) -> int:
-    """Retorna el plan_id del usuario (0, 1, o 2)."""
+    """Retorna el plan_id del usuario (0, 1, o 2). Verifica expiración de tester."""
+    _verificar_expiracion_tester(user_id)
     with get_db() as con:
         cur = con.execute("SELECT plan_id FROM usuarios WHERE user_id = ?", (user_id,))
         fila = cur.fetchone()
@@ -166,6 +195,36 @@ def activar_premium(user_id: int):
 
 def desactivar_premium(user_id: int):
     cambiar_plan(user_id, config.PLAN_GRATIS)
+
+
+def activar_tester_temporal(user_id: int, dias: int = 14):
+    """Activa plan Tester por N días."""
+    from datetime import timedelta
+    expira = (datetime.now() + timedelta(days=dias)).strftime("%Y-%m-%d")
+    with get_db() as con:
+        con.execute(
+            "UPDATE usuarios SET plan_id = ?, tester_expira = ? WHERE user_id = ?",
+            (config.PLAN_TESTER, expira, user_id)
+        )
+
+
+def _verificar_expiracion_tester(user_id: int):
+    """Si el tester expiró, regresa a plan gratis."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT plan_id, tester_expira FROM usuarios WHERE user_id = ?",
+            (user_id,)
+        )
+        fila = cur.fetchone()
+        if not fila:
+            return
+        plan_id, expira = fila
+        if plan_id == config.PLAN_TESTER and expira:
+            if date.today().isoformat() > expira:
+                con.execute(
+                    "UPDATE usuarios SET plan_id = 0, tester_expira = '' WHERE user_id = ?",
+                    (user_id,)
+                )
 
 
 # ─── FEATURE FLAGS ─────────────────────────────────────────────────────────────
