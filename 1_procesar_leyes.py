@@ -19,14 +19,6 @@ import chromadb
 import config
 import embeddings
 
-# OCR para PDFs escaneados (imagen)
-try:
-    from pdf2image import convert_from_path
-    import pytesseract
-    OCR_DISPONIBLE = True
-except ImportError:
-    OCR_DISPONIBLE = False
-
 # ─── REGISTRO DE ARCHIVOS PROCESADOS ─────────────────────────────────────────
 
 INDICE_PATH = os.path.join(config.BASE_DIR, "indice_leyes.json")
@@ -72,8 +64,6 @@ NOMBRES_CORRECTOS = {
     # ── Familia, Niñez y Mujer ────────────────────────────────────────────────
     "lopna.pdf":
         "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    "LEY DE REFORMA PARCIAL DE LA LEY ORGÁNICA PARA LA PROTECCIÓN DE NIÑOS, NIÑAS Y ADOLESCENTES.pdf":
-        "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "LEY ORGÁNICA DE REFORMA A LA LEY ORGÁNICA SOBRE EL DERECHO DE LAS MUJERES A UNA VIDA LIBRE DE VIOLENCIA.pdf":
         "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
     "LEY DE REFORMA DE LA LEY PARA LA PROTECCIÓN DE LAS FAMILIAS, LA MATERNIDAD Y LA PATERNIDAD.pdf":
@@ -82,14 +72,6 @@ NOMBRES_CORRECTOS = {
         "Ley Constitucional contra el Odio",
 
     # ── Vivienda y Arrendamiento ──────────────────────────────────────────────
-    "LEY CONTRA EL DESALOJO ARBITRARIO DE VIVIENDAS.pdf":
-        "Ley contra el Desalojo Arbitrario de Viviendas",
-    "LEY REGULARIZACIÓN Y CONTROL ARRENDAMIENTOS DE VIVIENDA.pdf":
-        "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
-    "DECRETO N° 929 MEDIANTE EL CUAL SE DICTA EL DECRETO CON RANGO VALOR Y FUERZA DE LEY DE REGULACIÓN DEL ARRENDAMIENTO INMOBILIARIO PARA EL USO COMERCIAL.pdf":
-        "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
-    "LEY PROPIEDAD HORIZONTAL.pdf":
-        "Ley de Propiedad Horizontal",
     "ley-de-propiedad-horizontal.pdf":
         "Ley de Propiedad Horizontal",
 
@@ -98,16 +80,12 @@ NOMBRES_CORRECTOS = {
         "Ley para la Inclusión de Personas con Discapacidad",
     "LEY ORGÁNICA PARA LA INCLUSIÓN, IGUALDAD Y DESARROLLO INTEGRAL DE LAS PERSONAS CON DISCAPACIDAD (2).pdf":
         "Ley para la Inclusión de Personas con Discapacidad",
-    "LEY PARA LA PROTECCIÓN DE LA FAUNA DOMÉSTICA LIBRE Y EN CAUTIVERIO.pdf":
-        "Ley de Protección de la Fauna Doméstica",
     "Ley para la Protección de la Fauna Domóstica Libre y en Cautiverio.pdf":
         "Ley de Protección de la Fauna Doméstica",
 
     # ── Corrupción, Estado y Municipio ────────────────────────────────────────
     "LEY DE REFORMA DEL DECRETO CON RANGO, VALOR Y FUERZA DE LEY CONTRA LA CORRUPCIÓN.pdf":
         "Ley contra la Corrupción",
-    "LEY ORGÁNICA DEL PODER PÚBLICO MUNICIPAL.pdf":
-        "Ley Orgánica del Poder Público Municipal",
     "ley_organica_de_la_contraloria_general_de_la_republica.pdf":
         "Ley Orgánica de la Contraloría General de la República",
     "LEY DE REFORMA DE LA LEY ORGÁNICA DE CONTRALORÍA SOCIAL.pdf":
@@ -117,13 +95,7 @@ NOMBRES_CORRECTOS = {
     "LEY DE REGISTROS Y NOTARIAS.pdf":
         "Ley de Registros y Notarías",
 
-    # ── Trabajadores Residenciales ────────────────────────────────────────────
-    "DECRETO LEY PARA LA DIGNIFICACIÓN TRABAJADORES RESIDENCIALES.pdf":
-        "Ley Especial para la Dignificación de Trabajadores Residenciales",
-
     # ── Ambiente ──────────────────────────────────────────────────────────────
-    "LEY ORGÁNICA DEL AMBIENTE.pdf":                "Ley Orgánica del Ambiente",
-    "LEY ORGÁNICA DE AMBIENTE.pdf":                 "Ley Orgánica del Ambiente",
     "LEY DE RESIDUOS Y DESECHOS SOLIDOS.pdf":       "Ley de Residuos y Desechos Sólidos",
 
     # ── Comunas y Poder Popular ──────────────────────────────────────────────
@@ -135,12 +107,7 @@ NOMBRES_CORRECTOS = {
         "Ley Orgánica del Poder Popular",
     "L.O. SISTEMA ECONÓMICO COMUNAL.pdf":           "Ley Orgánica del Sistema Económico Comunal",
     "LEY ORGÁNICA DEL SISTEMA ECONÓMICO COMUNAL.pdf": "Ley Orgánica del Sistema Económico Comunal",
-    "LEY ORGÁNICA CONSEJO FEDERAL DE GOBIERNO.pdf": "Ley Orgánica del Consejo Federal de Gobierno",
-    "DECRETO 8959 REGLAMENTO LEY ORGÁNICA DEL CONSEJO FEDERAL DE GOBIERNO 2012.pdf":
-        "Reglamento de la Ley Orgánica del Consejo Federal de Gobierno",
     "ley_organica_de_planificacion_publica_y_popular.pdf":
-        "Ley Orgánica de Planificación Pública y Popular",
-    "DECRETO CON RANGO, VALOR Y FUERZA DE LEY DE REFORMA DE LA LEY ORGÁNICA DE PLANIFICACIÓN PÚBLICA Y POPULAR.pdf":
         "Ley Orgánica de Planificación Pública y Popular",
 
     # ── Género ────────────────────────────────────────────────────────────────
@@ -186,17 +153,9 @@ NOMBRES_CORRECTOS = {
     "codigo-organico-procesal-penal.pdf":
         "Código Orgánico Procesal Penal (COPP)",
 
-    # ── Procesos Electorales ─────────────────────────────────────────────────
-    "ley-organi-20220131131037.pdf":
-        "Ley Orgánica de Procesos Electorales",
-
     # ── INDEPABIS / Consumidor ───────────────────────────────────────────────
     "ley-indepabis.pdf":
         "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
-
-    # ── Sector Bancario ─────────────────────────────────────────────────────
-    "ley-de-ref-20220117174750.pdf":
-        "Ley de Instituciones del Sector Bancario",
 
     # ── Seguro Social ────────────────────────────────────────────────────────
     "ley-del-seguro-social.pdf":
@@ -227,37 +186,12 @@ NOMBRES_CORRECTOS = {
 # ─── FUNCIONES DE EXTRACCIÓN ─────────────────────────────────────────────────
 
 def extraer_texto(ruta):
-    """Extrae texto del PDF. Si es escaneado (imagen), usa OCR como fallback."""
+    """Extrae texto del PDF."""
     doc   = fitz.open(ruta)
     texto = ""
     for p in doc:
         texto += p.get_text()
     doc.close()
-
-    # Si el PDF es escaneado (muy poco texto), intentar OCR
-    if len(texto.strip()) < 100 and OCR_DISPONIBLE:
-        nombre = os.path.basename(ruta)
-        print(f"   [OCR] Texto insuficiente, iniciando OCR para: {nombre}")
-        try:
-            imagenes = convert_from_path(ruta, dpi=250)  # 250 dpi: balance calidad/velocidad
-            total_pags = len(imagenes)
-            print(f"   [OCR] {total_pags} paginas por procesar...")
-            partes = []
-            for i, img in enumerate(imagenes):
-                txt = pytesseract.image_to_string(img, lang="spa")
-                partes.append(txt)
-                # Progreso cada 5 páginas o en la última
-                if (i + 1) % 5 == 0 or (i + 1) == total_pags:
-                    print(f"   [OCR] Pagina {i+1}/{total_pags}", flush=True)
-            texto = "\n".join(partes)
-            print(f"   [OCR] Completado: {len(texto):,} chars de {total_pags} paginas")
-        except Exception as e:
-            print(f"   [OCR] Fallo: {e}")
-
-    if len(texto.strip()) < 100 and not OCR_DISPONIBLE:
-        nombre = os.path.basename(ruta)
-        print(f"   ⚠️  PDF escaneado sin texto: {nombre} (instala pytesseract y pdf2image para OCR)")
-
     return texto
 
 
