@@ -1350,22 +1350,29 @@ def debug_busqueda(pregunta: str) -> str:
     except Exception as e:
         lineas.append(f"\n⚖️ Error buscando JP: {e}")
 
-    # 4. Verificar Código Penal faltas (501-508)
-    try:
-        cp = coleccion.get(
-            where={"$and": [
-                {"ley": {"$eq": "Código Penal"}},
-                {"articulo": {"$in": [501, 502, 503, 504, 505, 506, 507, 508]}}
-            ]},
-            include=["metadatas"]
-        )
-        if cp["metadatas"]:
-            arts_cp = [m["articulo"] for m in cp["metadatas"]]
-            lineas.append(f"🔨 CP Faltas (501-508): {arts_cp}")
-        else:
-            lineas.append(f"🔨 CP Faltas (501-508): NO ENCONTRADOS")
-    except Exception as e:
-        lineas.append(f"🔨 Error buscando CP faltas: {e}")
+    # 4. Verificar leyes críticas
+    leyes_criticas = {
+        "Código Penal": [502, 503, 504],
+        "Ley de Protección de la Fauna Doméstica": [1, 2, 3],
+        "Constitución de la República Bolivariana de Venezuela": [44, 48],
+        "Ley Orgánica del Trabajo (LOTTT)": [85, 86],
+    }
+    for ley_nombre, arts_check in leyes_criticas.items():
+        try:
+            cp = coleccion.get(
+                where={"$and": [
+                    {"ley": {"$eq": ley_nombre}},
+                    {"articulo": {"$in": arts_check}}
+                ]},
+                include=["metadatas"]
+            )
+            if cp["metadatas"]:
+                arts_found = [m["articulo"] for m in cp["metadatas"]]
+                lineas.append(f"✅ {ley_nombre}: {arts_found}")
+            else:
+                lineas.append(f"❌ {ley_nombre}: NO ENCONTRADA")
+        except Exception as e:
+            lineas.append(f"⚠️ {ley_nombre}: Error {e}")
 
     # 5. Embeddings
     emb = buscar_embedding(pregunta_juridica, top_n=10)
@@ -1386,14 +1393,25 @@ def debug_busqueda(pregunta: str) -> str:
         texto_corto = a['texto'][:150].replace('\n', ' ')
         lineas.append(f"  [{i+1}] {a['ley']}, Art. {a['articulo']}: {texto_corto}...")
 
-    # 8. Listar leyes únicas en la DB
+    # 8. Total de artículos y leyes en DB
     try:
-        all_meta = coleccion.get(include=["metadatas"], limit=10000)
-        leyes = set(m["ley"] for m in all_meta["metadatas"])
-        lineas.append(f"\n📚 Leyes en DB ({len(leyes)}):")
-        for ley in sorted(leyes):
-            count = sum(1 for m in all_meta["metadatas"] if m["ley"] == ley)
-            lineas.append(f"  • {ley} ({count} arts)")
+        total_arts = coleccion.count()
+        lineas.append(f"\n📚 Total artículos en DB: {total_arts}")
+        # Obtener leyes (puede requerir múltiples batches si hay más de 10k)
+        offset = 0
+        batch_size = 10000
+        todas_leyes = {}
+        while offset < total_arts:
+            batch = coleccion.get(include=["metadatas"], limit=batch_size, offset=offset)
+            if not batch["metadatas"]:
+                break
+            for m in batch["metadatas"]:
+                ley = m["ley"]
+                todas_leyes[ley] = todas_leyes.get(ley, 0) + 1
+            offset += len(batch["metadatas"])
+        lineas.append(f"📚 Leyes en DB ({len(todas_leyes)}):")
+        for ley in sorted(todas_leyes):
+            lineas.append(f"  • {ley} ({todas_leyes[ley]} arts)")
     except Exception as e:
         lineas.append(f"\n📚 Error listando leyes: {e}")
 
