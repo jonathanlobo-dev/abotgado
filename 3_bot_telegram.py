@@ -74,6 +74,7 @@ feedback_pendiente = set()
 soporte_pendiente  = set()
 ultima_respuesta   = {}  # user_id -> {"pregunta": ..., "respuesta": ...}
 registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
+esperando_ley      = {}  # user_id -> {"num_art": int} — esperando nombre de ley
 
 
 # ─── COMANDOS GENERALES ─────────────────────────────────────────────────────
@@ -888,6 +889,8 @@ async def cmd_cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         soporte_pendiente.discard(user_id)
         if user_id in registro_abogado:
             del registro_abogado[user_id]
+        if user_id in esperando_ley:
+            del esperando_ley[user_id]
         msg = documentos.cancelar_documento(user_id)
         await update.message.reply_text(msg)
     except Exception as e:
@@ -1112,6 +1115,47 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     db.registrar_usuario(user_id, user.first_name, user.username or "")
 
+    # ── Esperando nombre de ley (flujo "explícame artículo X") ───────────
+    if user_id in esperando_ley:
+        datos = esperando_ley.pop(user_id)
+        num_art = datos["num_art"]
+        ley_input = pregunta.strip()
+
+        ley_real = busqueda.buscar_ley_por_alias(ley_input)
+        if not ley_real:
+            await enviar_respuesta(
+                update.message,
+                f"No reconozco la ley \"<b>{ley_input}</b>\".\n\n"
+                "Usa /leyes para ver las leyes disponibles y sus alias.\n"
+                "O escribe tu consulta nuevamente."
+            )
+            return
+
+        arts = busqueda.buscar_articulo_en_db(ley_real, num_art)
+        if not arts:
+            await enviar_respuesta(
+                update.message,
+                f"No encontré el <b>Art. {num_art}</b> de <b>{ley_real}</b>.\n\n"
+                "Puede que ese artículo no esté en mi base de datos."
+            )
+            return
+
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id, action="typing"
+        )
+        texto_art = arts[0]["texto"]
+        if len(texto_art) > 3000:
+            texto_art = texto_art[:3000] + "... [truncado]"
+        explicacion = await asyncio.to_thread(
+            busqueda.explicar_articulo, arts[0]["texto"], ley_real, num_art
+        )
+        respuesta = f"📖 <b>{ley_real}</b>\n<b>Artículo {num_art}</b>\n\n{texto_art}\n\n"
+        if explicacion:
+            respuesta += f"{'━' * 25}\n{explicacion}\n\n"
+        respuesta += "<i>Usa /comparar para comparar con otro artículo.</i>"
+        await enviar_respuesta(update.message, respuesta)
+        return
+
     # ── Registro de abogado (flujo conversacional admin) ────────────────
     if user_id in registro_abogado:
         mensaje, completado = procesar_paso_abogado(user_id, pregunta)
@@ -1165,6 +1209,70 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         else:
             await enviar_respuesta(update.message, respuesta_doc)
         return
+
+    # ── Detección de "explícame el artículo X [de Y]" ────────────────────
+    import re as _re
+    pregunta_lower = busqueda.normalizar(pregunta)
+    # Patrones: "explicame el articulo 5", "que dice el articulo 48 de la constitucion", "articulo 12"
+    _pat_art = _re.search(
+        r'(?:explicame|dime|que\s+dice|muestrame|dame|lee(?:me)?)\s+'
+        r'(?:el\s+)?(?:articulo|art\.?)\s+(\d+)'
+        r'(?:\s+(?:de(?:l|\s+la|\s+el|\s+los|\s+las)?\s+)?(.+))?',
+        pregunta_lower
+    )
+    if not _pat_art:
+        # También "artículo 5 de la constitución" sin verbo previo
+        _pat_art = _re.search(
+            r'^(?:el\s+)?(?:articulo|art\.?)\s+(\d+)'
+            r'(?:\s+(?:de(?:l|\s+la|\s+el|\s+los|\s+las)?\s+)?(.+))?$',
+            pregunta_lower.strip()
+        )
+
+    if _pat_art:
+        _num_art = int(_pat_art.group(1))
+        _ley_texto = (_pat_art.group(2) or "").strip().rstrip("?.,!")
+
+        if _ley_texto:
+            # Tiene ley → buscar directamente
+            _ley_real = busqueda.buscar_ley_por_alias(_ley_texto)
+            if _ley_real:
+                _arts = busqueda.buscar_articulo_en_db(_ley_real, _num_art)
+                if _arts:
+                    await context.bot.send_chat_action(
+                        chat_id=update.effective_chat.id, action="typing"
+                    )
+                    _texto_art = _arts[0]["texto"]
+                    if len(_texto_art) > 3000:
+                        _texto_art = _texto_art[:3000] + "... [truncado]"
+                    _explicacion = await asyncio.to_thread(
+                        busqueda.explicar_articulo, _arts[0]["texto"], _ley_real, _num_art
+                    )
+                    _resp = f"📖 <b>{_ley_real}</b>\n<b>Artículo {_num_art}</b>\n\n{_texto_art}\n\n"
+                    if _explicacion:
+                        _resp += f"{'━' * 25}\n{_explicacion}\n\n"
+                    _resp += "<i>Usa /comparar para comparar con otro artículo.</i>"
+                    db.registrar_consulta(user_id)
+                    await enviar_respuesta(update.message, _resp)
+                    return
+                else:
+                    await enviar_respuesta(
+                        update.message,
+                        f"No encontré el <b>Art. {_num_art}</b> de <b>{_ley_real}</b>.\n\n"
+                        "Puede que ese artículo no esté en mi base de datos."
+                    )
+                    return
+        else:
+            # No tiene ley → preguntar
+            esperando_ley[user_id] = {"num_art": _num_art}
+            await enviar_respuesta(
+                update.message,
+                f"📖 ¿De qué ley quieres el <b>Artículo {_num_art}</b>?\n\n"
+                "Escribe el nombre o alias de la ley.\n"
+                "Ej: <code>constitución</code>, <code>LOTTT</code>, <code>código penal</code>\n\n"
+                "Usa /leyes para ver todas las disponibles.\n"
+                "Usa /cancelar para cancelar."
+            )
+            return
 
     # ── Consulta jurídica normal ─────────────────────────────────────────
     logger.info(f"Consulta recibida del usuario ID: {user_id}")
