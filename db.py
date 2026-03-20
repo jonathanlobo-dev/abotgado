@@ -186,8 +186,12 @@ def _setup_admins():
 
 # ─── USUARIOS ─────────────────────────────────────────────────────────────────
 
+MAX_AUTO_TESTERS = 50  # primeros N usuarios reciben Pionero gratis
+
+
 def registrar_usuario(user_id: int, nombre: str, username: str) -> bool:
-    """Registra usuario si es nuevo. Retorna True si es nuevo."""
+    """Registra usuario si es nuevo. Retorna True si es nuevo.
+    Los primeros MAX_AUTO_TESTERS usuarios (excepto admins) reciben Pionero por 2 semanas."""
     with get_db() as con:
         cur = con.execute("SELECT 1 FROM usuarios WHERE user_id = ?", (user_id,))
         if cur.fetchone():
@@ -196,7 +200,15 @@ def registrar_usuario(user_id: int, nombre: str, username: str) -> bool:
             INSERT INTO usuarios (user_id, nombre, username, plan_id)
             VALUES (?, ?, ?, 0)
         """, (user_id, nombre, username or ""))
-        return True  # nuevo usuario
+
+    # Auto-tester: si no es admin y hay menos de MAX_AUTO_TESTERS, dar Pionero
+    if user_id not in config.ADMIN_IDS:
+        with get_db() as con:
+            total = con.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+        if total <= MAX_AUTO_TESTERS:
+            activar_tester_temporal(user_id, dias=14)
+
+    return True  # nuevo usuario
 
 
 def buscar_por_username(username: str) -> int | None:
@@ -268,6 +280,50 @@ def activar_tester_temporal(user_id: int, dias: int = 14):
             "UPDATE usuarios SET plan_id = ?, tester_expira = ? WHERE user_id = ?",
             (config.PLAN_TESTER, expira, user_id)
         )
+
+
+def extender_tester(user_id: int, dias: int = 7):
+    """Extiende el plan Tester sumando días a la fecha actual de expiración.
+    Si no es tester o ya expiró, activa desde hoy."""
+    from datetime import timedelta
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT plan_id, tester_expira FROM usuarios WHERE user_id = ?",
+            (user_id,)
+        )
+        fila = cur.fetchone()
+        if not fila:
+            return
+
+        plan_id, expira_str = fila
+        hoy = date.today()
+
+        if plan_id == config.PLAN_TESTER and expira_str:
+            try:
+                expira_actual = date.fromisoformat(expira_str)
+                # Si aún no expiró, sumar desde la fecha de expiración
+                base = max(expira_actual, hoy)
+            except ValueError:
+                base = hoy
+        else:
+            base = hoy
+
+        nueva_expira = (base + timedelta(days=dias)).isoformat()
+        con.execute(
+            "UPDATE usuarios SET plan_id = ?, tester_expira = ? WHERE user_id = ?",
+            (config.PLAN_TESTER, nueva_expira, user_id)
+        )
+
+
+def obtener_expiracion_tester(user_id: int) -> str:
+    """Retorna la fecha de expiración del tester, o '' si no aplica."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT tester_expira FROM usuarios WHERE user_id = ?",
+            (user_id,)
+        )
+        fila = cur.fetchone()
+        return fila[0] if fila and fila[0] else ""
 
 
 def _verificar_expiracion_tester(user_id: int):
@@ -380,7 +436,7 @@ def listar_usuarios() -> list[dict]:
         cur = con.execute("""
             SELECT u.user_id, u.nombre, u.username, u.plan_id, u.fecha_reg,
                    COALESCE(c.cantidad, 0) as consultas_hoy,
-                   u.bono_memoria, u.docs_disponibles
+                   u.bono_memoria, u.docs_disponibles, u.tester_expira
             FROM usuarios u
             LEFT JOIN consultas_diarias c
                 ON u.user_id = c.user_id AND c.fecha = ?
@@ -390,7 +446,8 @@ def listar_usuarios() -> list[dict]:
         return [{"user_id": r[0], "nombre": r[1], "username": r[2],
                  "plan_id": r[3] or 0, "premium": (r[3] or 0) >= 2,
                  "fecha_reg": r[4], "consultas_hoy": r[5],
-                 "bono_memoria": bool(r[6]), "docs_disponibles": r[7] or 0}
+                 "bono_memoria": bool(r[6]), "docs_disponibles": r[7] or 0,
+                 "tester_expira": r[8] or ""}
                 for r in rows]
 
 

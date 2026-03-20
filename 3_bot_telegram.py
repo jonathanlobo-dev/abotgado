@@ -8,6 +8,7 @@ El motor de búsqueda está en busqueda.py
 import logging
 import asyncio
 import os
+from datetime import date
 from telegram import Update
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
@@ -129,14 +130,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 referidor_id = int(context.args[0][4:])
                 if referidor_id != user_id:
                     db.registrar_referido(user_id, referidor_id)
-                    # Ambos reciben tester por 2 semanas
+                    # Nuevo usuario: 2 semanas. Referidor: +1 semana extra.
                     db.activar_tester_temporal(user_id, dias=14)
-                    db.activar_tester_temporal(referidor_id, dias=14)
+                    db.extender_tester(referidor_id, dias=7)
                     try:
                         await context.bot.send_message(
                             chat_id=referidor_id,
                             text=f"🎉 Tu amigo {user.first_name} se registro con tu link.\n"
-                                 f"Ambos tienen <b>Plan Pionero gratis por 2 semanas!</b>\n"
+                                 f"<b>+1 semana de Plan Pionero!</b>\n"
                                  f"Memoria, comparador de articulos y mas.",
                             parse_mode="HTML"
                         )
@@ -214,7 +215,11 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/anuncio MSG — Broadcast a todos\n"
             "/mensaje ID MSG — Mensaje directo a 1 usuario\n"
             "/feedback — Ver opiniones\n"
-            "/responder ID MSG — Responder soporte\n\n"
+            "/responder ID MSG — Responder soporte\n"
+            "/backup — Descargar backup de la DB\n\n"
+            "<b>Planes:</b>\n"
+            "/plan_add ID [dias] — Sumar dias Pionero (+7 default)\n"
+            "/plan_del ID [dias] — Quitar dias Pionero (-7 default)\n\n"
             "<b>Directorio:</b>\n"
             "/add_abogado — Registrar abogado\n"
             "/abogados — Ver directorio\n"
@@ -621,9 +626,9 @@ async def cmd_referir(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎁 <b>Invita amigos a aBOTgado</b>\n\n"
         f"Tu link personal:\n<code>{link}</code>\n\n"
         "Cuando alguien se registre con tu link:\n"
-        "• Ambos reciben <b>Plan Pionero gratis por 2 semanas</b>\n"
-        "• Memoria de conversacion\n"
-        "• Comparador de articulos\n\n"
+        "• Tu amigo recibe <b>Plan Pionero gratis por 2 semanas</b>\n"
+        "• Tu recibes <b>+1 semana extra</b> de Pionero\n"
+        "• Memoria de conversacion y mas\n\n"
         f"Amigos referidos: <b>{refs}</b>"
     )
 
@@ -843,6 +848,36 @@ async def cmd_anuncio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def cmd_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Envía la base de datos SQLite como archivo por Telegram."""
+    if not es_admin(update.effective_user.id):
+        return
+    import shutil
+    from datetime import datetime as _dt
+    db_path = config.SQLITE_DB_FILE
+    if not os.path.exists(db_path):
+        await update.message.reply_text("No se encontró la base de datos.")
+        return
+    # Copiar para no enviar archivo en uso (WAL mode)
+    timestamp = _dt.now().strftime("%Y%m%d_%H%M")
+    backup_path = f"{db_path}.backup_{timestamp}"
+    try:
+        shutil.copy2(db_path, backup_path)
+        with open(backup_path, "rb") as f:
+            await update.message.reply_document(
+                document=f,
+                filename=f"abotgado_backup_{timestamp}.db",
+                caption=f"Backup de la DB — {timestamp}"
+            )
+    except Exception as e:
+        await update.message.reply_text(f"Error creando backup: {e}")
+    finally:
+        try:
+            os.remove(backup_path)
+        except Exception:
+            pass
+
+
 async def cmd_usuarios(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
@@ -858,9 +893,66 @@ async def cmd_usuarios(update: Update, context: ContextTypes.DEFAULT_TYPE):
             extras += " [MEM]"
         if u["docs_disponibles"] > 0:
             extras += f" [DOC:{u['docs_disponibles']}]"
+        # Mostrar expiración si es tester
+        if u["plan_id"] == config.PLAN_TESTER and u["tester_expira"]:
+            extras += f" exp:{u['tester_expira']}"
         texto += (f"{plan_info['icono']} {u['nombre']} (@{u['username']}) "
                   f"— ID: <code>{u['user_id']}</code> — hoy: {u['consultas_hoy']}{extras}\n")
     await enviar_respuesta(update.message, texto)
+
+
+async def cmd_plan_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/plan_add <ID> [dias] — Suma días al plan Pionero (default: 7)."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /plan_add <ID o @username> [dias]\nDefault: +7 dias")
+        return
+    ids, errores = resolver_targets(context.args[:1])
+    dias = 7
+    if len(context.args) > 1:
+        try:
+            dias = int(context.args[1])
+        except ValueError:
+            await update.message.reply_text("Los dias deben ser un numero.")
+            return
+    resultado = []
+    for uid in ids:
+        db.extender_tester(uid, dias=dias)
+        expira = db.obtener_expiracion_tester(uid)
+        resultado.append(f"+{dias}d Pionero para {uid} (expira: {expira})")
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
+
+
+async def cmd_plan_del(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/plan_del <ID> [dias] — Quita días al plan Pionero (default: 7). Si llega a 0, pasa a Gratis."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /plan_del <ID o @username> [dias]\nDefault: -7 dias")
+        return
+    ids, errores = resolver_targets(context.args[:1])
+    dias = 7
+    if len(context.args) > 1:
+        try:
+            dias = int(context.args[1])
+        except ValueError:
+            await update.message.reply_text("Los dias deben ser un numero.")
+            return
+    resultado = []
+    for uid in ids:
+        db.extender_tester(uid, dias=-dias)
+        expira = db.obtener_expiracion_tester(uid)
+        if expira and expira <= date.today().isoformat():
+            db.desactivar_premium(uid)
+            resultado.append(f"Pionero expirado para {uid} → Gratis")
+        else:
+            resultado.append(f"-{dias}d Pionero para {uid} (expira: {expira})")
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
 
 
 # ─── HANDLERS DE DOCUMENTOS ─────────────────────────────────────────────────
@@ -1423,6 +1515,9 @@ def main():
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
+    app.add_handler(CommandHandler("backup",          cmd_backup))
+    app.add_handler(CommandHandler("plan_add",        cmd_plan_add))
+    app.add_handler(CommandHandler("plan_del",        cmd_plan_del))
     app.add_handler(CommandHandler("debug",           cmd_debug))
     app.add_handler(CommandHandler("add_abogado",     cmd_add_abogado))
     app.add_handler(CommandHandler("abogados",        cmd_abogados))
