@@ -19,6 +19,14 @@ import chromadb
 import config
 import embeddings
 
+# OCR para PDFs escaneados (imagen)
+try:
+    from pdf2image import convert_from_path
+    import pytesseract
+    OCR_DISPONIBLE = True
+except ImportError:
+    OCR_DISPONIBLE = False
+
 # ─── REGISTRO DE ARCHIVOS PROCESADOS ─────────────────────────────────────────
 
 INDICE_PATH = os.path.join(config.BASE_DIR, "indice_leyes.json")
@@ -82,6 +90,8 @@ NOMBRES_CORRECTOS = {
         "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
     "LEY PROPIEDAD HORIZONTAL.pdf":
         "Ley de Propiedad Horizontal",
+    "ley-de-propiedad-horizontal.pdf":
+        "Ley de Propiedad Horizontal",
 
     # ── Discapacidad y Fauna ──────────────────────────────────────────────────
     "LEY ORGÁNICA PARA LA INCLUSIÓN, IGUALDAD Y DESARROLLO INTEGRAL DE LAS PERSONAS CON DISCAPACIDAD.pdf":
@@ -89,6 +99,8 @@ NOMBRES_CORRECTOS = {
     "LEY ORGÁNICA PARA LA INCLUSIÓN, IGUALDAD Y DESARROLLO INTEGRAL DE LAS PERSONAS CON DISCAPACIDAD (2).pdf":
         "Ley para la Inclusión de Personas con Discapacidad",
     "LEY PARA LA PROTECCIÓN DE LA FAUNA DOMÉSTICA LIBRE Y EN CAUTIVERIO.pdf":
+        "Ley de Protección de la Fauna Doméstica",
+    "Ley para la Protección de la Fauna Domóstica Libre y en Cautiverio.pdf":
         "Ley de Protección de la Fauna Doméstica",
 
     # ── Corrupción, Estado y Municipio ────────────────────────────────────────
@@ -201,17 +213,51 @@ NOMBRES_CORRECTOS = {
     # ── Simplificación de Trámites ───────────────────────────────────────────
     "Ley-Organica-de-Simplificacion-de-Tramites.pdf":
         "Ley Orgánica de Simplificación de Trámites Administrativos",
+
+    # ── Ética del Abogado ──────────────────────────────────────────────────
+    "codigo-de-etica-profesional-del-abogado-venezolano.pdf":
+        "Código de Ética Profesional del Abogado Venezolano",
+
+    # ── Arrendamientos Inmobiliarios 1999 ──────────────────────────────────
+    "ley-de-arrendamientos-inmobiliarios-1999.pdf":
+        "Ley de Arrendamientos Inmobiliarios",
 }
 
 
 # ─── FUNCIONES DE EXTRACCIÓN ─────────────────────────────────────────────────
 
 def extraer_texto(ruta):
+    """Extrae texto del PDF. Si es escaneado (imagen), usa OCR como fallback."""
     doc   = fitz.open(ruta)
     texto = ""
     for p in doc:
         texto += p.get_text()
     doc.close()
+
+    # Si el PDF es escaneado (muy poco texto), intentar OCR
+    if len(texto.strip()) < 100 and OCR_DISPONIBLE:
+        nombre = os.path.basename(ruta)
+        print(f"   [OCR] Texto insuficiente, iniciando OCR para: {nombre}")
+        try:
+            imagenes = convert_from_path(ruta, dpi=250)  # 250 dpi: balance calidad/velocidad
+            total_pags = len(imagenes)
+            print(f"   [OCR] {total_pags} paginas por procesar...")
+            partes = []
+            for i, img in enumerate(imagenes):
+                txt = pytesseract.image_to_string(img, lang="spa")
+                partes.append(txt)
+                # Progreso cada 5 páginas o en la última
+                if (i + 1) % 5 == 0 or (i + 1) == total_pags:
+                    print(f"   [OCR] Pagina {i+1}/{total_pags}", flush=True)
+            texto = "\n".join(partes)
+            print(f"   [OCR] Completado: {len(texto):,} chars de {total_pags} paginas")
+        except Exception as e:
+            print(f"   [OCR] Fallo: {e}")
+
+    if len(texto.strip()) < 100 and not OCR_DISPONIBLE:
+        nombre = os.path.basename(ruta)
+        print(f"   ⚠️  PDF escaneado sin texto: {nombre} (instala pytesseract y pdf2image para OCR)")
+
     return texto
 
 

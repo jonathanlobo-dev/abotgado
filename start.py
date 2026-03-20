@@ -35,7 +35,7 @@ def main():
         except (ValueError, IOError):
             pass
 
-    hay_leyes_nuevas = pdfs_actuales > pdfs_anteriores
+    hay_leyes_nuevas = pdfs_actuales != pdfs_anteriores
     forzar_reindex = os.getenv("REINDEX", "").lower() in ("1", "true", "si")
 
     if not chroma_existe or forzar_reindex or hay_leyes_nuevas:
