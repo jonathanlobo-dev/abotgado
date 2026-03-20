@@ -77,6 +77,39 @@ registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
 esperando_ley      = {}  # user_id -> {"num_art": int} — esperando nombre de ley
 
 
+# ─── FILTRO DE SEGURIDAD (PRE-LLM) ─────────────────────────────────────────
+
+import re as _re_seguridad
+
+_PATRONES_INYECCION = [
+    _re_seguridad.compile(r'ignora\s+(?:todas?\s+)?(?:las?\s+)?instrucciones', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'olvida\s+(?:todas?\s+)?(?:las?\s+)?(?:instrucciones|reglas)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'repite\s+(?:tu\s+)?(?:prompt|system\s*prompt|instrucciones)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:cu[aá]les?\s+(?:son|fueron)\s+(?:tus|las)\s+instrucciones)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:tu\s+)?prompt\s+(?:del\s+)?sistema', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:entra|cambia|activa)\s+(?:en\s+)?modo\s+(?:de\s+)?(?:desarrollador|developer|debug|admin|dios|god)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'a\s+partir\s+de\s+ahora\s*,?\s*(?:vas?\s+a\s+)?actua(?:r|s)\s+como', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'act[uú]a\s+como\s+(?:un|una|el|la)\s+(?!abogado)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'las?\s+reglas?\s+anteriores?\s+ya\s+no\s+aplican', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:empieza|comienza)\s+tu\s+respuesta\s+con', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:est[aá]\s+)?(?:estrictamente\s+)?prohibido\s+(?:usar|que\s+uses)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'responde\s+(?:en|al)\s+(?:idioma\s+)?(?:ingl[eé]s|ruso|franc[eé]s|portugu[eé]s|alem[aá]n|chino|japon[eé]s|italiano|[aá]rabe)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'traduce\s+(?:toda\s+)?tu\s+respuesta', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:responde|escribe)\s+(?:solo\s+)?(?:en\s+)?(?:formato\s+)?(?:json|xml|yaml|csv|markdown)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'c[oó]mo\s+(?:fuiste|est[aá]s)\s+programado', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:dime|revela|muestra)\s+(?:tus?\s+)?(?:instrucciones|reglas|configuraci[oó]n|prompt)', _re_seguridad.IGNORECASE),
+]
+
+RESPUESTA_INYECCION = "⚠️ No puedo procesar esa solicitud. Escribe tu consulta legal y te ayudo."
+
+def detectar_inyeccion(texto: str) -> bool:
+    """Detecta intentos de prompt injection antes de enviar al LLM."""
+    for patron in _PATRONES_INYECCION:
+        if patron.search(texto):
+            return True
+    return False
+
+
 # ─── COMANDOS GENERALES ─────────────────────────────────────────────────────
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1208,6 +1241,12 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 pass
         else:
             await enviar_respuesta(update.message, respuesta_doc)
+        return
+
+    # ── Filtro de seguridad (bloquea inyección antes del LLM) ────────────
+    if detectar_inyeccion(pregunta):
+        logger.warning(f"Inyección bloqueada de user {user_id}: {pregunta[:80]}")
+        await update.message.reply_text(RESPUESTA_INYECCION)
         return
 
     # ── Detección de "explícame el artículo X [de Y]" ────────────────────
