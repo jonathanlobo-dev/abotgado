@@ -597,6 +597,8 @@ REGLA DE RELEVANCIA:
   → Código Penal (faltas/perturbaciones) para ruido excesivo
   → LOTTT para cualquier problema laboral
 - Máximo 3-4 artículos citados. Los MÁS relevantes al caso.
+- Si la lista tiene artículos de VARIAS leyes distintas, CITA al menos 1 artículo de cada ley relevante. NO cites solo de una ley cuando hay varias que aplican. Ejemplo: si hay artículos de Fauna Doméstica Y Justicia de Paz, cita al menos 1 de cada una.
+- Prefiere artículos ESPECÍFICOS (que hablen de procedimientos, sanciones, obligaciones concretas) sobre artículos genéricos (que solo definen qué es la ley). Art 1 de cualquier ley suele ser genérico — busca artículos con más contenido práctico.
 - IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
 - Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
 - Si REALMENTE ningún artículo de la lista tiene relación con el tema, responde sin citar.
