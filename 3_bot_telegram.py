@@ -99,6 +99,11 @@ _PATRONES_INYECCION = [
     _re_seguridad.compile(r'(?:responde|escribe)\s+(?:solo\s+)?(?:en\s+)?(?:formato\s+)?(?:json|xml|yaml|csv|markdown)', _re_seguridad.IGNORECASE),
     _re_seguridad.compile(r'c[oó]mo\s+(?:fuiste|est[aá]s)\s+programado', _re_seguridad.IGNORECASE),
     _re_seguridad.compile(r'(?:dime|revela|muestra)\s+(?:tus?\s+)?(?:instrucciones|reglas|configuraci[oó]n|prompt)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'reglas\s+que\s+sigues\s+(?:internamente|para\s+responder)', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'resumen\s+de\s+tu\s+configuraci[oó]n', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:traduce|traducir)\s+(?:tus\s+)?instrucciones', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'(?:primeras?\s+\d+\s+)?l[ií]neas?\s+de\s+tus\s+instrucciones', _re_seguridad.IGNORECASE),
+    _re_seguridad.compile(r'mostr[aá]ndome\s+(?:las?\s+)?(?:primeras?\s+)?\d*\s*(?:l[ií]neas?\s+de\s+)?(?:tus\s+)?instrucciones', _re_seguridad.IGNORECASE),
 ]
 
 RESPUESTA_INYECCION = "⚠️ No puedo procesar esa solicitud. Escribe tu consulta legal y te ayudo."
@@ -1333,6 +1338,15 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 pass
         else:
             await enviar_respuesta(update.message, respuesta_doc)
+        return
+
+    # ── Filtrar comandos / escritos como texto (no admin) ────────────────
+    if pregunta.startswith("/"):
+        # Si es un comando admin escrito como texto, ignorar
+        await update.message.reply_text(
+            "Ese comando no existe o no tienes permiso.\n"
+            "Usa /ayuda para ver los comandos disponibles."
+        )
         return
 
     # ── Filtro de seguridad (bloquea inyección antes del LLM) ────────────
