@@ -218,7 +218,8 @@ ARTICULOS_CLAVE = {
     "animales": {
         "keywords": ["perro", "gato", "mascota", "animal doméstico", "animal domestico",
                      "maltrato animal", "fauna doméstica", "fauna domestica",
-                     "abandono animal"],
+                     "abandono animal", "ladra", "ladrar", "ladrido", "ladridos",
+                     "muerde", "mordida", "mordió", "mordio", "perro suelto"],
         "ley": "Ley de Protección de la Fauna Doméstica",
         "articulos": [1, 2, 3, 4, 5, 10, 11, 12, 15, 16]
     },
@@ -254,7 +255,8 @@ ARTICULOS_CLAVE = {
                      "musica alta", "perturbación", "perturbacion", "escándalo",
                      "escandalo", "convivencia", "conflicto vecinal",
                      "juez de paz", "justicia de paz", "paz comunal",
-                     "problema con el vecino", "molestia vecinal"],
+                     "problema con el vecino", "molestia vecinal",
+                     "ladra", "ladrar", "ladrido", "ladridos", "madrugada"],
         "ley": "Ley Orgánica de Justicia de Paz Comunal",
         # >10 artículos → usa embedding search dentro de la ley
         "articulos": list(range(1, 60))
@@ -263,7 +265,8 @@ ARTICULOS_CLAVE = {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
                      "musica alta", "perturbación", "perturbacion", "escándalo",
                      "escandalo", "desorden", "alboroto", "molestia",
-                     "gimnasio clandestino", "fiesta ruidosa", "gritos"],
+                     "gimnasio clandestino", "fiesta ruidosa", "gritos",
+                     "ladra", "ladrar", "ladrido", "ladridos", "madrugada"],
         "ley": "Código Penal",
         # 502 = perturbación del sosiego, 503-508 = otras faltas
         # 501 excluido: es sobre agencias/empresas, no ruido
@@ -619,6 +622,8 @@ ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 ⚠️ <i>Info orientativa. Consulta un abogado.</i>
 
 REGLAS DE FORMATO Y REDACCIÓN:
+- SIEMPRE termina tu respuesta con EXACTAMENTE esta línea, sin modificarla: ⚠️ <i>Info orientativa. Consulta un abogado.</i>
+- NUNCA cambies el disclaimer final. NO escribas "Recuerda que...", "Es importante...", ni ninguna variación. COPIA Y PEGA la línea exacta de arriba.
 - Usa <b>negritas HTML</b> en nombre de ley y artículo en cada cita.
 - Usa <i>itálica HTML</i> solo para el disclaimer final.
 - NO uses asteriscos (*) para formato. SOLO usa etiquetas HTML: <b> para negritas, <i> para itálica.
