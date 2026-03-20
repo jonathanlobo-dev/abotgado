@@ -140,8 +140,10 @@ NOMBRES_CORRECTOS = {
     "reforma-del-codigo-penal.pdf":                 "Código Penal",
 
     # ── Justicia de Paz Comunal ──────────────────────────────────────────────
+    "Ley Orgánica de Justicia de Paz Comunal.pdf":
+        "Ley Orgánica de Justicia de Paz Comunal",
     "LEY DE REFORMA PARCIAL DE LA LEY ORGÁNICA DE LA JURISDICCIÓN ESPECIAL DE JUSTICIA DE PAZ COMUNAL.pdf":
-        "Ley de Justicia de Paz Comunal",
+        "Ley Orgánica de Justicia de Paz Comunal",
 
     # ── Personas Adultas Mayores ─────────────────────────────────────────────
     "LEY ORGÁNICA PARA LA ATENCIÓN Y DESARROLLO INTEGRAL DE LAS PERSONAS ADULTAS MAYORES.pdf":

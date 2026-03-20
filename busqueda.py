@@ -74,6 +74,17 @@ ARTICULOS_CLAVE = {
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
         "articulos": [85, 86, 87, 88, 89, 90, 141, 142, 143, 190, 191, 192]
     },
+    "comunicaciones": {
+        "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
+                     "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
+                     "revisar telefono", "galería", "galeria", "fotos", "correo",
+                     "interceptar", "pinchar", "espiar", "grabar conversación",
+                     "grabar conversacion", "revisar mi teléfono", "pedir mi teléfono"],
+        "ley": "Constitución de la República Bolivariana de Venezuela",
+        # Art 48 = inviolabilidad comunicaciones (PRIORIDAD para casos de teléfono)
+        # Art 47 = inviolabilidad del hogar, Art 60 = protección honor/privacidad
+        "articulos": [48, 47, 60, 44]
+    },
     "derechos": {
         "keywords": ["detener", "detienen", "detenido", "detenida", "detención",
                      "detencion", "arrestar", "arrestado", "arrestaron", "preso",
@@ -85,17 +96,6 @@ ARTICULOS_CLAVE = {
                      "calabozo", "encerrar", "encerrado", "libertad"],
         "ley": "Constitución de la República Bolivariana de Venezuela",
         "articulos": [44, 45, 46, 47, 49, 50, 55, 60, 139]
-    },
-    "comunicaciones": {
-        "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
-                     "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
-                     "revisar telefono", "galería", "galeria", "fotos", "correo",
-                     "interceptar", "pinchar", "espiar", "grabar conversación",
-                     "grabar conversacion", "revisar mi teléfono", "pedir mi teléfono"],
-        "ley": "Constitución de la República Bolivariana de Venezuela",
-        # Art 48 = inviolabilidad comunicaciones (PRIORIDAD para casos de teléfono)
-        # Art 47 = inviolabilidad del hogar, Art 60 = protección honor/privacidad
-        "articulos": [48, 47, 60, 44]
     },
     "vivienda_cc": {
         "keywords": ["casero", "arrendador", "inquilino", "arrendatario", "alquiler",
@@ -249,14 +249,16 @@ ARTICULOS_CLAVE = {
         "ley": "Código Penal",
         "articulos": [405, 406, 407, 413, 414, 415, 451, 453, 455, 457, 458, 460, 462, 464]
     },
-    # NOTA: JP desactivada temporalmente — el PDF es una ley de reforma parcial,
-    # TODOS sus artículos son "Se modifica..." sin contenido sustantivo.
-    # Se necesita el PDF consolidado. La guía institucional sigue funcionando.
-    # "justicia_paz": {
-    #     "keywords": ["vecino", "vecinos", ...],
-    #     "ley": "Ley de Justicia de Paz Comunal",
-    #     "articulos": list(range(9, 50))
-    # },
+    "justicia_paz": {
+        "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
+                     "musica alta", "perturbación", "perturbacion", "escándalo",
+                     "escandalo", "convivencia", "conflicto vecinal",
+                     "juez de paz", "justicia de paz", "paz comunal",
+                     "problema con el vecino", "molestia vecinal"],
+        "ley": "Ley Orgánica de Justicia de Paz Comunal",
+        # >10 artículos → usa embedding search dentro de la ley
+        "articulos": list(range(1, 60))
+    },
     "faltas_penales": {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
                      "musica alta", "perturbación", "perturbacion", "escándalo",
@@ -455,7 +457,9 @@ ALIAS_LEYES = {
     "ley municipal": "Ley Orgánica del Poder Público Municipal",
     "poder publico municipal": "Ley Orgánica del Poder Público Municipal",
     # Justicia de Paz
-    "justicia de paz": "Ley de Justicia de Paz Comunal",
+    "justicia de paz": "Ley Orgánica de Justicia de Paz Comunal",
+    "ley de justicia de paz": "Ley Orgánica de Justicia de Paz Comunal",
+    "paz comunal": "Ley Orgánica de Justicia de Paz Comunal",
     # Adultos Mayores
     "adultos mayores": "Ley de Atención Integral de las Personas Adultas Mayores",
     # Antecedentes
@@ -646,6 +650,14 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS LABORALES:
 - Prestaciones: El patrono tiene 5 días después del despido para pagar. Si no paga, denuncia en la Inspectoría.
 - Línea gratuita MPPPST: 0800-TRABAJO (0800-872-2256)
 - Si es acoso laboral: Denuncia ante la Inspectoría y ante la Fiscalía del Ministerio Público.
+""",
+    "comunicaciones": """
+INSTITUCIONES Y PASOS CONCRETOS PARA VIOLACIÓN DE COMUNICACIONES/PRIVACIDAD:
+- Art. 48 de la Constitución: Las comunicaciones privadas son INVIOLABLES. Solo pueden ser interceptadas por orden judicial.
+- Si un policía te pide el teléfono: NO estás obligado a entregarlo ni desbloquearlo sin orden judicial. Pide que identifique su placa y unidad.
+- Fiscalía del Ministerio Público: Denuncia si un funcionario revisó tu teléfono sin orden judicial.
+- Defensoría del Pueblo: Línea 0800-DEFENSORIA (0800-333-3676) para denunciar abuso de funcionarios.
+- Si grabaron tus conversaciones sin consentimiento: Denuncia ante la Fiscalía y el CICPC (División de Delitos Informáticos).
 """,
     "derechos": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLACIÓN DE DERECHOS:
@@ -1264,7 +1276,7 @@ def debug_busqueda(pregunta: str) -> str:
     # 3. Verificar si existen artículos de Justicia de Paz en ChromaDB
     try:
         jp = coleccion.get(
-            where={"ley": {"$eq": "Ley de Justicia de Paz Comunal"}},
+            where={"ley": {"$eq": "Ley Orgánica de Justicia de Paz Comunal"}},
             include=["metadatas"],
             limit=5
         )
