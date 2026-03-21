@@ -96,9 +96,11 @@ ARTICULOS_CLAVE = {
     "laboral_despido": {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
                      "botar", "botaron", "botado", "echar", "echaron",
-                     "reenganche", "inamovilidad", "estabilidad"],
+                     "reenganche", "inamovilidad", "estabilidad",
+                     "dormido", "quedarse dormido", "negligencia", "falta grave",
+                     "causa justificada", "despido justificado"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
-        "articulos": [85, 86, 87, 88, 89, 90]
+        "articulos": [79, 85, 86, 87, 88, 89]
     },
     "laboral_vacaciones": {
         "keywords": ["vacaciones", "bono vacacional", "descanso anual",
@@ -1360,8 +1362,8 @@ RAMA_POR_TEMA = {
 
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
-def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
-    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados)."""
+def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], float]:
+    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados, mejor_distancia)."""
 
     pregunta_juridica = reformular(pregunta)
     logger.info(f"  Original:    {pregunta}")
@@ -1396,7 +1398,9 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
         ramas_detectadas = None
 
     # 3. Embeddings (Semántica pura) — filtrado por rama si hay tema
-    agregar(buscar_embedding(pregunta_juridica, top_n=10, ramas=ramas_detectadas))
+    resultados_emb = buscar_embedding(pregunta_juridica, top_n=10, ramas=ramas_detectadas)
+    mejor_distancia = min((r["distancia"] for r in resultados_emb), default=1.0)
+    agregar(resultados_emb)
 
     # 4. BM25 (Palabras exactas) - complemento
     agregar(buscar_bm25(pregunta_juridica, top_n=8))
@@ -1424,7 +1428,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
 
     if not relevantes_finales:
-        return [], "", temas_detectados
+        return [], "", temas_detectados, mejor_distancia
 
     # Formato numerado
     contexto = "LISTA DE ARTÍCULOS DISPONIBLES (SOLO puedes citar de esta lista):\n\n"
@@ -1466,7 +1470,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
                 contexto += GUIAS_INSTITUCIONALES[tema]
                 break
 
-    return relevantes_finales, contexto, temas_detectados
+    return relevantes_finales, contexto, temas_detectados, mejor_distancia
 
 
 def debug_busqueda(pregunta: str) -> str:
@@ -1655,7 +1659,8 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
     # Protección contra prompt injection
     if es_prompt_injection(pregunta):
         logger.warning(f"  ⚠️ Prompt injection detectado de user {user_id}")
-        return "No puedo procesar esa solicitud. Escribe tu consulta legal y te ayudo."
+        return {"respuesta": "No puedo procesar esa solicitud. Escribe tu consulta legal y te ayudo.",
+                "temas": [], "confianza": "n/a"}
 
     pregunta = sanitizar_input(pregunta)
 
@@ -1674,18 +1679,22 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 max_tokens=100,
                 temperature=0.3,
             )
-            return response.choices[0].message.content
+            return {"respuesta": response.choices[0].message.content,
+                    "temas": [], "confianza": "n/a"}
         except Exception:
-            return "¡Hola! Soy aBOTgado, tu asistente jurídico. ¿En qué te puedo ayudar?"
+            return {"respuesta": "¡Hola! Soy aBOTgado, tu asistente jurídico. ¿En qué te puedo ayudar?",
+                    "temas": [], "confianza": "n/a"}
 
     # Temas claramente fuera de dominio (recetas, poemas, código, etc.)
     if es_fuera_de_dominio(pregunta):
         logger.info(f"  → Fuera de dominio, rechazo sin RAG")
-        return "Solo puedo ayudarte con consultas sobre leyes venezolanas. Escribe tu pregunta legal y te ayudo."
+        return {"respuesta": "Solo puedo ayudarte con consultas sobre leyes venezolanas. Escribe tu pregunta legal y te ayudo.",
+                "temas": [], "confianza": "n/a"}
 
     es_premium = user_id and db.es_premium(user_id)
     seguimiento = es_premium and historial and es_seguimiento(pregunta)
     temas_detectados = []
+    mejor_dist = 0.0  # default; se actualiza en buscar_articulos_nuevos
 
     if seguimiento:
         logger.info(f"  → Pregunta de seguimiento detectada")
@@ -1702,7 +1711,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
             # Búsqueda complementaria: reformular pregunta CON contexto del tema anterior
             pregunta_enriquecida = f"{tema_previo}. {pregunta}" if tema_previo else pregunta
-            _, contexto_nuevo, temas_detectados = buscar_articulos_nuevos(pregunta_enriquecida)
+            _, contexto_nuevo, temas_detectados, _ = buscar_articulos_nuevos(pregunta_enriquecida)
 
             # Combinar: contexto previo + artículos nuevos relevantes
             if contexto_nuevo:
@@ -1711,15 +1720,29 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 contexto = contexto_previo
         else:
             # Si no hay contexto previo, buscar normalmente
-            _, contexto, temas_detectados = buscar_articulos_nuevos(pregunta)
+            _, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta)
             if not contexto:
-                return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                        "⚠️ Consulta con un abogado.")
+                return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
+                        "⚠️ Consulta con un abogado.",
+                        "temas": [], "confianza": "ninguna"}
     else:
-        relevantes, contexto, temas_detectados = buscar_articulos_nuevos(pregunta)
+        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta)
         if not relevantes:
-            return ("No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                    "⚠️ Consulta con un abogado.")
+            return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
+                    "⚠️ Consulta con un abogado.",
+                    "temas": [], "confianza": "ninguna"}
+
+    # Determinar nivel de confianza
+    # mejor_dist solo existe si no es seguimiento con contexto_previo
+    dist = mejor_dist if not seguimiento else 0.0
+    if temas_detectados:
+        confianza = "alta"
+    elif dist < 0.45:
+        confianza = "media"
+    else:
+        confianza = "baja"
+
+    logger.info(f"  Confianza: {confianza} (temas={temas_detectados}, dist={dist:.3f})")
 
     # Registrar métricas de la consulta
     if user_id:
@@ -1780,10 +1803,17 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
         respuesta = _filtrar_montos_inventados(respuesta)
-        return respuesta
+
+        # Agregar disclaimer si confianza es baja
+        if confianza == "baja":
+            respuesta += ("\n\n⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
+                          "Te recomiendo consultar con un abogado para orientación específica.</i>")
+
+        return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza}
     except Exception as e:
         logger.error(f"Error en Groq LLM: {e}")
-        return "Hubo un error procesando tu consulta. Por favor intenta de nuevo en unos minutos."
+        return {"respuesta": "Hubo un error procesando tu consulta. Por favor intenta de nuevo en unos minutos.",
+                "temas": [], "confianza": "error"}
 
 
 # ─── FORMATO DE RESPUESTA ───────────────────────────────────────────────────

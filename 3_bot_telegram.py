@@ -9,10 +9,10 @@ import logging
 import asyncio
 import os
 from datetime import date
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
-    filters, ContextTypes
+    CallbackQueryHandler, filters, ContextTypes
 )
 import config
 import db
@@ -1442,7 +1442,10 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     con_memoria = db.tiene_memoria(user_id)
     historial = db.cargar_historial(user_id) if con_memoria else None
 
-    respuesta = await asyncio.to_thread(busqueda.buscar_y_responder, pregunta, historial, user_id)
+    resultado = await asyncio.to_thread(busqueda.buscar_y_responder, pregunta, historial, user_id)
+    respuesta = resultado["respuesta"]
+    temas = resultado.get("temas", [])
+    confianza = resultado.get("confianza", "n/a")
 
     db.registrar_consulta(user_id)
     if con_memoria:
@@ -1451,11 +1454,98 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
 
+    # Alerta al admin: consulta sin tema detectado (respuesta de baja confianza)
+    if confianza == "baja" and not es_admin(user_id):
+        await notificar_admins(context,
+            f"⚠️ CONSULTA SIN TEMA\n"
+            f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+            f"Pregunta: {pregunta[:200]}\n"
+            f"Confianza: {confianza}")
+
     restantes = db.consultas_restantes(user_id)
     if restantes != -1 and restantes <= 1:
         respuesta += f"\n\n<i>Consultas restantes hoy: {restantes}</i>"
 
-    await enviar_respuesta(update.message, respuesta)
+    # Botones de feedback
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("👍", callback_data=f"fb_up_{user_id}"),
+         InlineKeyboardButton("👎", callback_data=f"fb_down_{user_id}")]
+    ])
+
+    texto_formateado = busqueda.formatear_respuesta(respuesta)
+    if len(texto_formateado) > 4096:
+        # Enviar en partes, botones solo en el último
+        for i in range(0, len(texto_formateado), 4096):
+            parte = texto_formateado[i:i+4096]
+            es_ultima = (i + 4096 >= len(texto_formateado))
+            try:
+                await update.message.reply_text(
+                    parte, parse_mode="HTML",
+                    reply_markup=keyboard if es_ultima else None)
+            except Exception:
+                await update.message.reply_text(
+                    parte,
+                    reply_markup=keyboard if es_ultima else None)
+    else:
+        try:
+            await update.message.reply_text(
+                texto_formateado, parse_mode="HTML", reply_markup=keyboard)
+        except Exception:
+            await update.message.reply_text(
+                texto_formateado, reply_markup=keyboard)
+
+
+# ─── FEEDBACK BUTTONS ────────────────────────────────────────────────────────
+
+async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Maneja los botones de 👍/👎 después de cada respuesta."""
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data  # fb_up_123456 o fb_down_123456
+    partes = data.split("_")
+    if len(partes) < 3:
+        return
+
+    tipo = partes[1]  # "up" o "down"
+    try:
+        feedback_user_id = int(partes[2])
+    except ValueError:
+        return
+
+    # Solo el usuario que hizo la consulta puede dar feedback
+    if query.from_user.id != feedback_user_id:
+        await query.answer("Este botón es para el usuario que hizo la consulta.")
+        return
+
+    # Obtener la pregunta/respuesta del usuario
+    datos = ultima_respuesta.get(feedback_user_id, {})
+    pregunta_original = datos.get("pregunta", "")
+
+    if tipo == "up":
+        db.guardar_feedback(feedback_user_id, "positivo", pregunta_original[:200])
+        # Quitar botones y mostrar agradecimiento
+        try:
+            await query.edit_message_reply_markup(reply_markup=None)
+        except Exception:
+            pass
+        await query.answer("👍 ¡Gracias por tu feedback!")
+    elif tipo == "down":
+        db.guardar_feedback(feedback_user_id, "negativo", pregunta_original[:200])
+        # Quitar botones
+        try:
+            await query.edit_message_reply_markup(reply_markup=None)
+        except Exception:
+            pass
+        await query.answer("👎 Gracias. Revisaremos esta respuesta.")
+        # Notificar admin sobre feedback negativo
+        resp_texto = datos.get("respuesta", "")[:300]
+        await notificar_admins(context,
+            f"👎 FEEDBACK NEGATIVO\n"
+            f"Usuario: {query.from_user.first_name} "
+            f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
+            f"Pregunta: {pregunta_original[:200]}\n"
+            f"Respuesta (inicio): {resp_texto}")
 
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────
@@ -1537,6 +1627,9 @@ def main():
     app.add_handler(CommandHandler("abogados",        cmd_abogados))
     app.add_handler(CommandHandler("del_abogado",     cmd_del_abogado))
     app.add_handler(CommandHandler("activar_abogado", cmd_activar_abogado))
+
+    # Feedback buttons (👍/👎)
+    app.add_handler(CallbackQueryHandler(handle_feedback, pattern=r"^fb_"))
 
     # Mensajes normales
     app.add_handler(MessageHandler(
