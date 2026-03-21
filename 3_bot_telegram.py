@@ -1500,53 +1500,61 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Maneja los botones de 👍/👎 después de cada respuesta."""
     query = update.callback_query
+    logger.info(f"Feedback recibido: {query.data} de user {query.from_user.id}")
 
-    data = query.data  # fb_up_123456 o fb_down_123456
-    partes = data.split("_")
-    if len(partes) < 3:
-        await query.answer()
-        return
-
-    tipo = partes[1]  # "up" o "down"
     try:
-        feedback_user_id = int(partes[2])
-    except ValueError:
-        await query.answer()
-        return
+        data = query.data  # fb_up_123456 o fb_down_123456
+        partes = data.split("_")
+        if len(partes) < 3:
+            await query.answer()
+            return
 
-    # Solo el usuario que hizo la consulta puede dar feedback
-    if query.from_user.id != feedback_user_id:
-        await query.answer("Este botón es para el usuario que hizo la consulta.")
-        return
-
-    # Obtener la pregunta/respuesta del usuario
-    datos = ultima_respuesta.get(feedback_user_id, {})
-    pregunta_original = datos.get("pregunta", "")
-
-    if tipo == "up":
-        db.guardar_feedback(feedback_user_id, "positivo", pregunta_original[:200])
+        tipo = partes[1]  # "up" o "down"
         try:
-            await query.edit_message_reply_markup(reply_markup=None)
+            feedback_user_id = int(partes[2])
+        except ValueError:
+            await query.answer()
+            return
+
+        # Solo el usuario que hizo la consulta puede dar feedback
+        if query.from_user.id != feedback_user_id:
+            await query.answer("Este botón es para el usuario que hizo la consulta.")
+            return
+
+        # Obtener la pregunta/respuesta del usuario
+        datos = ultima_respuesta.get(feedback_user_id, {})
+        pregunta_original = datos.get("pregunta", "")
+
+        if tipo == "up":
+            db.guardar_feedback(feedback_user_id, "positivo", pregunta_original[:200])
+            await query.answer("👍 ¡Gracias por tu feedback!")
+            try:
+                await query.edit_message_reply_markup(reply_markup=None)
+            except Exception:
+                pass
+        elif tipo == "down":
+            db.guardar_feedback(feedback_user_id, "negativo", pregunta_original[:200])
+            await query.answer("👎 Gracias. Revisaremos esta respuesta.")
+            try:
+                await query.edit_message_reply_markup(reply_markup=None)
+            except Exception:
+                pass
+            # Notificar admin sobre feedback negativo
+            resp_texto = datos.get("respuesta", "")[:300]
+            await notificar_admins(context,
+                f"👎 FEEDBACK NEGATIVO\n"
+                f"Usuario: {query.from_user.first_name} "
+                f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
+                f"Pregunta: {pregunta_original[:200]}\n"
+                f"Respuesta (inicio): {resp_texto}")
+        else:
+            await query.answer()
+    except Exception as e:
+        logger.error(f"Error en handle_feedback: {e}")
+        try:
+            await query.answer("Error procesando feedback")
         except Exception:
             pass
-        await query.answer("👍 ¡Gracias por tu feedback!")
-    elif tipo == "down":
-        db.guardar_feedback(feedback_user_id, "negativo", pregunta_original[:200])
-        try:
-            await query.edit_message_reply_markup(reply_markup=None)
-        except Exception:
-            pass
-        await query.answer("👎 Gracias. Revisaremos esta respuesta.")
-        # Notificar admin sobre feedback negativo
-        resp_texto = datos.get("respuesta", "")[:300]
-        await notificar_admins(context,
-            f"👎 FEEDBACK NEGATIVO\n"
-            f"Usuario: {query.from_user.first_name} "
-            f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
-            f"Pregunta: {pregunta_original[:200]}\n"
-            f"Respuesta (inicio): {resp_texto}")
-    else:
-        await query.answer()
 
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────
