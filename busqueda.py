@@ -107,8 +107,9 @@ ARTICULOS_CLAVE = {
                      "sustancia", "hierba", "mota", "porro", "bazuco",
                      "posesión de drogas", "posesion de drogas", "narcotráfico",
                      "narcotrafico", "consumo de drogas", "fumando", "drogarse"],
-        "ley": "Ley Orgánica sobre Sustancias Estupefacientes y Psicotrópicas",
-        "articulos": [34, 36, 38, 75, 76, 77, 82, 83]
+        "ley": "Ley Orgánica de Drogas",
+        # Art 149=tráfico, 128-132=consumidor/medidas, 153=cantidades, 161=locales, 163=agravantes
+        "articulos": [128, 129, 130, 131, 132, 149, 153, 161, 163]
     },
     "derechos": {
         "keywords": ["detener", "detienen", "detenido", "detenida", "detención",

@@ -181,9 +181,9 @@ NOMBRES_CORRECTOS = {
     "ley-de-arrendamientos-inmobiliarios-1999.pdf":
         "Ley de Arrendamientos Inmobiliarios",
 
-    # ── Estupefacientes y Psicotrópicos ────────────────────────────────────
-    "ley-organica-sobre-sustancias-estupefacientes-y-psicotropicas.pdf":
-        "Ley Orgánica sobre Sustancias Estupefacientes y Psicotrópicas",
+    # ── Ley Orgánica de Drogas (2010) ───────────────────────────────────────
+    "Ley-Organica-de-Drogas-2010.pdf":
+        "Ley Orgánica de Drogas",
 }
 
 
