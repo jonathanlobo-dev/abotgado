@@ -1660,7 +1660,10 @@ def main():
 
     app.add_error_handler(error_handler)
 
-    app.run_polling()
+    app.run_polling(
+        allowed_updates=["message", "callback_query"],
+        drop_pending_updates=True
+    )
 
 
 if __name__ == "__main__":
