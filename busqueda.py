@@ -1056,12 +1056,21 @@ def buscar_bm25(query: str, top_n: int = 10) -> list[dict]:
             for i in top if scores[i] > umbral]
 
 
-def buscar_embedding(query: str, top_n: int = 10) -> list[dict]:
+def buscar_embedding(query: str, top_n: int = 10, ramas: list[str] = None) -> list[dict]:
     emb = embeddings.generar_embedding(query)
-    r   = coleccion.query(
-        query_embeddings=[emb], n_results=top_n,
-        include=["documents", "metadatas", "distances"]
-    )
+    query_params = {
+        "query_embeddings": [emb], "n_results": top_n,
+        "include": ["documents", "metadatas", "distances"]
+    }
+    # Filtrar por rama(s) si se especifican
+    if ramas:
+        if len(ramas) == 1:
+            query_params["where"] = {"rama": {"$eq": ramas[0]}}
+        else:
+            query_params["where"] = {"rama": {"$in": ramas}}
+        logger.info(f"  Embedding filtrado por ramas: {ramas}")
+
+    r = coleccion.query(**query_params)
     # Filtro más estricto: solo artículos con distancia < 0.75 (antes 0.95)
     return [{"texto": r["documents"][0][i], "ley": r["metadatas"][0][i]["ley"],
              "articulo": r["metadatas"][0][i]["articulo"],
@@ -1318,6 +1327,29 @@ def es_fuera_de_dominio(pregunta: str) -> bool:
     return any(re.search(p, pregunta_lower) for p in patrones_fuera)
 
 
+# ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
+RAMA_POR_TEMA = {
+    "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
+    "laboral_prestaciones": "laboral", "laboral_general": "laboral",
+    "transito_infracciones": "transito", "transito_licencia": "transito",
+    "transito_accidente": "transito", "transito_vehiculo": "transito",
+    "transito_general": "transito",
+    "drogas": "penal", "corrupcion": "penal", "penal": "penal",
+    "civil": "civil", "propiedad": "civil", "divorcio": "civil",
+    "comercial": "civil",
+    "familia": "familia", "maternidad_paternidad": "familia",
+    "violencia_mujer": "familia",
+    "vivienda_cc": "vivienda", "vivienda_desalojo": "vivienda",
+    "vivienda_arrendamiento": "vivienda", "arrendamiento_comercial": "vivienda",
+    "propiedad_horizontal": "vivienda",
+    "derechos": "constitucional", "comunicaciones": "constitucional",
+    "tributario": "tributario",
+    "animales": "animales", "ambiente": "ambiente",
+    "discapacidad": "administrativo", "municipal": "administrativo",
+    "trabajadores_residenciales": "laboral",
+}
+
+
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
 def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
@@ -1347,10 +1379,18 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
     arts_clave, temas_detectados = buscar_articulos_clave(pregunta)
     agregar(arts_clave)
 
-    # 2. Embeddings (Semántica pura)
-    agregar(buscar_embedding(pregunta_juridica, top_n=10))
+    # 2. Determinar ramas para filtrar embeddings
+    ramas_detectadas = list(set(
+        RAMA_POR_TEMA.get(t, "general") for t in temas_detectados
+    )) if temas_detectados else None
+    # Si solo detectó "general", no filtrar (buscar en todo)
+    if ramas_detectadas and ramas_detectadas == ["general"]:
+        ramas_detectadas = None
 
-    # 3. BM25 (Palabras exactas) - complemento
+    # 3. Embeddings (Semántica pura) — filtrado por rama si hay tema
+    agregar(buscar_embedding(pregunta_juridica, top_n=10, ramas=ramas_detectadas))
+
+    # 4. BM25 (Palabras exactas) - complemento
     agregar(buscar_bm25(pregunta_juridica, top_n=8))
     agregar(buscar_bm25(pregunta, top_n=5))
 

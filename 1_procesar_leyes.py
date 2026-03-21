@@ -187,6 +187,80 @@ NOMBRES_CORRECTOS = {
 }
 
 
+# ─── CLASIFICACIÓN POR RAMA DEL DERECHO ─────────────────────────────────────
+# Cada ley se etiqueta con una "rama" para filtrar búsquedas en ChromaDB
+
+CLASIFICACION_LEYES = {
+    # ── Laboral ──────────────────────────────────────────────────────────────
+    "Ley Orgánica del Trabajo (LOTTT)":                                 "laboral",
+    "Ley del Seguro Social":                                            "laboral",
+
+    # ── Penal ────────────────────────────────────────────────────────────────
+    "Código Penal":                                                     "penal",
+    "Código Orgánico Procesal Penal (COPP)":                            "penal",
+    "Ley Especial contra los Delitos Informáticos":                     "penal",
+    "Ley contra la Corrupción":                                         "penal",
+    "Ley Orgánica de Drogas":                                           "penal",
+    "Código Orgánico de Justicia Militar":                              "penal",
+    "Ley de Registro de Antecedentes Penales":                          "penal",
+    "Ley Constitucional contra el Odio":                                "penal",
+
+    # ── Civil ────────────────────────────────────────────────────────────────
+    "Código Civil venezolano":                                          "civil",
+    "Código de Procedimiento Civil":                                    "civil",
+    "Ley de Registros y Notarías":                                      "civil",
+    "Código de Comercio":                                               "civil",
+    "Ley de Arrendamientos Inmobiliarios":                              "civil",
+
+    # ── Familia ──────────────────────────────────────────────────────────────
+    "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)": "familia",
+    "Ley para la Protección de las Familias, la Maternidad y la Paternidad":  "familia",
+    "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia": "familia",
+
+    # ── Tránsito ─────────────────────────────────────────────────────────────
+    "Ley de Transporte Terrestre":                                      "transito",
+
+    # ── Tributario ───────────────────────────────────────────────────────────
+    "Código Orgánico Tributario":                                       "tributario",
+    "Ley de Impuesto Sobre la Renta (ISLR)":                            "tributario",
+
+    # ── Vivienda ─────────────────────────────────────────────────────────────
+    "Ley de Propiedad Horizontal":                                      "vivienda",
+    "Ley para la Regularización y Control de los Arrendamientos de Vivienda": "vivienda",
+
+    # ── Constitucional ───────────────────────────────────────────────────────
+    "Constitución de la República Bolivariana de Venezuela":            "constitucional",
+
+    # ── Administrativo ───────────────────────────────────────────────────────
+    "Ley Orgánica de la Contraloría General de la República":           "administrativo",
+    "Ley Orgánica de Contraloría Social":                               "administrativo",
+    "Ley Orgánica del Poder Popular":                                   "administrativo",
+    "Ley Orgánica de las Comunas":                                      "administrativo",
+    "Ley Orgánica de los Consejos Comunales":                           "administrativo",
+    "Ley Orgánica de Gestión Comunitaria":                              "administrativo",
+    "Ley Orgánica del Sistema Económico Comunal":                       "administrativo",
+    "Ley Orgánica de Planificación Pública y Popular":                  "administrativo",
+    "Ley Orgánica de Simplificación de Trámites Administrativos":       "administrativo",
+    "Ley para la Promoción y Uso del Lenguaje de Género":               "administrativo",
+    "Ley Orgánica de Justicia de Paz Comunal":                          "administrativo",
+    "Ley de Atención Integral de las Personas Adultas Mayores":         "administrativo",
+    "Ley para la Inclusión de Personas con Discapacidad":               "administrativo",
+    "Ley Orgánica de las Zonas Económicas Especiales":                  "administrativo",
+
+    # ── Consumidor ───────────────────────────────────────────────────────────
+    "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)": "consumidor",
+
+    # ── Animales ─────────────────────────────────────────────────────────────
+    "Ley de Protección de la Fauna Doméstica":                          "animales",
+
+    # ── Ambiente ─────────────────────────────────────────────────────────────
+    "Ley de Residuos y Desechos Sólidos":                               "ambiente",
+
+    # ── General ──────────────────────────────────────────────────────────────
+    "Código de Ética Profesional del Abogado Venezolano":               "general",
+}
+
+
 # ─── FUNCIONES DE EXTRACCIÓN ─────────────────────────────────────────────────
 
 def extraer_texto(ruta):
@@ -415,12 +489,15 @@ def main():
         print(f"   Generando embeddings ({len(textos)} articulos)...")
         embs = embeddings.generar_embeddings_batch(textos, batch_size=20)
 
+        rama = CLASIFICACION_LEYES.get(nombre_ley, "general")
+        print(f"   → Rama: {rama}")
+
         for i, (art, emb) in enumerate(zip(articulos, embs)):
             coleccion.upsert(
                 ids       =[art["id"]],
                 documents =[art["texto"]],
                 embeddings=[emb],
-                metadatas =[{"ley": art["ley"], "articulo": art["articulo"]}]
+                metadatas =[{"ley": art["ley"], "articulo": art["articulo"], "rama": rama}]
             )
 
             if (i + 1) % 50 == 0 or (i + 1) == len(articulos):
