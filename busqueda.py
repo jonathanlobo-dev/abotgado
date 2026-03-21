@@ -49,21 +49,46 @@ logger.info(f"Índice BM25 listo — {len(docs_bm25)} artículos")
 # ─── ARTÍCULOS CLAVE POR TEMA ────────────────────────────────────────────────
 
 ARTICULOS_CLAVE = {
-    "transito": {
-        "keywords": ["carro", "coche", "vehículo", "vehiculo", "moto", "motocicleta",
-                     "camión", "camion", "alcabala", "tránsito", "transito", "seguro",
-                     "rcv", "licencia", "conducir", "conductor", "accidente", "choque",
-                     "multa", "placa", "circulación", "circulacion", "autopista",
-                     "certificado médico", "certificado medico", "revision vehicular",
-                     "revisión vehicular", "papeles del carro", "documentos del carro",
-                     "registro vehicular", "titulo de propiedad vehiculo",
-                     "semáforo", "semaforo", "infracción", "infraccion",
-                     "exceso de velocidad", "velocidad", "estacionar",
-                     "estacionamiento", "grúa", "grua", "piques"],
+    "transito_infracciones": {
+        "keywords": ["semáforo", "semaforo", "infracción", "infraccion", "multa",
+                     "exceso de velocidad", "velocidad", "piques", "pasarse la luz",
+                     "luz roja", "sin licencia", "sin seguro", "manos libres",
+                     "celular manejando", "borracho manejando", "alcoholímetro"],
         "ley": "Ley de Transporte Terrestre",
-        # Art 58=seguro RCV, 63-67=licencias, 86=deberes accidente, 169-171=multas,
-        # 179=suspensión licencia, 181=retención vehículo, 192-194=responsabilidad civil
-        "articulos": [58, 63, 64, 65, 66, 67, 86, 169, 170, 171, 173, 179, 181, 192, 193, 194]
+        # Art 169=multas 10UT, 170=multas 5UT, 171=multas 3UT, 173=piques 100UT
+        "articulos": [169, 170, 171, 173, 177]
+    },
+    "transito_licencia": {
+        "keywords": ["licencia", "licencia de conducir", "certificado médico",
+                     "certificado medico", "titulo profesional", "conducir",
+                     "renovar licencia", "sacar licencia"],
+        "ley": "Ley de Transporte Terrestre",
+        # Art 63-68=licencias
+        "articulos": [63, 64, 65, 66, 67, 68]
+    },
+    "transito_accidente": {
+        "keywords": ["accidente", "choque", "chocaron", "atropello", "atropellar",
+                     "atropellaron", "volcamiento", "colisión", "colision"],
+        "ley": "Ley de Transporte Terrestre",
+        # Art 86=deberes en accidente, 192-194=responsabilidad civil, 200=procedimiento
+        "articulos": [86, 192, 193, 194, 200]
+    },
+    "transito_vehiculo": {
+        "keywords": ["seguro", "rcv", "placa", "registro vehicular", "revision vehicular",
+                     "revisión vehicular", "papeles del carro", "documentos del carro",
+                     "titulo de propiedad vehiculo", "retención del vehículo",
+                     "retencion del vehiculo", "grúa", "grua", "estacionar",
+                     "estacionamiento", "mal estacionado"],
+        "ley": "Ley de Transporte Terrestre",
+        # Art 58=seguro obligatorio, 179=suspensión licencia, 181=retención vehículo
+        "articulos": [58, 179, 180, 181]
+    },
+    "transito_general": {
+        "keywords": ["carro", "coche", "vehículo", "vehiculo", "moto", "motocicleta",
+                     "camión", "camion", "alcabala", "tránsito", "transito",
+                     "conductor", "circulación", "circulacion", "autopista"],
+        "ley": "Ley de Transporte Terrestre",
+        "articulos": [58, 63, 86, 169, 170, 192]
     },
     "laboral_despido": {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
@@ -1348,6 +1373,9 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
     _MAPA_GUIA = {
         "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
         "laboral_prestaciones": "laboral", "laboral_general": "laboral",
+        "transito_infracciones": "transito", "transito_licencia": "transito",
+        "transito_accidente": "transito", "transito_vehiculo": "transito",
+        "transito_general": "transito",
     }
     guias_usadas = set()
     for tema in temas_detectados:
