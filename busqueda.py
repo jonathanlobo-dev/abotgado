@@ -1758,11 +1758,11 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
     # Determinar nivel de confianza (keyword + embedding combinados)
     dist = mejor_dist if not seguimiento else 0.0
-    if temas_detectados and dist < 0.35:
+    if temas_detectados and dist < 0.55:
         confianza = "alta"
-    elif temas_detectados and dist >= 0.35:
+    elif temas_detectados and dist >= 0.55:
         confianza = "media"
-    elif dist < 0.45:
+    elif dist < 0.55:
         confianza = "media"
     else:
         confianza = "baja"
@@ -1834,7 +1834,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             respuesta += ("\n\n⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
                           "Te recomiendo consultar con un abogado para orientación específica.</i>")
 
-        return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza}
+        return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza, "distancia": dist}
     except Exception as e:
         logger.error(f"Error en Groq LLM: {e}")
         return {"respuesta": "Hubo un error procesando tu consulta. Por favor intenta de nuevo en unos minutos.",

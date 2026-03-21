@@ -1602,6 +1602,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     respuesta = resultado["respuesta"]
     temas = resultado.get("temas", [])
     confianza = resultado.get("confianza", "n/a")
+    distancia = resultado.get("distancia", 0.0)
 
     db.registrar_consulta(user_id)
     if con_memoria:
@@ -1614,9 +1615,11 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Alerta al admin: consulta sin tema detectado (respuesta de baja confianza)
     if confianza in ("baja", "media") and not es_admin(user_id):
         icono_conf = "🔴" if confianza == "baja" else "🟡"
+        temas_str = ", ".join(temas) if temas else "ninguno"
         await notificar_admins(context,
-            f"{icono_conf} CONSULTA SIN TEMA\n"
-            f"Confianza: {confianza}\n"
+            f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
+            f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+            f"Temas: {temas_str}\n"
             f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
             f"Pregunta: {pregunta[:200]}")
 
