@@ -1582,14 +1582,16 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.edit_message_reply_markup(reply_markup=None)
             except Exception:
                 pass
-            # Notificar admin sobre feedback negativo
-            resp_texto = datos.get("respuesta", "")[:300]
+            # Notificar admin sobre feedback negativo (sin HTML)
+            import re as _re_fb
+            resp_crudo = _re_fb.sub(r'<[^>]+>', '', datos.get("respuesta", ""))
+            resp_crudo = resp_crudo[:500]
             await notificar_admins(context,
                 f"👎 FEEDBACK NEGATIVO\n"
                 f"Usuario: {query.from_user.first_name} "
                 f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
-                f"Pregunta: {pregunta_original[:200]}\n"
-                f"Respuesta (inicio): {resp_texto}")
+                f"Pregunta: {pregunta_original[:200]}\n\n"
+                f"Respuesta:\n{resp_crudo}")
         else:
             await query.answer()
     except Exception as e:
