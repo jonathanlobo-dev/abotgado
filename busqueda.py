@@ -83,8 +83,8 @@ ARTICULOS_CLAVE = {
                      "retencion del vehiculo", "grúa", "grua", "estacionar",
                      "estacionamiento", "mal estacionado"],
         "ley": "Ley de Transporte Terrestre",
-        # Art 58=seguro obligatorio, 179=suspensión licencia, 181=retención vehículo
-        "articulos": [58, 179, 180, 181]
+        # Art 58=seguro obligatorio, 170=multa 5UT sin seguro, 179=suspensión, 180=medidas
+        "articulos": [58, 170, 179, 180]
     },
     "transito_general": {
         "keywords": ["carro", "coche", "vehículo", "vehiculo", "moto", "motocicleta",
@@ -709,6 +709,7 @@ REGLAS DE FORMATO Y REDACCIÓN:
 - NO uses asteriscos (*) para formato. SOLO usa etiquetas HTML: <b> para negritas, <i> para itálica.
 - Sé breve y directo. PROHIBIDO: "es importante", "debes considerar", "debes solicitar asesoramiento legal".
 - NO repitas el mismo artículo dos veces. NO cites el artículo y su parágrafo como si fueran dos citas distintas.
+- Si un artículo tiene una LISTA de numerales u opciones, cita SOLO el numeral que responde a la pregunta del usuario. Ignora los numerales que hablen de otros temas. Ejemplo: si el usuario pregunta por el seguro y el artículo lista "1. placas, 2. licencia, 3. seguro", cita SOLO el numeral del seguro.
 - Si mencionas un artículo, DEBES decir qué dice.
 - PROHIBIDO INVENTAR CANTIDADES — REGLA ESTRICTA: En la sección "Qué hacer" y "Respuesta", SOLO puedes mencionar montos, multas, porcentajes, años de cárcel o unidades tributarias que estén LITERALMENTE escritos en los artículos citados arriba. Si un artículo dice "10 U.T.", puedes decir "10 U.T." pero NO inventes otros montos como "50% del salario mínimo" o "20-30% del ingreso". Si no hay monto específico en el artículo, simplemente di "puedes ser multado" sin inventar la cifra.
 - PROHIBIDO incluir números de teléfono en tu respuesta. NUNCA pongas números 0800, 0212, ni ningún teléfono.
