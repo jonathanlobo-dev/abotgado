@@ -57,8 +57,10 @@ ARTICULOS_CLAVE = {
                      "certificado médico", "certificado medico", "revision vehicular",
                      "revisión vehicular", "papeles del carro", "documentos del carro",
                      "registro vehicular", "titulo de propiedad vehiculo"],
-        "ley": "Ley de Tránsito Terrestre",
-        "articulos": [12, 13, 14, 24, 25, 26, 27, 50, 51, 52, 95, 96, 97, 98]
+        "ley": "Ley de Transporte Terrestre",
+        # Art 58=seguro RCV, 63-67=licencias, 86=deberes accidente, 169-171=multas,
+        # 179=suspensión licencia, 181=retención vehículo, 192-194=responsabilidad civil
+        "articulos": [58, 63, 64, 65, 66, 67, 86, 169, 170, 171, 173, 179, 181, 192, 193, 194]
     },
     "laboral_despido": {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
@@ -437,9 +439,9 @@ ALIAS_LEYES = {
     # Código de Comercio
     "codigo de comercio": "Código de Comercio",
     # Tránsito
-    "ley de transito": "Ley de Tránsito Terrestre",
-    "ley de transito terrestre": "Ley de Tránsito Terrestre",
-    "transito": "Ley de Tránsito Terrestre",
+    "ley de transito": "Ley de Transporte Terrestre",
+    "ley de transito terrestre": "Ley de Transporte Terrestre",
+    "transito": "Ley de Transporte Terrestre",
     # LOPNA
     "lopna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "ley de ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
@@ -552,7 +554,7 @@ CATALOGO_LEYES = {
         ("Código de Comercio", "codigo de comercio"),
         ("Código Orgánico Tributario", "COT"),
         ("LOTTT (Trabajo)", "LOTTT, ley del trabajo"),
-        ("Ley de Tránsito Terrestre", "transito"),
+        ("Ley de Transporte Terrestre", "transito"),
     ],
     "Vivienda": [
         ("Desalojo Arbitrario", "desalojo"),
@@ -616,7 +618,7 @@ REGLA PRINCIPAL — PROHIBICIÓN ABSOLUTA DE INVENTAR:
 REGLA DE RELEVANCIA:
 - NO cites artículos de leyes que no tengan NADA que ver con el tema. Ejemplos de artículos IRRELEVANTES:
   → LOPNA (niños) para un problema entre vecinos adultos
-  → Ley de Tránsito para un problema laboral
+  → Ley de Transporte Terrestre para un problema laboral
   → Código de Comercio para un problema familiar
 - SÍ cita artículos que sean del ÁREA CORRECTA aunque no mencionen la palabra exacta del problema. Ejemplos de artículos RELEVANTES:
   → Ley de Justicia de Paz para conflictos vecinales (ruido, música, gimnasio, etc.)

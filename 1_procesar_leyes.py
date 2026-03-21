@@ -51,7 +51,7 @@ def guardar_indice(indice: dict):
 
 NOMBRES_CORRECTOS = {
     # ── Leyes base ────────────────────────────────────────────────────────────
-    "ley_transito_terrestre.pdf":                   "Ley de Tránsito Terrestre",
+    "Ley_de_Transporte_Terrestre,_Venezuela,_2008.pdf": "Ley de Transporte Terrestre",
     "constitucion.pdf":                             "Constitución de la República Bolivariana de Venezuela",
     "CONSTITUCIÓN DE LA REPÚBLICA BOLIVARIANA DE VENEZUELA.pdf":
         "Constitución de la República Bolivariana de Venezuela",
