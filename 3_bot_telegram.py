@@ -1638,13 +1638,27 @@ def main():
     app.add_handler(CommandHandler("activar_abogado", cmd_activar_abogado))
 
     # Feedback buttons (👍/👎)
-    app.add_handler(CallbackQueryHandler(handle_feedback, pattern=r"^fb_"))
+    app.add_handler(CallbackQueryHandler(handle_feedback))
 
     # Mensajes normales
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         responder_consulta
     ))
+
+    # Error handler global — envía errores al admin
+    async def error_handler(update, context):
+        logger.error(f"Error: {context.error}", exc_info=context.error)
+        for admin_id in config.ADMIN_IDS:
+            try:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=f"🔴 ERROR:\n{type(context.error).__name__}: {context.error}"
+                )
+            except Exception:
+                pass
+
+    app.add_error_handler(error_handler)
 
     app.run_polling()
 
