@@ -1230,6 +1230,9 @@ PALABRAS_SEGUIMIENTO = [
     "mas info", "más información", "mas informacion", "repite", "no entendí",
     "no entendi", "qué significa", "que significa", "a quién", "a quien",
     "dónde denuncio", "donde denuncio", "dónde acudo", "donde acudo",
+    "me pueden", "pueden hacerme", "qué pasa si", "que pasa si",
+    "y si no", "qué me pasa", "que me pasa", "me quitan",
+    "cuánto", "cuanto", "cuándo", "cuando prescribo",
 ]
 
 
@@ -1253,7 +1256,9 @@ def _tiene_tema_legal(texto: str) -> bool:
         "desalojo", "alquiler", "divorcio", "custodia", "pensión", "pension",
         "impuesto", "empresa", "herencia", "accidente", "denuncia", "demanda",
         "violencia", "maltrato", "vecino", "ruido", "banco", "estafa", "hackeo",
-        "arrendamiento", "contrato", "deuda", "multa", "licencia",
+        "arrendamiento", "contrato", "deuda", "multa", "multar", "licencia",
+        "tránsito", "transito", "semáforo", "semaforo", "choque", "drogas",
+        "marihuana", "vacaciones", "prestaciones", "carro", "vehículo", "vehiculo",
     ]
     return any(t in texto for t in temas_legales)
 
