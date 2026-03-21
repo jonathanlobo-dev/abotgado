@@ -11,7 +11,8 @@ import os
 from datetime import date
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    InlineQueryResultArticle, InputTextMessageContent
+    InlineQueryResultArticle, InputTextMessageContent,
+    InlineQueryResultsButton
 )
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
@@ -1736,8 +1737,10 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer(
             results=[],
             cache_time=5,
-            switch_pm_text="Escribe tu consulta legal...",
-            switch_pm_parameter="inline"
+            button=InlineQueryResultsButton(
+                text="Escribe tu consulta legal...",
+                start_parameter="inline"
+            )
         )
         return
 
