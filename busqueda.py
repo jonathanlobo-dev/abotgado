@@ -50,10 +50,13 @@ logger.info(f"Índice BM25 listo — {len(docs_bm25)} artículos")
 
 ARTICULOS_CLAVE = {
     "transito_infracciones": {
-        "keywords": ["semáforo", "semaforo", "infracción", "infraccion", "multa",
+        "keywords": ["semáforo", "semaforo", "infracción", "infraccion",
                      "exceso de velocidad", "velocidad", "piques", "pasarse la luz",
                      "luz roja", "sin licencia", "sin seguro", "manos libres",
-                     "celular manejando", "borracho manejando", "alcoholímetro"],
+                     "celular manejando", "borracho", "ebrio", "alcohol",
+                     "alcoholizado", "tomado", "manejar borracho", "manejar tomado",
+                     "manejar ebrio", "conducir borracho", "alcoholímetro",
+                     "alcoholimetro", "bebidas alcohólicas", "bebidas alcoholicas"],
         "ley": "Ley de Transporte Terrestre",
         # Art 169=multas 10UT, 170=multas 5UT, 171=multas 3UT, 173=piques 100UT
         "articulos": [169, 170, 171, 173, 177]
