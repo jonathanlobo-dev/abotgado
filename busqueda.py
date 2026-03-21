@@ -56,7 +56,10 @@ ARTICULOS_CLAVE = {
                      "multa", "placa", "circulación", "circulacion", "autopista",
                      "certificado médico", "certificado medico", "revision vehicular",
                      "revisión vehicular", "papeles del carro", "documentos del carro",
-                     "registro vehicular", "titulo de propiedad vehiculo"],
+                     "registro vehicular", "titulo de propiedad vehiculo",
+                     "semáforo", "semaforo", "infracción", "infraccion",
+                     "exceso de velocidad", "velocidad", "estacionar",
+                     "estacionamiento", "grúa", "grua", "piques"],
         "ley": "Ley de Transporte Terrestre",
         # Art 58=seguro RCV, 63-67=licencias, 86=deberes accidente, 169-171=multas,
         # 179=suspensión licencia, 181=retención vehículo, 192-194=responsabilidad civil
@@ -441,7 +444,11 @@ ALIAS_LEYES = {
     # Tránsito
     "ley de transito": "Ley de Transporte Terrestre",
     "ley de transito terrestre": "Ley de Transporte Terrestre",
+    "ley de transporte terrestre": "Ley de Transporte Terrestre",
+    "ley transporte terrestre": "Ley de Transporte Terrestre",
+    "ley transito": "Ley de Transporte Terrestre",
     "transito": "Ley de Transporte Terrestre",
+    "transporte terrestre": "Ley de Transporte Terrestre",
     # LOPNA
     "lopna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "ley de ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
