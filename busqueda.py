@@ -289,7 +289,7 @@ ARTICULOS_CLAVE = {
                      "perro suelto", "envenenar", "envenenaron", "matar animal",
                      "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        "articulos": [1, 2, 5, 10, 11, 12, 15, 46, 66, 68]
+        "articulos": [10, 11, 12, 15, 46, 52, 66, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -1621,6 +1621,28 @@ def _filtrar_telefonos_inventados(texto: str) -> str:
     return resultado
 
 
+def _filtrar_montos_inventados(texto: str) -> str:
+    """Elimina montos/porcentajes que el LLM inventó en la sección 'Qué hacer'.
+    Solo filtra en la parte DESPUÉS de los artículos citados (💡 Qué hacer)."""
+    # Patrones de montos inventados comunes de Llama 3.3
+    patrones_montos = [
+        # "50% del salario mínimo", "20-30% del ingreso", etc.
+        r'\b\d+(?:[.,]\d+)?%\s+del\s+(?:salario|ingreso|sueldo)[^.]*\.?',
+        # "entre X% y Y%"
+        r'entre\s+\d+%?\s+y\s+\d+%[^.]*\.?',
+        # "que es de 50% del salario mínimo"
+        r',?\s*que\s+es\s+de\s+\d+%[^.]*\.?',
+        # "la multa es de X bolívares/salarios"
+        r',?\s*(?:la\s+multa|que)\s+(?:es|será?)\s+de\s+\d+[^.]*(?:salario|bolívar|bs)[^.]*\.?',
+    ]
+    for patron in patrones_montos:
+        texto = re.sub(patron, '.', texto, flags=re.IGNORECASE)
+    # Limpiar dobles puntos y espacios
+    texto = re.sub(r'\.\s*\.', '.', texto)
+    texto = re.sub(r'  +', ' ', texto)
+    return texto
+
+
 def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        user_id: int = None) -> str:
     """Pipeline híbrido con seguimiento de conversación para premium."""
@@ -1751,8 +1773,9 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             temperature=0.05,
         )
         respuesta = response.choices[0].message.content
-        # Post-filtro: eliminar teléfonos inventados por el LLM
+        # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
+        respuesta = _filtrar_montos_inventados(respuesta)
         return respuesta
     except Exception as e:
         logger.error(f"Error en Groq LLM: {e}")
