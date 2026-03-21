@@ -72,7 +72,8 @@ ARTICULOS_CLAVE = {
                      "cesta ticket", "cestaticket", "pagar", "pagarme",
                      "sin pagar", "no me pagan", "no me pagaron"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
-        "articulos": [85, 86, 87, 88, 89, 90, 141, 142, 143, 190, 191, 192]
+        "articulos": [85, 86, 87, 88, 89, 90, 141, 142, 143,
+                       189, 190, 191, 192, 193, 194, 195, 196, 197, 199, 200]
     },
     "comunicaciones": {
         "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
@@ -601,7 +602,8 @@ REGLA DE RELEVANCIA:
 - Prefiere artículos ESPECÍFICOS (que hablen de procedimientos, sanciones, obligaciones concretas) sobre artículos genéricos (que solo definen qué es la ley). Art 1 de cualquier ley suele ser genérico — busca artículos con más contenido práctico.
 - IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
 - Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
-- Si REALMENTE ningún artículo de la lista tiene relación con el tema, OMITE la sección 📖 por completo. NO cites artículos irrelevantes solo por "rellenar". Es MEJOR no citar nada que citar algo que no tiene que ver.
+- Si REALMENTE ningún artículo de la lista tiene relación DIRECTA con el problema del usuario, OMITE la sección 📖 por completo y pon en su lugar: "📖 No tengo artículos específicos sobre este tema en mi base de datos." NO cites artículos irrelevantes solo por "rellenar". Es MEJOR no citar nada que citar algo que no tiene que ver.
+- Artículos IRRELEVANTES que NUNCA debes citar como relleno: disposiciones derogatorias, remisiones a otros códigos, definiciones generales de la ley, artículos sobre estructura organizativa. Si el artículo no habla del PROBLEMA CONCRETO del usuario, NO lo cites.
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista, NO lo menciones. NUNCA escribas "No disponible en la lista" ni "no se encuentra". Simplemente OMÍTELO y usa otro.
