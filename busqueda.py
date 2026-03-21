@@ -331,9 +331,14 @@ ARTICULOS_CLAVE = {
                      "estafa", "fraude", "secuestro", "violación", "violacion", "pena",
                      "ladrón", "ladron", "agresión física", "agresion fisica",
                      "amenaza", "amenazaron", "lesiones", "apuñalar", "apunalar",
-                     "disparar", "dispararon", "arma", "navaja", "cuchillo"],
+                     "disparar", "dispararon", "arma", "navaja", "cuchillo",
+                     "negligencia médica", "negligencia medica", "mala praxis",
+                     "malapraxis", "demandar al médico", "demandar al medico",
+                     "error médico", "error medico"],
         "ley": "Código Penal",
-        "articulos": [405, 406, 407, 413, 414, 415, 451, 453, 455, 457, 458, 460, 462, 464]
+        # 405-407=homicidio, 409=homicidio culposo (negligencia), 413-415=lesiones,
+        # 420=lesiones culposas (mala praxis), 451-464=robo/hurto/estafa
+        "articulos": [405, 406, 407, 409, 413, 414, 415, 420, 451, 453, 455, 457, 458, 460, 462, 464]
     },
     "justicia_paz": {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
@@ -455,7 +460,9 @@ ARTICULOS_CLAVE = {
                      "pornografía infantil", "pornografia infantil", "ciberacoso",
                      "grooming", "espionaje", "datos personales", "privacidad digital",
                      "acceso indebido", "sabotaje informático", "sabotaje informatico",
-                     "clonaron mi tarjeta", "estafa por internet", "estafa online"],
+                     "clonaron mi tarjeta", "clonaron la tarjeta", "tarjeta clonada",
+                     "clonacion", "clonación", "me clonaron",
+                     "estafa por internet", "estafa online"],
         "ley": "Ley Especial contra los Delitos Informáticos",
         "articulos": [1, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
     },
@@ -1860,10 +1867,20 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             confianza = "baja"
             logger.info(f"  Confianza bajada a 'baja' por señal en respuesta del LLM")
 
-        # Agregar disclaimer si confianza es baja
+        # Reemplazar disclaimer genérico si confianza es baja
         if confianza == "baja":
-            respuesta += ("\n\n⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
-                          "Te recomiendo consultar con un abogado para orientación específica.</i>")
+            # Reemplazar el "Info orientativa" del LLM por uno más honesto
+            for frase_gen in ["⚠️ Info orientativa. Consulta un abogado.",
+                              "⚠️ Info orientativa. Consulta un abogado"]:
+                if frase_gen in respuesta:
+                    respuesta = respuesta.replace(frase_gen,
+                        "⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
+                        "Te recomiendo consultar con un abogado para orientación específica.</i>")
+                    break
+            else:
+                # Si no tiene el disclaimer genérico, agregar el específico
+                respuesta += ("\n\n⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
+                              "Te recomiendo consultar con un abogado para orientación específica.</i>")
 
         return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza, "distancia": dist}
     except Exception as e:
