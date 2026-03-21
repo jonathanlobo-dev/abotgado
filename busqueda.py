@@ -421,12 +421,13 @@ ARTICULOS_CLAVE = {
         "articulos": [1, 2, 3, 4, 5, 7, 8, 16, 17, 18, 31, 32, 35, 44, 65, 66, 73, 74, 75, 76, 77]
     },
     "bancario": {
-        "keywords": ["banco", "bancos", "cuenta bancaria", "tarjeta", "crédito",
-                     "credito", "débito", "debito", "préstamo bancario",
-                     "prestamo bancario", "intereses", "comisión bancaria",
+        "keywords": ["cuenta bancaria", "préstamo bancario",
+                     "prestamo bancario", "comisión bancaria",
                      "comision bancaria", "sudeban", "superintendencia de bancos",
-                     "cajero", "transferencia", "bloqueo de cuenta",
-                     "fraude bancario", "clonación", "clonacion", "punto de venta"],
+                     "bloqueo de cuenta", "fraude bancario",
+                     "clonación de tarjeta", "clonacion de tarjeta",
+                     "tarjeta clonada", "me clonaron la tarjeta",
+                     "punto de venta", "ley de bancos", "sector bancario"],
         "ley": "Ley de Instituciones del Sector Bancario",
         "articulos": [1, 2, 3, 5, 6, 44, 45, 46, 62, 63, 64, 65, 76, 77, 78, 79, 172, 173]
     },
