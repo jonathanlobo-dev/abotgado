@@ -1500,17 +1500,18 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Maneja los botones de 👍/👎 después de cada respuesta."""
     query = update.callback_query
-    await query.answer()
 
     data = query.data  # fb_up_123456 o fb_down_123456
     partes = data.split("_")
     if len(partes) < 3:
+        await query.answer()
         return
 
     tipo = partes[1]  # "up" o "down"
     try:
         feedback_user_id = int(partes[2])
     except ValueError:
+        await query.answer()
         return
 
     # Solo el usuario que hizo la consulta puede dar feedback
@@ -1524,7 +1525,6 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if tipo == "up":
         db.guardar_feedback(feedback_user_id, "positivo", pregunta_original[:200])
-        # Quitar botones y mostrar agradecimiento
         try:
             await query.edit_message_reply_markup(reply_markup=None)
         except Exception:
@@ -1532,7 +1532,6 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer("👍 ¡Gracias por tu feedback!")
     elif tipo == "down":
         db.guardar_feedback(feedback_user_id, "negativo", pregunta_original[:200])
-        # Quitar botones
         try:
             await query.edit_message_reply_markup(reply_markup=None)
         except Exception:
@@ -1546,6 +1545,8 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
             f"Pregunta: {pregunta_original[:200]}\n"
             f"Respuesta (inicio): {resp_texto}")
+    else:
+        await query.answer()
 
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────
