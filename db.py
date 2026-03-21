@@ -90,6 +90,9 @@ def inicializar_db():
         if "tester_expira" not in columnas:
             con.execute("ALTER TABLE usuarios ADD COLUMN tester_expira TEXT DEFAULT ''")
 
+        if "consultas_extra" not in columnas:
+            con.execute("ALTER TABLE usuarios ADD COLUMN consultas_extra INTEGER DEFAULT 0")
+
         # ── Tablas nuevas ────────────────────────────────────────────────
         con.execute("""
             CREATE TABLE IF NOT EXISTS feedback (
@@ -465,9 +468,16 @@ def consultas_hoy(user_id: int) -> int:
 
 
 def limite_diario(user_id: int) -> int:
-    """Retorna el límite de consultas según el plan."""
+    """Retorna el límite de consultas según el plan + consultas extra regaladas."""
     plan_info = info_plan(user_id)
-    return plan_info["consultas"]
+    base = plan_info["consultas"]
+    if base == -1:  # ilimitado
+        return -1
+    with get_db() as con:
+        cur = con.execute("SELECT consultas_extra FROM usuarios WHERE user_id = ?", (user_id,))
+        fila = cur.fetchone()
+        extra = fila[0] if fila and fila[0] else 0
+    return base + extra
 
 
 def puede_consultar(user_id: int) -> bool:
@@ -492,6 +502,22 @@ def consultas_restantes(user_id: int) -> int:
     if limite == -1:
         return -1  # ilimitado
     return max(0, limite - consultas_hoy(user_id))
+
+
+def regalar_consultas(user_id: int, cantidad: int = 5):
+    """Suma consultas extra al usuario (se suman al límite diario del plan)."""
+    with get_db() as con:
+        con.execute(
+            "UPDATE usuarios SET consultas_extra = COALESCE(consultas_extra, 0) + ? WHERE user_id = ?",
+            (cantidad, user_id))
+
+
+def quitar_consultas_extra(user_id: int, cantidad: int = 5):
+    """Quita consultas extra al usuario."""
+    with get_db() as con:
+        con.execute(
+            "UPDATE usuarios SET consultas_extra = MAX(0, COALESCE(consultas_extra, 0) - ?) WHERE user_id = ?",
+            (cantidad, user_id))
 
 
 # ─── HISTORIAL DE CONVERSACIÓN ────────────────────────────────────────────────

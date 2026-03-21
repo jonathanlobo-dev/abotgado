@@ -217,6 +217,7 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/premium_off ID — Desactivar Premium\n"
             "/tester ID — Activar Pionero\n"
             "/regalar_memoria ID — Regalar memoria\n"
+            "/regalar_consultas ID [N] — Regalar consultas extra (default 5)\n"
             "/anuncio MSG — Broadcast a todos\n"
             "/mensaje ID MSG — Mensaje directo a 1 usuario\n"
             "/feedback — Ver opiniones\n"
@@ -811,6 +812,48 @@ async def cmd_regalar_memoria(update: Update, context: ContextTypes.DEFAULT_TYPE
                 text="🎉 <b>Memoria de conversacion activada!</b>\n\n"
                      "Ahora puedo recordar nuestras conversaciones anteriores.\n"
                      "Escribe /estado para ver tus beneficios.",
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+    for err in errores:
+        resultado.append(f"No encontrado: {err}")
+    await update.message.reply_text("\n".join(resultado))
+
+
+async def cmd_regalar_consultas(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin: /regalar_consultas ID [cantidad] — Regala consultas extra (default 5)."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text(
+            "Uso: /regalar_consultas <ID o @username> [cantidad]\n"
+            "Ejemplo: /regalar_consultas 123456 10\n"
+            "Default: 5 consultas extra")
+        return
+
+    # Último argumento puede ser la cantidad
+    cantidad = 5
+    args_targets = list(context.args)
+    if len(args_targets) >= 2:
+        try:
+            cantidad = int(args_targets[-1])
+            args_targets = args_targets[:-1]
+        except ValueError:
+            pass  # no es número, es otro target
+
+    ids, errores = resolver_targets(args_targets)
+    resultado = []
+    for uid in ids:
+        db.regalar_consultas(uid, cantidad)
+        restantes = db.consultas_restantes(uid)
+        resultado.append(f"+{cantidad} consultas para {uid} (restantes hoy: {restantes})")
+        try:
+            await context.bot.send_message(
+                chat_id=uid,
+                text=f"🎉 <b>Te han regalado {cantidad} consultas extra!</b>\n\n"
+                     f"Consultas disponibles hoy: {restantes}\n"
+                     f"Escribe tu pregunta legal.",
                 parse_mode="HTML"
             )
         except Exception:
@@ -1622,6 +1665,7 @@ def main():
     app.add_handler(CommandHandler("tester",          cmd_tester))
     app.add_handler(CommandHandler("regalar_doc",     cmd_regalar_doc))
     app.add_handler(CommandHandler("regalar_memoria", cmd_regalar_memoria))
+    app.add_handler(CommandHandler("regalar_consultas", cmd_regalar_consultas))
     app.add_handler(CommandHandler("anuncio",         cmd_anuncio))
     app.add_handler(CommandHandler("stats_admin",     cmd_stats_admin))
     app.add_handler(CommandHandler("feedback",        cmd_feedback_admin))
