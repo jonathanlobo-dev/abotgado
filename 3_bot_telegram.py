@@ -1761,12 +1761,13 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db.registrar_usuario(user_id, query.from_user.first_name, query.from_user.username or "")
 
     # Si no hay texto suficiente, mostrar instrucción
-    if len(texto) < 5:
+    if len(texto) < 20:
         await query.answer(
             results=[],
-            cache_time=5,
+            cache_time=3,
             button=InlineQueryResultsButton(
-                text="Escribe tu consulta legal...",
+                text="Escribe tu consulta legal completa..." if len(texto) < 5
+                     else "Sigue escribiendo tu pregunta...",
                 start_parameter="inline"
             )
         )
