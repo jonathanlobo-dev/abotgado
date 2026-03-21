@@ -559,7 +559,16 @@ async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
     texto = "💬 <b>Feedback recibido:</b>\n\n"
     for f in feedbacks:
-        texto += f"[{f['timestamp'][:10]}] ID {f['user_id']} ({f['tipo']}): {f['comentario'][:100]}\n"
+        icono = "👍" if f["tipo"] == "positivo" else "👎"
+        # Separar pregunta de respuesta si tiene el formato nuevo
+        comentario = f["comentario"] or ""
+        if "\n---\n" in comentario:
+            pregunta, resp = comentario.split("\n---\n", 1)
+            texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}\n"
+            texto += f"   P: {pregunta[:150]}\n"
+            texto += f"   R: {resp[:150]}\n\n"
+        else:
+            texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}: {comentario[:150]}\n\n"
     await enviar_respuesta(update.message, texto)
 
 
@@ -1568,30 +1577,33 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         datos = ultima_respuesta.get(feedback_user_id, {})
         pregunta_original = datos.get("pregunta", "")
 
+        # Limpiar HTML de la respuesta para guardar en DB y notificaciones
+        import re as _re_fb
+        resp_crudo = _re_fb.sub(r'<[^>]+>', '', datos.get("respuesta", ""))
+
         if tipo == "up":
-            db.guardar_feedback(feedback_user_id, "positivo", pregunta_original[:200])
+            comentario_db = f"{pregunta_original[:200]}\n---\n{resp_crudo[:300]}"
+            db.guardar_feedback(feedback_user_id, "positivo", comentario_db)
             await query.answer("👍 ¡Gracias por tu feedback!")
             try:
                 await query.edit_message_reply_markup(reply_markup=None)
             except Exception:
                 pass
         elif tipo == "down":
-            db.guardar_feedback(feedback_user_id, "negativo", pregunta_original[:200])
+            comentario_db = f"{pregunta_original[:200]}\n---\n{resp_crudo[:300]}"
+            db.guardar_feedback(feedback_user_id, "negativo", comentario_db)
             await query.answer("👎 Gracias. Revisaremos esta respuesta.")
             try:
                 await query.edit_message_reply_markup(reply_markup=None)
             except Exception:
                 pass
-            # Notificar admin sobre feedback negativo (sin HTML)
-            import re as _re_fb
-            resp_crudo = _re_fb.sub(r'<[^>]+>', '', datos.get("respuesta", ""))
-            resp_crudo = resp_crudo[:500]
+            # Notificar admin sobre feedback negativo
             await notificar_admins(context,
                 f"👎 FEEDBACK NEGATIVO\n"
                 f"Usuario: {query.from_user.first_name} "
                 f"(@{query.from_user.username or 'N/A'}, ID: {feedback_user_id})\n"
                 f"Pregunta: {pregunta_original[:200]}\n\n"
-                f"Respuesta:\n{resp_crudo}")
+                f"Respuesta:\n{resp_crudo[:500]}")
         else:
             await query.answer()
     except Exception as e:

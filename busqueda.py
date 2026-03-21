@@ -486,6 +486,8 @@ ALIAS_LEYES = {
     "trabajo": "Ley Orgánica del Trabajo (LOTTT)",
     # Código de Comercio
     "codigo de comercio": "Código de Comercio",
+    "comercio": "Código de Comercio",
+    "ley de comercio": "Código de Comercio",
     # Tránsito
     "ley de transito": "Ley de Transporte Terrestre",
     "ley de transito terrestre": "Ley de Transporte Terrestre",
