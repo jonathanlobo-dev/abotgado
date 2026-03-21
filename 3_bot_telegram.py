@@ -1612,12 +1612,13 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
 
     # Alerta al admin: consulta sin tema detectado (respuesta de baja confianza)
-    if confianza == "baja" and not es_admin(user_id):
+    if confianza in ("baja", "media") and not es_admin(user_id):
+        icono_conf = "🔴" if confianza == "baja" else "🟡"
         await notificar_admins(context,
-            f"⚠️ CONSULTA SIN TEMA\n"
+            f"{icono_conf} CONSULTA SIN TEMA\n"
+            f"Confianza: {confianza}\n"
             f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-            f"Pregunta: {pregunta[:200]}\n"
-            f"Confianza: {confianza}")
+            f"Pregunta: {pregunta[:200]}")
 
     restantes = db.consultas_restantes(user_id)
     if restantes != -1 and restantes <= 1:
@@ -1812,11 +1813,13 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # Si confianza baja, agregar advertencia
+    # Si confianza baja/media, alertar admin
     resultados = [resultado_inline]
-    if confianza == "baja":
+    if confianza in ("baja", "media"):
+        icono = "🔴" if confianza == "baja" else "🟡"
         await notificar_admins(context,
-            f"⚠️ INLINE SIN TEMA\n"
+            f"{icono} INLINE SIN TEMA\n"
+            f"Confianza: {confianza}\n"
             f"Usuario: {query.from_user.first_name} (ID: {user_id})\n"
             f"Pregunta: {texto[:200]}")
 
