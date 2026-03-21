@@ -649,14 +649,35 @@ def guardar_feedback(user_id: int, tipo: str, comentario: str = ""):
         )
 
 
-def listar_feedback(limit: int = 20) -> list[dict]:
+def listar_feedback(limit: int = 10, offset: int = 0, tipo: str = None) -> list[dict]:
     with get_db() as con:
-        cur = con.execute(
-            "SELECT user_id, tipo, comentario, timestamp FROM feedback ORDER BY id DESC LIMIT ?",
-            (limit,)
-        )
+        if tipo:
+            cur = con.execute(
+                "SELECT user_id, tipo, comentario, timestamp FROM feedback "
+                "WHERE tipo = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+                (tipo, limit, offset)
+            )
+        else:
+            cur = con.execute(
+                "SELECT user_id, tipo, comentario, timestamp FROM feedback "
+                "ORDER BY id DESC LIMIT ? OFFSET ?",
+                (limit, offset)
+            )
         return [{"user_id": r[0], "tipo": r[1], "comentario": r[2], "timestamp": r[3]}
                 for r in cur.fetchall()]
+
+
+def contar_feedback() -> dict:
+    """Retorna conteo total de feedback por tipo."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT tipo, COUNT(*) FROM feedback GROUP BY tipo"
+        )
+        conteos = {r[0]: r[1] for r in cur.fetchall()}
+        total = sum(conteos.values())
+        return {"total": total, "positivo": conteos.get("positivo", 0),
+                "negativo": conteos.get("negativo", 0),
+                "comentario": conteos.get("comentario", 0)}
 
 
 # ─── FAVORITOS ────────────────────────────────────────────────────────────────

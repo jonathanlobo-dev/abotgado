@@ -551,24 +551,59 @@ async def cmd_opinion(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/feedback [pagina] [negativo|positivo] — Ver feedback paginado."""
     if not es_admin(update.effective_user.id):
         return
-    feedbacks = db.listar_feedback(20)
-    if not feedbacks:
+
+    # Parsear argumentos: /feedback, /feedback 2, /feedback negativo, /feedback negativo 2
+    pagina = 1
+    filtro_tipo = None
+    for arg in (context.args or []):
+        if arg in ("negativo", "positivo", "comentario"):
+            filtro_tipo = arg
+        else:
+            try:
+                pagina = int(arg)
+            except ValueError:
+                pass
+
+    POR_PAGINA = 10
+    offset = (pagina - 1) * POR_PAGINA
+
+    conteos = db.contar_feedback()
+    feedbacks = db.listar_feedback(limit=POR_PAGINA, offset=offset, tipo=filtro_tipo)
+
+    if not feedbacks and pagina == 1:
         await update.message.reply_text("No hay feedback aun.")
         return
-    texto = "💬 <b>Feedback recibido:</b>\n\n"
-    for f in feedbacks:
-        icono = "👍" if f["tipo"] == "positivo" else "👎"
-        # Separar pregunta de respuesta si tiene el formato nuevo
-        comentario = f["comentario"] or ""
-        if "\n---\n" in comentario:
-            pregunta, resp = comentario.split("\n---\n", 1)
-            texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}\n"
-            texto += f"   P: {pregunta[:150]}\n"
-            texto += f"   R: {resp[:150]}\n\n"
-        else:
-            texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}: {comentario[:150]}\n\n"
+
+    # Header con estadísticas
+    texto = (f"💬 <b>Feedback</b> — "
+             f"👍 {conteos['positivo']} · 👎 {conteos['negativo']} · "
+             f"💬 {conteos['comentario']} · Total: {conteos['total']}\n")
+    if filtro_tipo:
+        texto += f"Filtro: <b>{filtro_tipo}</b>\n"
+    texto += f"Página {pagina}\n\n"
+
+    if not feedbacks:
+        texto += "<i>No hay más resultados.</i>"
+    else:
+        for f in feedbacks:
+            icono = "👍" if f["tipo"] == "positivo" else ("👎" if f["tipo"] == "negativo" else "💬")
+            comentario = f["comentario"] or ""
+            if "\n---\n" in comentario:
+                pregunta, resp = comentario.split("\n---\n", 1)
+                texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}\n"
+                texto += f"   P: {pregunta[:150]}\n"
+                texto += f"   R: {resp[:150]}\n\n"
+            else:
+                texto += f"{icono} [{f['timestamp'][:10]}] ID {f['user_id']}: {comentario[:150]}\n\n"
+
+        # Indicar si hay más páginas
+        if len(feedbacks) == POR_PAGINA:
+            filtro_txt = f" {filtro_tipo}" if filtro_tipo else ""
+            texto += f"<i>Siguiente: /feedback{filtro_txt} {pagina + 1}</i>"
+
     await enviar_respuesta(update.message, texto)
 
 
