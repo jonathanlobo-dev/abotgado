@@ -122,17 +122,20 @@ ARTICULOS_CLAVE = {
                      "sueldo", "salario", "bono",
                      "maternidad", "nómina", "nomina",
                      "contrato laboral", "jornada", "horas extras", "sindicato",
-                     "cesta ticket", "cestaticket", "pagar", "pagarme",
-                     "sin pagar", "no me pagan", "no me pagaron"],
+                     "cesta ticket", "cestaticket",
+                     "no me pagan", "no me pagaron", "sin pagar",
+                     "pagar prestaciones", "no me quieren pagar el trabajo"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
         "articulos": [85, 86, 87, 141, 142, 190, 191, 192]
     },
     "comunicaciones": {
-        "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
+        "keywords": ["comunicaciones", "privacidad",
                      "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
-                     "revisar telefono", "galería", "galeria", "fotos", "correo",
+                     "revisar telefono", "revisar mi celular", "revisar mi teléfono",
+                     "galería", "galeria", "fotos", "correo",
                      "interceptar", "pinchar", "espiar", "grabar conversación",
-                     "grabar conversacion", "revisar mi teléfono", "pedir mi teléfono"],
+                     "grabar conversacion", "pedir mi teléfono", "pedir mi celular",
+                     "me quitaron el teléfono", "me quitaron el celular"],
         "ley": "Constitución de la República Bolivariana de Venezuela",
         # Art 48 = inviolabilidad comunicaciones (PRIORIDAD para casos de teléfono)
         # Art 47 = inviolabilidad del hogar, Art 60 = protección honor/privacidad

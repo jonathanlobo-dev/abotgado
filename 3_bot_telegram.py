@@ -1781,7 +1781,7 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
             description="Has usado todas tus consultas de hoy.",
             input_message_content=InputTextMessageContent(
                 message_text="⏰ He alcanzado mi límite de consultas diarias. "
-                             "Usa /estado en @abotgado_bot para ver tu plan."
+                             "Usa /estado en @abotgadoBOT para ver tu plan."
             )
         )
         await query.answer(results=[resultado], cache_time=5)
@@ -1843,16 +1843,7 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # Si confianza baja/media, alertar admin
     resultados = [resultado_inline]
-    if confianza in ("baja", "media"):
-        icono = "🔴" if confianza == "baja" else "🟡"
-        await notificar_admins(context,
-            f"{icono} INLINE SIN TEMA\n"
-            f"Confianza: {confianza}\n"
-            f"Usuario: {query.from_user.first_name} (ID: {user_id})\n"
-            f"Pregunta: {texto[:200]}")
-
     await query.answer(results=resultados, cache_time=30)
 
 
