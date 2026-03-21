@@ -210,10 +210,19 @@ ARTICULOS_CLAVE = {
     "familia": {
         "keywords": ["hijo", "hija", "niño", "niña", "menor", "adolescente",
                      "custodia", "guarda", "manutención", "pension alimentaria",
-                     "alimentos", "divorcio", "separación", "separacion",
-                     "matrimonio", "patria potestad", "adopción", "adopcion"],
+                     "alimentos", "patria potestad", "adopción", "adopcion"],
         "ley": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
         "articulos": [5, 7, 8, 26, 27, 30, 32, 76, 85, 86, 358, 359, 360]
+    },
+    "divorcio": {
+        "keywords": ["divorcio", "divorciar", "separación", "separacion",
+                     "matrimonio", "casado", "casada", "cónyuge", "conyugue",
+                     "bienes gananciales", "comunidad conyugal",
+                     "quién se queda con", "quien se queda con",
+                     "repartir bienes", "bienes del matrimonio",
+                     "casa del matrimonio", "liquidación conyugal"],
+        "ley": "Código Civil venezolano",
+        "articulos": [148, 149, 150, 151, 156, 168, 173, 174, 175, 184]
     },
     "maternidad_paternidad": {
         "keywords": ["embarazada", "embarazo", "maternidad", "paternidad", "prenatal",
@@ -1382,6 +1391,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
         "transito_infracciones": "transito", "transito_licencia": "transito",
         "transito_accidente": "transito", "transito_vehiculo": "transito",
         "transito_general": "transito",
+        "divorcio": "familia",
     }
     guias_usadas = set()
     for tema in temas_detectados:
