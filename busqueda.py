@@ -289,7 +289,7 @@ ARTICULOS_CLAVE = {
                      "perro suelto", "envenenar", "envenenaron", "matar animal",
                      "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        "articulos": [10, 11, 12, 15, 46, 52, 66, 68]
+        "articulos": [46, 52, 66, 67, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -1626,19 +1626,19 @@ def _filtrar_montos_inventados(texto: str) -> str:
     Solo filtra en la parte DESPUÉS de los artículos citados (💡 Qué hacer)."""
     # Patrones de montos inventados comunes de Llama 3.3
     patrones_montos = [
+        # "que es de 50% del salario mínimo" → eliminar frase completa
+        r',?\s*que\s+es\s+de\s+\d+[^.]*(?:salario|ingreso|sueldo|bolívar|bs)[^.]*',
         # "50% del salario mínimo", "20-30% del ingreso", etc.
-        r'\b\d+(?:[.,]\d+)?%\s+del\s+(?:salario|ingreso|sueldo)[^.]*\.?',
-        # "entre X% y Y%"
-        r'entre\s+\d+%?\s+y\s+\d+%[^.]*\.?',
-        # "que es de 50% del salario mínimo"
-        r',?\s*que\s+es\s+de\s+\d+%[^.]*\.?',
-        # "la multa es de X bolívares/salarios"
-        r',?\s*(?:la\s+multa|que)\s+(?:es|será?)\s+de\s+\d+[^.]*(?:salario|bolívar|bs)[^.]*\.?',
+        r'\b\d+(?:[.,]\d+)?%\s+del\s+(?:salario|ingreso|sueldo)[^.]*',
+        # "entre X% y Y% del ingreso"
+        r'entre\s+\d+%?\s+y\s+\d+%\s+del\s+(?:salario|ingreso|sueldo)[^.]*',
     ]
     for patron in patrones_montos:
-        texto = re.sub(patron, '.', texto, flags=re.IGNORECASE)
-    # Limpiar dobles puntos y espacios
+        texto = re.sub(patron, '', texto, flags=re.IGNORECASE)
+    # Limpiar artefactos: "es de .", puntos dobles, espacios dobles
+    texto = re.sub(r'(?:es|será?)\s+de\s*\.', '.', texto, flags=re.IGNORECASE)
     texto = re.sub(r'\.\s*\.', '.', texto)
+    texto = re.sub(r',\s*\.', '.', texto)
     texto = re.sub(r'  +', ' ', texto)
     return texto
 
