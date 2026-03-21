@@ -98,8 +98,9 @@ ARTICULOS_CLAVE = {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
                      "botar", "botaron", "botado", "echar", "echaron",
                      "reenganche", "inamovilidad", "estabilidad",
-                     "dormido", "quedarse dormido", "negligencia", "falta grave",
-                     "causa justificada", "despido justificado"],
+                     "dormido", "quedarse dormido", "falta grave",
+                     "causa justificada", "despido justificado",
+                     "negligencia laboral", "negligencia en el trabajo"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
         "articulos": [79, 85, 86, 87, 88, 89]
     },
@@ -208,10 +209,20 @@ ARTICULOS_CLAVE = {
     },
     "propiedad": {
         "keywords": ["propiedad", "dueño", "dueno", "propietario", "comprar",
-                     "vender", "escritura", "hipoteca", "herencia", "testamento",
-                     "sucesión", "sucesion", "heredar", "bienes"],
+                     "vender", "escritura", "hipoteca", "bienes"],
         "ley": "Código Civil venezolano",
         "articulos": [545, 546, 547, 548, 549, 796, 807, 808, 809, 810]
+    },
+    "testamento": {
+        "keywords": ["testamento", "testamentario", "hacer testamento",
+                     "heredero", "herederos", "legatario", "legado",
+                     "última voluntad", "ultima voluntad",
+                     "herencia", "heredar", "sucesión", "sucesion",
+                     "desheredar", "legítima", "legitima"],
+        "ley": "Código Civil venezolano",
+        # Art 833=definición, 834=capacidad, 835=incapacidad, 840=tipos,
+        # 849-850=testamento abierto, 853=cerrado, 870=nulidad
+        "articulos": [833, 834, 835, 840, 849, 850, 851, 852, 853, 854, 856, 870]
     },
     "familia": {
         "keywords": ["hijo", "hija", "niño", "niña", "menor", "adolescente",
@@ -1369,7 +1380,7 @@ RAMA_POR_TEMA = {
     "transito_accidente": "transito", "transito_vehiculo": "transito",
     "transito_general": "transito",
     "drogas": "penal", "corrupcion": "penal", "penal": "penal",
-    "civil": "civil", "propiedad": "civil", "divorcio": "civil",
+    "civil": "civil", "propiedad": "civil", "testamento": "civil", "divorcio": "civil",
     "comercial": "civil",
     "familia": "familia", "maternidad_paternidad": "familia",
     "violencia_mujer": "familia",

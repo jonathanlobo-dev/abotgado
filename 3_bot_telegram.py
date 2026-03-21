@@ -1598,11 +1598,24 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     con_memoria = db.tiene_memoria(user_id)
     historial = db.cargar_historial(user_id) if con_memoria else None
 
-    resultado = await asyncio.to_thread(busqueda.buscar_y_responder, pregunta, historial, user_id)
-    respuesta = resultado["respuesta"]
-    temas = resultado.get("temas", [])
-    confianza = resultado.get("confianza", "n/a")
-    distancia = resultado.get("distancia", 0.0)
+    try:
+        resultado = await asyncio.to_thread(busqueda.buscar_y_responder, pregunta, historial, user_id)
+        respuesta = resultado["respuesta"]
+        temas = resultado.get("temas", [])
+        confianza = resultado.get("confianza", "n/a")
+        distancia = resultado.get("distancia", 0.0)
+    except Exception as e:
+        logger.error(f"Error en buscar_y_responder: {e}")
+        # Alertar al admin del error
+        if not es_admin(user_id):
+            await notificar_admins(context,
+                f"❌ ERROR EN BÚSQUEDA\n"
+                f"Usuario: {user.first_name} (ID: {user_id})\n"
+                f"Pregunta: {pregunta[:200]}\n"
+                f"Error: {str(e)[:300]}")
+        await update.message.reply_text(
+            "Hubo un error procesando tu consulta. Intenta de nuevo o reformula tu pregunta.")
+        return
 
     db.registrar_consulta(user_id)
     if con_memoria:
