@@ -1119,8 +1119,9 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
     ids_vistos     = set()
     temas          = []
     for tema, cfg in ARTICULOS_CLAVE.items():
-        if any(normalizar(k) in pregunta_norm for k in cfg["keywords"]):
-            logger.info(f"  Tema detectado: {tema}")
+        keyword_match = next((k for k in cfg["keywords"] if normalizar(k) in pregunta_norm), None)
+        if keyword_match:
+            logger.info(f"  Tema detectado: {tema} (keyword: '{keyword_match}' en '{pregunta[:80]}')")
             temas.append(tema)
 
             arts_lista = cfg["articulos"]
@@ -1755,11 +1756,12 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                     "⚠️ Consulta con un abogado.",
                     "temas": [], "confianza": "ninguna"}
 
-    # Determinar nivel de confianza
-    # mejor_dist solo existe si no es seguimiento con contexto_previo
+    # Determinar nivel de confianza (keyword + embedding combinados)
     dist = mejor_dist if not seguimiento else 0.0
-    if temas_detectados:
+    if temas_detectados and dist < 0.35:
         confianza = "alta"
+    elif temas_detectados and dist >= 0.35:
+        confianza = "media"
     elif dist < 0.45:
         confianza = "media"
     else:
