@@ -282,11 +282,14 @@ ARTICULOS_CLAVE = {
     },
     "animales": {
         "keywords": ["perro", "gato", "mascota", "animal doméstico", "animal domestico",
-                     "maltrato animal", "fauna doméstica", "fauna domestica",
-                     "abandono animal", "ladra", "ladrar", "ladrido", "ladridos",
-                     "muerde", "mordida", "mordió", "mordio", "perro suelto"],
+                     "maltrato animal", "maltratando animal", "maltratar animal",
+                     "crueldad animal", "fauna doméstica", "fauna domestica",
+                     "abandono animal", "abandonar animal", "ladra", "ladrar",
+                     "ladrido", "ladridos", "muerde", "mordida", "mordió", "mordio",
+                     "perro suelto", "envenenar", "envenenaron", "matar animal",
+                     "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        "articulos": [1, 2, 3, 4, 5, 10, 11, 12, 15, 16]
+        "articulos": [1, 2, 5, 10, 11, 12, 15, 46, 66, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -704,8 +707,9 @@ REGLAS DE FORMATO Y REDACCIÓN:
 - Sé breve y directo. PROHIBIDO: "es importante", "debes considerar", "debes solicitar asesoramiento legal".
 - NO repitas el mismo artículo dos veces. NO cites el artículo y su parágrafo como si fueran dos citas distintas.
 - Si mencionas un artículo, DEBES decir qué dice.
-- PROHIBIDO inventar montos de multas, penas de cárcel, tarifas o porcentajes si NO están expresamente escritos en el artículo citado.
-- PROHIBIDO incluir números de teléfono en tu respuesta. NUNCA pongas números 0800, 0212, ni ningún teléfono. Tampoco inventes páginas web ni correos electrónicos.
+- PROHIBIDO INVENTAR CANTIDADES: Si los artículos del contexto NO mencionan una cantidad exacta de dinero, años de cárcel, porcentajes (ej. % de salario), montos de multas o unidades tributarias, NO los inventes en tu respuesta. Solo menciona montos que estén LITERALMENTE escritos en el artículo citado.
+- PROHIBIDO incluir números de teléfono en tu respuesta. NUNCA pongas números 0800, 0212, ni ningún teléfono.
+- Si no tienes el teléfono o página web exacta de una institución, simplemente menciona el nombre de la institución SIN agregar "(no disponible)" ni "no disponible". Ejemplo correcto: "Acude a la Fiscalía del Ministerio Público". Ejemplo INCORRECTO: "Acude a la Fiscalía del Ministerio Público (no disponible)".
 - En "Qué hacer": USA LA INFORMACIÓN DE LA GUÍA INSTITUCIONAL que aparece al final del contexto. Incluye instituciones REALES, plazos legales, documentos que debe llevar. NO incluyas números de teléfono.
 - PROHIBIDO INVENTAR INSTITUCIONES: Si la guía institucional NO menciona el nombre de un ministerio, superintendencia, registro u organismo específico, NO lo inventes. En ese caso, di "Acude al organismo competente en la materia" o "Consulta con un abogado especializado". NUNCA adivines a qué institución ir si no está en la guía. Ejemplo: NO mandes al usuario al SENIAT si la guía no lo dice, NO mandes al Consejo Comunal si la guía no lo dice.
 
@@ -773,7 +777,7 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:
 - Tribunal de Protección de Niños, Niñas y Adolescentes: Para custodia, régimen de visitas, pensión alimentaria.
 - Consejo de Protección del Niño (municipal): Para denunciar maltrato o abandono de menores. Hay uno en cada municipio.
 - IDENNA (Instituto Nacional de Niños): Para protección de menores.
-- Pensión alimentaria: Se fija en el Tribunal de Protección. El monto es entre 20% y 30% del ingreso del obligado.
+- Pensión alimentaria: Se fija en el Tribunal de Protección según las necesidades del niño y la capacidad económica del obligado.
 - Divorcio: Acude al Tribunal de Municipio (mutuo acuerdo) o Tribunal Civil (contencioso).
 """,
     "violencia_mujer": """
