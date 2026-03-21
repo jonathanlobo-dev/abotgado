@@ -1716,6 +1716,16 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 
+# ─── COMANDO DESCONOCIDO ──────────────────────────────────────────────────────
+
+async def cmd_desconocido(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Catch-all para comandos no registrados."""
+    await update.message.reply_text(
+        "Ese comando no existe.\n"
+        "Usa /ayuda para ver los comandos disponibles."
+    )
+
+
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 def main():
@@ -1806,6 +1816,9 @@ def main():
         filters.TEXT & ~filters.COMMAND,
         responder_consulta
     ))
+
+    # Catch-all: comandos no reconocidos (DEBE ser el último handler)
+    app.add_handler(MessageHandler(filters.COMMAND, cmd_desconocido))
 
     # Error handler global — envía errores al admin
     async def error_handler(update, context):
