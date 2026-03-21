@@ -240,9 +240,12 @@ ARTICULOS_CLAVE = {
                      "bienes gananciales", "comunidad conyugal",
                      "quién se queda con", "quien se queda con",
                      "repartir bienes", "bienes del matrimonio",
-                     "casa del matrimonio", "liquidación conyugal"],
+                     "casa del matrimonio", "liquidación conyugal",
+                     "no quiere firmar", "no me quiere dar el divorcio",
+                     "divorcio contencioso"],
         "ley": "Código Civil venezolano",
-        "articulos": [148, 149, 150, 151, 156, 168, 173, 174, 175, 184]
+        # 185=causales de divorcio, 186=efectos, 188-191=separación, 148-151=bienes
+        "articulos": [185, 186, 188, 189, 190, 191, 148, 149, 150, 151, 156, 168, 173, 174, 175]
     },
     "maternidad_paternidad": {
         "keywords": ["embarazada", "embarazo", "maternidad", "paternidad", "prenatal",
@@ -468,6 +471,35 @@ ARTICULOS_CLAVE = {
                      "estafa por internet", "estafa online"],
         "ley": "Ley Especial contra los Delitos Informáticos",
         "articulos": [1, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+    },
+    "proteccion_consumidor": {
+        "keywords": ["teléfono dañado", "telefono dañado", "producto dañado", "producto defectuoso",
+                     "me estafaron en la tienda", "garantía", "garantia",
+                     "no me quieren cambiar", "me vendieron dañado",
+                     "producto malo", "producto dañado", "devolver producto",
+                     "reclamo de compra", "defensor del consumidor"],
+        "ley": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+        # 1=objeto, 3=ámbito, 8=derechos, 73=retracto, 78=responsabilidad, 79=solidaria, 80=reposición
+        "articulos": [1, 3, 8, 73, 75, 78, 79, 80]
+    },
+    "mala_praxis": {
+        "keywords": ["negligencia médica", "negligencia medica", "mala praxis",
+                     "error médico", "error medico", "me operaron mal",
+                     "el médico me", "el medico me", "daño médico",
+                     "impericia médica", "impericia medica"],
+        "ley": "Código Penal",
+        # 411=lesiones culposas por negligencia/impericia, 422=lesiones culposas leves
+        "articulos": [411, 422]
+    },
+    "deuda_civil": {
+        "keywords": ["me deben plata", "me debe plata", "me deben dinero", "me debe dinero",
+                     "presté dinero", "preste dinero", "no me quiere pagar",
+                     "no me quieren pagar", "cobro de bolívares", "cobro de bolivares",
+                     "pagaré", "pagare", "deuda entre particulares",
+                     "me debe y no paga", "préstamo personal", "prestamo personal"],
+        "ley": "Código de Procedimiento Civil",
+        # Procedimiento para cobro: demanda, medidas preventivas, ejecución
+        "articulos": [11, 338, 339, 340, 341, 585, 588, 630, 631, 632, 633, 634]
     },
     "tramites": {
         "keywords": ["trámite", "tramite", "trámites", "tramites", "burocracia",
@@ -996,6 +1028,30 @@ INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS INFORMÁTICOS:
 - Si es estafa online: Guarda TODA la evidencia (capturas, conversaciones, comprobantes de pago, URLs).
 - CONATEL: Si el delito involucra telecomunicaciones o contenido ilegal en internet.
 """,
+    "proteccion_consumidor": """
+INSTITUCIONES Y PASOS CONCRETOS PARA PROTECCIÓN AL CONSUMIDOR:
+- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Es la institución principal para reclamos de consumidor. Puedes denunciar por su página web o presencialmente.
+- INDEPABIS: Aunque fue sustituida por la SUNDDE, la ley sigue vigente. Tienes derecho a que te cambien o reparen un producto defectuoso.
+- Art. 80 de la Ley INDEPABIS: Tienes derecho a la reposición del bien, reparación gratuita, o devolución del dinero.
+- Plazo: Tienes 7 días para retractarte de una compra (Art. 73).
+- Si la tienda no responde: Acude a la SUNDDE con factura, fotos del producto y cualquier comunicación con el vendedor.
+""",
+    "mala_praxis": """
+INSTITUCIONES Y PASOS CONCRETOS PARA NEGLIGENCIA MÉDICA:
+- Fiscalía del Ministerio Público: Presenta denuncia por lesiones culposas (Art. 422 del Código Penal).
+- Tribunal Civil: Puedes demandar por daños y perjuicios (responsabilidad civil extracontractual).
+- Colegio de Médicos: Puedes denunciar al médico ante el Colegio de Médicos de tu estado para que inicien un procedimiento disciplinario.
+- IMPORTANTE: Guarda TODA la documentación médica (historia clínica, informes, recetas, exámenes).
+- Solicita copia de tu historia clínica — es tu DERECHO y no pueden negártela.
+""",
+    "deuda_civil": """
+INSTITUCIONES Y PASOS CONCRETOS PARA COBRO DE DEUDAS CIVILES:
+- Tribunal Civil: Para montos mayores, debes demandar por cobro de bolívares ante el Tribunal Civil.
+- Tribunal de Municipio: Para montos menores, acude al Tribunal de Municipio.
+- IMPORTANTE: Si tienes un documento firmado (pagaré, letra de cambio, contrato) tienes una prueba fuerte. Si fue de palabra, necesitarás testigos o pruebas indirectas (transferencias bancarias, mensajes).
+- Procedimiento: El abogado puede solicitar medidas preventivas (embargo preventivo) para asegurar el cobro mientras se tramita la demanda.
+- Alternativa: Antes de demandar, intenta una conciliación a través del Juez de Paz Comunal.
+""",
     "tramites": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TRÁMITES:
 - La Ley de Simplificación de Trámites PROHÍBE que las oficinas públicas te pidan documentos que ya reposan en otra oficina del Estado.
@@ -1401,6 +1457,8 @@ RAMA_POR_TEMA = {
     "animales": "animales", "ambiente": "ambiente",
     "discapacidad": "administrativo", "municipal": "administrativo",
     "trabajadores_residenciales": "laboral",
+    "proteccion_consumidor": "civil", "mala_praxis": "penal",
+    "deuda_civil": "civil",
 }
 
 
