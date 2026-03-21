@@ -61,6 +61,15 @@ def inicializar_db():
             )
         """)
 
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS ultima_respuesta (
+                user_id   INTEGER PRIMARY KEY,
+                pregunta  TEXT,
+                respuesta TEXT,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # ── Migración: agregar columnas nuevas si no existen ──────────────
         columnas = {r[1] for r in con.execute("PRAGMA table_info(usuarios)").fetchall()}
 
@@ -678,6 +687,49 @@ def contar_feedback() -> dict:
         return {"total": total, "positivo": conteos.get("positivo", 0),
                 "negativo": conteos.get("negativo", 0),
                 "comentario": conteos.get("comentario", 0)}
+
+
+def borrar_feedback(feedback_tipo: str = None, user_id: int = None) -> int:
+    """Borra feedback por filtro. Retorna cantidad borrada."""
+    with get_db() as con:
+        condiciones = []
+        params = []
+        if feedback_tipo:
+            condiciones.append("tipo = ?")
+            params.append(feedback_tipo)
+        if user_id:
+            condiciones.append("user_id = ?")
+            params.append(user_id)
+        where = " WHERE " + " AND ".join(condiciones) if condiciones else ""
+        cur = con.execute(f"SELECT COUNT(*) FROM feedback{where}", params)
+        cantidad = cur.fetchone()[0]
+        con.execute(f"DELETE FROM feedback{where}", params)
+        return cantidad
+
+
+# ─── ÚLTIMA RESPUESTA (persistente) ──────────────────────────────────────────
+
+def guardar_ultima_respuesta(user_id: int, pregunta: str, respuesta: str):
+    with get_db() as con:
+        con.execute("""
+            INSERT INTO ultima_respuesta (user_id, pregunta, respuesta, timestamp)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id) DO UPDATE SET
+                pregunta = excluded.pregunta,
+                respuesta = excluded.respuesta,
+                timestamp = CURRENT_TIMESTAMP
+        """, (user_id, pregunta, respuesta))
+
+
+def cargar_ultima_respuesta(user_id: int) -> dict:
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT pregunta, respuesta FROM ultima_respuesta WHERE user_id = ?",
+            (user_id,))
+        fila = cur.fetchone()
+        if fila:
+            return {"pregunta": fila[0], "respuesta": fila[1]}
+        return {}
 
 
 # ─── FAVORITOS ────────────────────────────────────────────────────────────────

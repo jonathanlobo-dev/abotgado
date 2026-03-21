@@ -56,17 +56,24 @@ def resolver_targets(args: list[str]) -> tuple[list[int], list[str]]:
     return ids, errores
 
 
-async def enviar_respuesta(message, texto: str):
+async def enviar_respuesta(message, texto: str, reply_markup=None):
     """Formatea la respuesta a HTML y envía con fallback a texto plano."""
     texto = busqueda.formatear_respuesta(texto)
     if len(texto) > 4096:
-        for i in range(0, len(texto), 4096):
-            await enviar_respuesta(message, texto[i:i+4096])
+        partes = [texto[i:i+4096] for i in range(0, len(texto), 4096)]
+        for i, parte in enumerate(partes):
+            es_ultima = (i == len(partes) - 1)
+            try:
+                await message.reply_text(parte, parse_mode="HTML",
+                    reply_markup=reply_markup if es_ultima else None)
+            except Exception:
+                await message.reply_text(parte,
+                    reply_markup=reply_markup if es_ultima else None)
         return
     try:
-        await message.reply_text(texto, parse_mode="HTML")
+        await message.reply_text(texto, parse_mode="HTML", reply_markup=reply_markup)
     except Exception:
-        await message.reply_text(texto)
+        await message.reply_text(texto, reply_markup=reply_markup)
 
 
 # ─── ESTADO TEMPORAL ─────────────────────────────────────────────────────────
@@ -220,7 +227,8 @@ async def ayuda(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/regalar_consultas ID [N] — Regalar consultas extra (default 5)\n"
             "/anuncio MSG — Broadcast a todos\n"
             "/mensaje ID MSG — Mensaje directo a 1 usuario\n"
-            "/feedback — Ver opiniones\n"
+            "/feedback [negativo|positivo] [pag] — Ver opiniones\n"
+            "/feedback_borrar [tipo] [ID] — Borrar feedback\n"
             "/responder ID MSG — Responder soporte\n"
             "/backup — Descargar backup de la DB\n\n"
             "<b>Planes:</b>\n"
@@ -605,6 +613,50 @@ async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE)
             texto += f"<i>Siguiente: /feedback{filtro_txt} {pagina + 1}</i>"
 
     await enviar_respuesta(update.message, texto)
+
+
+async def cmd_feedback_borrar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/feedback_borrar [negativo|positivo] [ID] — Borrar feedback por filtro."""
+    if not es_admin(update.effective_user.id):
+        return
+
+    if not context.args:
+        await enviar_respuesta(update.message,
+            "🗑️ <b>Borrar feedback</b>\n\n"
+            "<b>Uso:</b>\n"
+            "/feedback_borrar todo — Borrar TODO el feedback\n"
+            "/feedback_borrar negativo — Borrar todos los negativos\n"
+            "/feedback_borrar positivo — Borrar todos los positivos\n"
+            "/feedback_borrar 123456 — Borrar feedback de un usuario\n"
+            "/feedback_borrar negativo 123456 — Borrar negativos de un usuario")
+        return
+
+    filtro_tipo = None
+    filtro_uid = None
+
+    for arg in context.args:
+        if arg in ("negativo", "positivo", "comentario"):
+            filtro_tipo = arg
+        elif arg == "todo":
+            pass  # sin filtros = borra todo
+        else:
+            try:
+                filtro_uid = int(arg)
+            except ValueError:
+                uid = db.resolver_usuario(arg)
+                if uid:
+                    filtro_uid = uid
+
+    cantidad = db.borrar_feedback(feedback_tipo=filtro_tipo, user_id=filtro_uid)
+
+    desc = []
+    if filtro_tipo:
+        desc.append(f"tipo={filtro_tipo}")
+    if filtro_uid:
+        desc.append(f"user={filtro_uid}")
+    filtro_txt = " (" + ", ".join(desc) + ")" if desc else " (todo)"
+
+    await update.message.reply_text(f"🗑️ {cantidad} feedback borrados{filtro_txt}")
 
 
 # ─── FAVORITOS ───────────────────────────────────────────────────────────────
@@ -1370,7 +1422,13 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if explicacion:
             respuesta += f"{'━' * 25}\n{explicacion}\n\n"
         respuesta += "<i>Usa /comparar para comparar con otro artículo.</i>"
-        await enviar_respuesta(update.message, respuesta)
+        ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
+        db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("👍", callback_data=f"fb_up_{user_id}"),
+             InlineKeyboardButton("👎", callback_data=f"fb_down_{user_id}")]
+        ])
+        await enviar_respuesta(update.message, respuesta, reply_markup=kb)
         return
 
     # ── Registro de abogado (flujo conversacional admin) ────────────────
@@ -1484,7 +1542,13 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                         _resp += f"{'━' * 25}\n{_explicacion}\n\n"
                     _resp += "<i>Usa /comparar para comparar con otro artículo.</i>"
                     db.registrar_consulta(user_id)
-                    await enviar_respuesta(update.message, _resp)
+                    ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": _resp}
+                    db.guardar_ultima_respuesta(user_id, pregunta, _resp)
+                    _kb = InlineKeyboardMarkup([
+                        [InlineKeyboardButton("👍", callback_data=f"fb_up_{user_id}"),
+                         InlineKeyboardButton("👎", callback_data=f"fb_down_{user_id}")]
+                    ])
+                    await enviar_respuesta(update.message, _resp, reply_markup=_kb)
                     return
                 else:
                     await enviar_respuesta(
@@ -1540,6 +1604,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         db.guardar_mensaje(user_id, "assistant", respuesta)
 
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
+    db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
 
     # Alerta al admin: consulta sin tema detectado (respuesta de baja confianza)
     if confianza == "baja" and not es_admin(user_id):
@@ -1608,8 +1673,10 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("Este botón es para el usuario que hizo la consulta.")
             return
 
-        # Obtener la pregunta/respuesta del usuario
-        datos = ultima_respuesta.get(feedback_user_id, {})
+        # Obtener la pregunta/respuesta del usuario (memoria o DB)
+        datos = ultima_respuesta.get(feedback_user_id)
+        if not datos:
+            datos = db.cargar_ultima_respuesta(feedback_user_id)
         pregunta_original = datos.get("pregunta", "")
 
         # Limpiar HTML de la respuesta para guardar en DB y notificaciones
@@ -1718,6 +1785,7 @@ def main():
     app.add_handler(CommandHandler("anuncio",         cmd_anuncio))
     app.add_handler(CommandHandler("stats_admin",     cmd_stats_admin))
     app.add_handler(CommandHandler("feedback",        cmd_feedback_admin))
+    app.add_handler(CommandHandler("feedback_borrar", cmd_feedback_borrar))
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
