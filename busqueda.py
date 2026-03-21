@@ -474,6 +474,7 @@ ALIAS_LEYES = {
     # Código Penal
     "codigo penal": "Código Penal",
     "cp": "Código Penal",
+    "penal": "Código Penal",
     # Código de Procedimiento Civil
     "codigo de procedimiento civil": "Código de Procedimiento Civil",
     "cpc": "Código de Procedimiento Civil",
@@ -481,6 +482,8 @@ ALIAS_LEYES = {
     "lottt": "Ley Orgánica del Trabajo (LOTTT)",
     "ley del trabajo": "Ley Orgánica del Trabajo (LOTTT)",
     "ley organica del trabajo": "Ley Orgánica del Trabajo (LOTTT)",
+    "ley de trabajo": "Ley Orgánica del Trabajo (LOTTT)",
+    "trabajo": "Ley Orgánica del Trabajo (LOTTT)",
     # Código de Comercio
     "codigo de comercio": "Código de Comercio",
     # Tránsito
@@ -494,9 +497,14 @@ ALIAS_LEYES = {
     # LOPNA
     "lopna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "ley de ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
+    "lopnna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
+    "ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
+    "menores": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     # Violencia
     "ley de violencia": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
     "ley de la mujer": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
+    "violencia de genero": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
+    "violencia contra la mujer": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
     # Tributario
     "codigo organico tributario": "Código Orgánico Tributario",
     "cot": "Código Orgánico Tributario",
@@ -516,6 +524,7 @@ ALIAS_LEYES = {
     # Ambiente
     "ley del ambiente": "Ley Orgánica del Ambiente",
     "ley organica del ambiente": "Ley Orgánica del Ambiente",
+    "ambiente": "Ley Orgánica del Ambiente",
     # Justicia Militar
     "codigo de justicia militar": "Código Orgánico de Justicia Militar",
     # Registros
@@ -530,9 +539,14 @@ ALIAS_LEYES = {
     "trabajadores residenciales": "Ley Especial para la Dignificación de Trabajadores Residenciales",
     # Discapacidad
     "discapacidad": "Ley para la Inclusión de Personas con Discapacidad",
-    # Fauna
+    # Fauna / Animales
     "fauna domestica": "Ley de Protección de la Fauna Doméstica",
     "ley de fauna": "Ley de Protección de la Fauna Doméstica",
+    "fauna": "Ley de Protección de la Fauna Doméstica",
+    "animales": "Ley de Protección de la Fauna Doméstica",
+    "ley de animales": "Ley de Protección de la Fauna Doméstica",
+    "proteccion animal": "Ley de Protección de la Fauna Doméstica",
+    "ley animales": "Ley de Protección de la Fauna Doméstica",
     # Municipal
     "ley municipal": "Ley Orgánica del Poder Público Municipal",
     "poder publico municipal": "Ley Orgánica del Poder Público Municipal",
@@ -581,6 +595,11 @@ ALIAS_LEYES = {
     "delitos informaticos": "Ley Especial contra los Delitos Informáticos",
     "ley de delitos informaticos": "Ley Especial contra los Delitos Informáticos",
     "ciberdelitos": "Ley Especial contra los Delitos Informáticos",
+    # Drogas
+    "drogas": "Ley Orgánica de Drogas",
+    "ley de drogas": "Ley Orgánica de Drogas",
+    "ley antidrogas": "Ley Orgánica de Drogas",
+    "antidrogas": "Ley Orgánica de Drogas",
     # Simplificación de Trámites
     "simplificacion de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
     "ley de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
