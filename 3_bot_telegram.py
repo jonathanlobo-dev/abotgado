@@ -1612,16 +1612,27 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
 
-    # Alerta al admin: consulta sin tema detectado (respuesta de baja confianza)
-    if confianza in ("baja", "media") and not es_admin(user_id):
-        icono_conf = "🔴" if confianza == "baja" else "🟡"
-        temas_str = ", ".join(temas) if temas else "ninguno"
-        await notificar_admins(context,
-            f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
-            f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
-            f"Temas: {temas_str}\n"
-            f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-            f"Pregunta: {pregunta[:200]}")
+    # Alerta al admin: DEBUG — enviar info de TODAS las consultas no-admin
+    if not es_admin(user_id):
+        try:
+            temas_str = ", ".join(temas) if temas else "ninguno"
+            if confianza in ("baja", "media"):
+                icono_conf = "🔴" if confianza == "baja" else "🟡"
+                await notificar_admins(context,
+                    f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
+                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+                    f"Temas: {temas_str}\n"
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                    f"Pregunta: {pregunta[:200]}")
+            else:
+                await notificar_admins(context,
+                    f"🟢 DEBUG CONSULTA\n"
+                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+                    f"Temas: {temas_str}\n"
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                    f"Pregunta: {pregunta[:200]}")
+        except Exception as e:
+            logger.error(f"Error enviando alerta de confianza: {e}")
 
     restantes = db.consultas_restantes(user_id)
     if restantes != -1 and restantes <= 1:
@@ -1801,7 +1812,9 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Formatear para enviar
     respuesta_formateada = busqueda.formatear_respuesta(respuesta)
     # Agregar crédito al final
-    respuesta_formateada += "\n\n<i>Consultado via @abotgado_bot</i>"
+    bot_username = (await context.bot.get_me()).username
+    ref_link = f"https://t.me/{bot_username}?start=ref_{user_id}"
+    respuesta_formateada += f'\n\n<i>Consultado via <a href="{ref_link}">@{bot_username}</a></i>'
 
     # ID único para este resultado
     result_id = hashlib.md5(f"{user_id}_{texto}".encode()).hexdigest()
