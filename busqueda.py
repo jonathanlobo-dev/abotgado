@@ -60,20 +60,35 @@ ARTICULOS_CLAVE = {
         "ley": "Ley de Tránsito Terrestre",
         "articulos": [12, 13, 14, 24, 25, 26, 27, 50, 51, 52, 95, 96, 97, 98]
     },
-    "laboral": {
+    "laboral_despido": {
+        "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
+                     "botar", "botaron", "botado", "echar", "echaron",
+                     "reenganche", "inamovilidad", "estabilidad"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        "articulos": [85, 86, 87, 88, 89, 90]
+    },
+    "laboral_vacaciones": {
+        "keywords": ["vacaciones", "bono vacacional", "descanso anual",
+                     "dias libres", "dias de descanso"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        "articulos": [189, 190, 191, 192, 193, 194, 195, 196, 197]
+    },
+    "laboral_prestaciones": {
+        "keywords": ["prestaciones", "liquidación", "liquidacion", "utilidades",
+                     "antigüedad", "antiguedad"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        "articulos": [141, 142, 143, 144]
+    },
+    "laboral_general": {
         "keywords": ["trabajo", "trabajador", "trabajadora", "empleo", "empleado",
                      "empleada", "jefe", "patrono", "patrona",
-                     "despido", "despidieron", "despedir", "despedido", "despedida",
-                     "botar", "botaron", "botado", "echar", "echaron",
-                     "sueldo", "salario", "vacaciones",
-                     "prestaciones", "liquidación", "liquidacion", "bono", "utilidades",
-                     "maternidad", "inamovilidad", "reenganche", "nómina", "nomina",
+                     "sueldo", "salario", "bono",
+                     "maternidad", "nómina", "nomina",
                      "contrato laboral", "jornada", "horas extras", "sindicato",
                      "cesta ticket", "cestaticket", "pagar", "pagarme",
                      "sin pagar", "no me pagan", "no me pagaron"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
-        "articulos": [85, 86, 87, 88, 89, 90, 141, 142, 143,
-                       189, 190, 191, 192, 193, 194, 195, 196, 197, 199, 200]
+        "articulos": [85, 86, 87, 141, 142, 190, 191, 192]
     },
     "comunicaciones": {
         "keywords": ["teléfono", "telefono", "celular", "comunicaciones", "privacidad",
@@ -603,7 +618,8 @@ REGLA DE RELEVANCIA:
 - IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
 - Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
 - Si REALMENTE ningún artículo de la lista tiene relación DIRECTA con el problema del usuario, OMITE la sección 📖 por completo y pon en su lugar: "📖 No tengo artículos específicos sobre este tema en mi base de datos." NO cites artículos irrelevantes solo por "rellenar". Es MEJOR no citar nada que citar algo que no tiene que ver.
-- Artículos IRRELEVANTES que NUNCA debes citar como relleno: disposiciones derogatorias, remisiones a otros códigos, definiciones generales de la ley, artículos sobre estructura organizativa. Si el artículo no habla del PROBLEMA CONCRETO del usuario, NO lo cites.
+- Artículos IRRELEVANTES que NUNCA debes citar como relleno: disposiciones derogatorias, remisiones a otros códigos, definiciones generales de la ley, artículos sobre estructura organizativa, prescripción de penas, sanciones tributarias para problemas no tributarios. Si el artículo no habla del PROBLEMA CONCRETO del usuario, NO lo cites.
+- REGLA DE ORO: Pregúntate "¿este artículo le SIRVE al usuario para resolver SU problema?". Si la respuesta es no, NO lo cites. Ejemplo: si pregunta por vacaciones, NO cites artículos de estabilidad laboral. Si pregunta por drogas, NO cites artículos de tributos ni derogatorias.
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista, NO lo menciones. NUNCA escribas "No disponible en la lista" ni "no se encuentra". Simplemente OMÍTELO y usa otro.
@@ -1311,11 +1327,17 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str]]:
         contexto += f"[{idx}] {art['ley']}, Art. {art['articulo']}:\n{art['texto']}\n\n"
 
     # Inyectar guías institucionales según temas detectados
+    # Mapear subtemas a guías (ej: laboral_vacaciones → laboral)
+    _MAPA_GUIA = {
+        "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
+        "laboral_prestaciones": "laboral", "laboral_general": "laboral",
+    }
     guias_usadas = set()
     for tema in temas_detectados:
-        if tema in GUIAS_INSTITUCIONALES and tema not in guias_usadas:
-            contexto += GUIAS_INSTITUCIONALES[tema]
-            guias_usadas.add(tema)
+        guia_key = _MAPA_GUIA.get(tema, tema)
+        if guia_key in GUIAS_INSTITUCIONALES and guia_key not in guias_usadas:
+            contexto += GUIAS_INSTITUCIONALES[guia_key]
+            guias_usadas.add(guia_key)
 
     # Si no se detectaron temas por keyword, intentar inyectar guía por contexto general
     if not guias_usadas:
@@ -1453,23 +1475,41 @@ _TELEFONOS_REALES = {
 
 def _filtrar_telefonos_inventados(texto: str) -> str:
     """Elimina números de teléfono que el LLM inventó (no están en la whitelist)."""
-    def reemplazar_telefono(m):
-        numero = m.group(0).strip()
-        # Verificar contra whitelist (limpiando espacios)
+    def es_telefono_real(fragmento):
+        fragmento = fragmento.strip()
         for real in _TELEFONOS_REALES:
-            if real in numero or numero in real:
-                return m.group(0)  # Es real, mantener
-        # Es inventado, eliminar el fragmento que lo contiene
+            if real in fragmento or fragmento in real:
+                return True
+        return False
+
+    def reemplazar_numerico(m):
+        if es_telefono_real(m.group(0)):
+            return m.group(0)
         return ""
 
-    # Buscar patrones de teléfono: 0800-XXX, 0212-XXX, (0212) XXX
+    def reemplazar_0800_alfa(m):
+        if es_telefono_real(m.group(0)):
+            return m.group(0)
+        return ""
+
+    # 1. Capturar 0800-PALABRA (ej: 0800-IDEFENSO, 0800-SALUD)
     resultado = re.sub(
-        r'(?:(?:al\s+)?(?:tel[eé]fono|l[ií]nea|n[uú]mero)\s*:?\s*)?'
-        r'(?:\(?\d{4}\)?\s*[-.]?\s*\d{3,4}\s*[-.]?\s*\d{2,4}(?:\s*[-.]?\s*\d{2,4})?)',
-        reemplazar_telefono,
+        r'0800-[A-ZÁÉÍÓÚÑa-záéíóúñ][-A-ZÁÉÍÓÚÑa-záéíóúñ0-9]*',
+        reemplazar_0800_alfa,
         texto
     )
-    # Limpiar dobles espacios y líneas rotas que queden
+
+    # 2. Capturar numéricos: 0212-XXX, (0212) XXX, 0800-123-4567
+    resultado = re.sub(
+        r'\(?\d{4}\)?\s*[-.]?\s*\d{3,4}\s*[-.]?\s*\d{2,4}(?:\s*[-.]?\s*\d{2,4})?',
+        reemplazar_numerico,
+        resultado
+    )
+
+    # Limpiar restos: paréntesis vacíos, "teléfono:" sin número, dobles espacios
+    resultado = re.sub(r'(?:tel[eé]fono|l[ií]nea|n[uú]mero)\s*:\s*\)', '', resultado, flags=re.IGNORECASE)
+    resultado = re.sub(r'(?:tel[eé]fono|l[ií]nea|n[uú]mero)\s*:\s*(?=[.\s,])', '', resultado, flags=re.IGNORECASE)
+    resultado = re.sub(r'\(\s*\)', '', resultado)
     resultado = re.sub(r'  +', ' ', resultado)
     resultado = re.sub(r'\.\s*\.', '.', resultado)
     resultado = re.sub(r',\s*\.', '.', resultado)
