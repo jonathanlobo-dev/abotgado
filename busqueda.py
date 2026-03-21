@@ -425,8 +425,6 @@ ARTICULOS_CLAVE = {
                      "prestamo bancario", "comisión bancaria",
                      "comision bancaria", "sudeban", "superintendencia de bancos",
                      "bloqueo de cuenta", "fraude bancario",
-                     "clonación de tarjeta", "clonacion de tarjeta",
-                     "tarjeta clonada", "me clonaron la tarjeta",
                      "punto de venta", "ley de bancos", "sector bancario"],
         "ley": "Ley de Instituciones del Sector Bancario",
         "articulos": [1, 2, 3, 5, 6, 44, 45, 46, 62, 63, 64, 65, 76, 77, 78, 79, 172, 173]
@@ -1840,6 +1838,27 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
         respuesta = _filtrar_montos_inventados(respuesta)
+
+        # ── Post-análisis de confianza basado en la respuesta real ──
+        # Si el LLM admite que no encontró artículos, bajar confianza
+        resp_lower = respuesta.lower()
+        señales_baja = [
+            "no hay artículos relevantes",
+            "no hay articulos relevantes",
+            "no se encontraron artículos",
+            "no se encontraron articulos",
+            "no tengo artículos",
+            "no tengo articulos",
+            "no están en la lista",
+            "no estan en la lista",
+            "no está en la lista",
+            "no esta en la lista",
+            "no hay artículos en la lista",
+            "no hay articulos en la lista",
+        ]
+        if any(s in resp_lower for s in señales_baja):
+            confianza = "baja"
+            logger.info(f"  Confianza bajada a 'baja' por señal en respuesta del LLM")
 
         # Agregar disclaimer si confianza es baja
         if confianza == "baja":
