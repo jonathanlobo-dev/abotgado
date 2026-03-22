@@ -88,6 +88,7 @@ soporte_pendiente  = set()
 ultima_respuesta   = {}  # user_id -> {"pregunta": ..., "respuesta": ...}
 registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
 esperando_ley      = {}  # user_id -> {"num_art": int} — esperando nombre de ley
+debug_mode         = False  # /debug on|off — enviar 🟢 de TODAS las consultas
 
 
 # ─── FILTRO DE SEGURIDAD (PRE-LLM) ─────────────────────────────────────────
@@ -618,6 +619,23 @@ async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE)
             texto += f"<i>Siguiente: /feedback{filtro_txt} {pagina + 1}</i>"
 
     await enviar_respuesta(update.message, texto)
+
+
+async def cmd_debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Activa/desactiva modo debug: /debug on | /debug off"""
+    global debug_mode
+    if not es_admin(update.effective_user.id):
+        return
+    arg = (context.args[0].lower() if context.args else "").strip()
+    if arg == "on":
+        debug_mode = True
+        await update.message.reply_text("🟢 Debug activado — recibirás info de TODAS las consultas.")
+    elif arg == "off":
+        debug_mode = False
+        await update.message.reply_text("🔴 Debug desactivado — solo recibirás alertas de baja confianza (🟡🔴).")
+    else:
+        estado = "activado 🟢" if debug_mode else "desactivado 🔴"
+        await update.message.reply_text(f"Debug: {estado}\nUsa: /debug on | /debug off")
 
 
 async def cmd_feedback_borrar(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1625,17 +1643,25 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
 
-    # Alerta al admin: solo consultas de baja/media confianza
-    if confianza in ("baja", "media") and not es_admin(user_id):
+    # Alertas al admin
+    if not es_admin(user_id):
         try:
             temas_str = ", ".join(temas) if temas else "ninguno"
-            icono_conf = "🔴" if confianza == "baja" else "🟡"
-            await notificar_admins(context,
-                f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
-                f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
-                f"Temas: {temas_str}\n"
-                f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-                f"Pregunta: {pregunta[:200]}")
+            if confianza in ("baja", "media"):
+                icono_conf = "🔴" if confianza == "baja" else "🟡"
+                await notificar_admins(context,
+                    f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
+                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+                    f"Temas: {temas_str}\n"
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                    f"Pregunta: {pregunta[:200]}")
+            elif debug_mode:
+                await notificar_admins(context,
+                    f"🟢 DEBUG CONSULTA\n"
+                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+                    f"Temas: {temas_str}\n"
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                    f"Pregunta: {pregunta[:200]}")
         except Exception as e:
             logger.error(f"Error enviando alerta de confianza: {e}")
 
@@ -1919,6 +1945,7 @@ def main():
     app.add_handler(CommandHandler("stats_admin",     cmd_stats_admin))
     app.add_handler(CommandHandler("feedback",        cmd_feedback_admin))
     app.add_handler(CommandHandler("feedback_borrar", cmd_feedback_borrar))
+    app.add_handler(CommandHandler("debug",           cmd_debug))
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
