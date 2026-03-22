@@ -58,7 +58,7 @@ ARTICULOS_CLAVE = {
                      "alcoholizado", "tomado", "manejar borracho", "manejar tomado",
                      "manejar ebrio", "conducir borracho", "alcoholímetro",
                      "alcoholimetro", "bebidas alcohólicas", "bebidas alcoholicas"],
-        "ley": "Ley de Transporte Terrestre",
+        "ley": "Ley de Tránsito Terrestre",
         # Art 169=multas 10UT, 170=multas 5UT, 171=multas 3UT, 173=piques 100UT
         "articulos": [169, 170, 171, 173, 177]
     },
@@ -66,14 +66,14 @@ ARTICULOS_CLAVE = {
         "keywords": ["licencia", "licencia de conducir", "certificado médico",
                      "certificado medico", "titulo profesional", "conducir",
                      "renovar licencia", "sacar licencia"],
-        "ley": "Ley de Transporte Terrestre",
+        "ley": "Ley de Tránsito Terrestre",
         # Art 63-68=licencias
         "articulos": [63, 64, 65, 66, 67, 68]
     },
     "transito_accidente": {
         "keywords": ["accidente", "choque", "chocaron", "atropello", "atropellar",
                      "atropellaron", "volcamiento", "colisión", "colision"],
-        "ley": "Ley de Transporte Terrestre",
+        "ley": "Ley de Tránsito Terrestre",
         # Art 86=deberes en accidente, 192-194=responsabilidad civil, 200=procedimiento
         "articulos": [86, 192, 193, 194, 200]
     },
@@ -83,7 +83,7 @@ ARTICULOS_CLAVE = {
                      "titulo de propiedad vehiculo", "retención del vehículo",
                      "retencion del vehiculo", "grúa", "grua", "estacionar",
                      "estacionamiento", "mal estacionado"],
-        "ley": "Ley de Transporte Terrestre",
+        "ley": "Ley de Tránsito Terrestre",
         # Art 58=seguro obligatorio, 170=multa 5UT sin seguro, 179=suspensión, 180=medidas
         "articulos": [58, 170, 179, 180]
     },
@@ -91,7 +91,7 @@ ARTICULOS_CLAVE = {
         "keywords": ["carro", "coche", "vehículo", "vehiculo", "moto", "motocicleta",
                      "camión", "camion", "alcabala", "tránsito", "transito",
                      "conductor", "circulación", "circulacion", "autopista"],
-        "ley": "Ley de Transporte Terrestre",
+        "ley": "Ley de Tránsito Terrestre",
         "articulos": [58, 63, 86, 169, 170, 192]
     },
     "laboral_despido": {
@@ -169,7 +169,8 @@ ARTICULOS_CLAVE = {
                      "canon", "casa alquilada", "contrato de arrendamiento",
                      "prorroga legal", "prórroga legal", "deposito de arrendamiento"],
         "ley": "Código Civil venezolano",
-        "articulos": [1579, 1580, 1581, 1582, 1583, 1584, 1585, 1600, 1601, 1615]
+        # NOTA: Art. 1579+ no están en DB (CC solo hasta 999). Usar embedding search.
+        "articulos": list(range(1, 999))  # fuerza embedding por ser > 10
     },
     "vivienda_desalojo": {
         "keywords": ["casero", "arrendador", "inquilino", "arrendatario", "alquiler",
@@ -208,7 +209,8 @@ ARTICULOS_CLAVE = {
                      "dinero", "debe", "obligación", "obligacion", "contrato",
                      "incumplimiento", "daños", "perjuicios"],
         "ley": "Código Civil venezolano",
-        "articulos": [1133, 1134, 1159, 1160, 1264, 1354, 1474, 1745, 1746, 1747]
+        # NOTA: Art. 1133+ no están en DB (CC solo hasta 999). Usar embedding search.
+        "articulos": list(range(1, 999))  # fuerza embedding por ser > 10
     },
     "propiedad": {
         "keywords": ["propiedad", "dueño", "dueno", "propietario", "comprar",
@@ -217,9 +219,12 @@ ARTICULOS_CLAVE = {
         "articulos": [545, 546, 547, 548, 549, 796, 807, 808, 809, 810]
     },
     "testamento": {
-        "keywords": ["testamento", "testamentario", "hacer testamento",
-                     "legatario", "legado", "última voluntad", "ultima voluntad",
+        "keywords": ["hacer testamento", "quiero hacer un testamento",
+                     "testamentario", "legatario", "legado",
+                     "última voluntad", "ultima voluntad",
                      "desheredar", "legítima", "legitima", "quiero testar"],
+        "excluir": ["no dejó testamento", "sin testamento", "no dejo testamento",
+                     "murió sin", "murio sin", "falleció sin", "fallecio sin"],
         "ley": "Código Civil venezolano",
         # Art 833=definición, 834=disposiciones, 835=acto personal, 840=incapacidad,
         # 849-850=testamento abierto, 853=cerrado, 870=nulidad
@@ -575,8 +580,8 @@ ARTICULOS_CLAVE = {
                      "compre una casa y esta mala", "defectos de construcción",
                      "defectos de construccion", "inmueble defectuoso"],
         "ley": "Código Civil venezolano",
-        # saneamiento por vicios ocultos - sección del CC sobre compraventa
-        "articulos": [1518, 1519, 1520, 1521, 1522, 1523, 1524, 1525]
+        # NOTA: Art. 1518+ no están en DB (CC solo hasta 999). Usar embedding search.
+        "articulos": list(range(1, 999))  # fuerza embedding por ser > 10
     },
 }
 
@@ -609,13 +614,13 @@ ALIAS_LEYES = {
     "comercio": "Código de Comercio",
     "ley de comercio": "Código de Comercio",
     # Tránsito
-    "ley de transito": "Ley de Transporte Terrestre",
-    "ley de transito terrestre": "Ley de Transporte Terrestre",
-    "ley de transporte terrestre": "Ley de Transporte Terrestre",
-    "ley transporte terrestre": "Ley de Transporte Terrestre",
-    "ley transito": "Ley de Transporte Terrestre",
-    "transito": "Ley de Transporte Terrestre",
-    "transporte terrestre": "Ley de Transporte Terrestre",
+    "ley de transito": "Ley de Tránsito Terrestre",
+    "ley de transito terrestre": "Ley de Tránsito Terrestre",
+    "ley de transporte terrestre": "Ley de Tránsito Terrestre",
+    "ley transporte terrestre": "Ley de Tránsito Terrestre",
+    "ley transito": "Ley de Tránsito Terrestre",
+    "transito": "Ley de Tránsito Terrestre",
+    "transporte terrestre": "Ley de Tránsito Terrestre",
     # LOPNA
     "lopna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "ley de ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
@@ -747,7 +752,7 @@ CATALOGO_LEYES = {
         ("Código de Comercio", "codigo de comercio"),
         ("Código Orgánico Tributario", "COT"),
         ("LOTTT (Trabajo)", "LOTTT, ley del trabajo"),
-        ("Ley de Transporte Terrestre", "transito"),
+        ("Ley de Tránsito Terrestre", "transito"),
     ],
     "Vivienda": [
         ("Desalojo Arbitrario", "desalojo"),
@@ -811,7 +816,7 @@ REGLA PRINCIPAL — PROHIBICIÓN ABSOLUTA DE INVENTAR:
 REGLA DE RELEVANCIA:
 - NO cites artículos de leyes que no tengan NADA que ver con el tema. Ejemplos de artículos IRRELEVANTES:
   → LOPNA (niños) para un problema entre vecinos adultos
-  → Ley de Transporte Terrestre para un problema laboral
+  → Ley de Tránsito Terrestre para un problema laboral
   → Código de Comercio para un problema familiar
 - SÍ cita artículos que sean del ÁREA CORRECTA aunque no mencionen la palabra exacta del problema. Ejemplos de artículos RELEVANTES:
   → Ley de Justicia de Paz para conflictos vecinales (ruido, música, gimnasio, etc.)
@@ -1307,6 +1312,10 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
     ids_vistos     = set()
     temas          = []
     for tema, cfg in ARTICULOS_CLAVE.items():
+        # Verificar exclusiones primero
+        excluir = cfg.get("excluir", [])
+        if any(normalizar(e) in pregunta_norm for e in excluir):
+            continue
         keyword_match = next((k for k in cfg["keywords"] if normalizar(k) in pregunta_norm), None)
         if keyword_match:
             logger.info(f"  Tema detectado: {tema} (keyword: '{keyword_match}' en '{pregunta[:80]}')")
