@@ -153,9 +153,9 @@ NOMBRES_CORRECTOS = {
     "codigo-organico-procesal-penal.pdf":
         "Código Orgánico Procesal Penal (COPP)",
 
-    # ── INDEPABIS / Consumidor ───────────────────────────────────────────────
-    "ley-indepabis.pdf":
-        "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    # ── Precios Justos / Consumidor (antes INDEPABIS) ──────────────────────
+    "Ley-Orgánica-de-Precios-Justos.pdf":
+        "Ley Orgánica de Precios Justos",
 
     # ── Seguro Social ────────────────────────────────────────────────────────
     "ley-del-seguro-social.pdf":
@@ -248,7 +248,7 @@ CLASIFICACION_LEYES = {
     "Ley Orgánica de las Zonas Económicas Especiales":                  "administrativo",
 
     # ── Consumidor ───────────────────────────────────────────────────────────
-    "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)": "consumidor",
+    "Ley Orgánica de Precios Justos": "consumidor",
 
     # ── Animales ─────────────────────────────────────────────────────────────
     "Ley de Protección de la Fauna Doméstica":                          "animales",

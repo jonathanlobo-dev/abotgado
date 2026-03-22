@@ -428,7 +428,7 @@ ARTICULOS_CLAVE = {
                      "cobrar de mas", "estafa comercial", "publicidad engañosa",
                      "publicidad enganosa", "tienda", "vendedor", "proveedor",
                      "servicio deficiente", "no me quieren devolver"],
-        "ley": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+        "ley": "Ley Orgánica de Precios Justos",
         "articulos": [1, 2, 3, 4, 5, 7, 8, 16, 17, 18, 31, 32, 35, 44, 65, 66, 73, 74, 75, 76, 77]
     },
     "bancario": {
@@ -478,7 +478,7 @@ ARTICULOS_CLAVE = {
                      "no me quieren cambiar", "me vendieron dañado",
                      "producto malo", "producto dañado", "devolver producto",
                      "reclamo de compra", "defensor del consumidor"],
-        "ley": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+        "ley": "Ley Orgánica de Precios Justos",
         # 1=objeto, 3=ámbito, 8=derechos, 73=retracto, 78=responsabilidad, 79=solidaria, 80=reposición
         "articulos": [1, 3, 8, 73, 75, 78, 79, 80]
     },
@@ -628,11 +628,14 @@ ALIAS_LEYES = {
     "copp": "Código Orgánico Procesal Penal (COPP)",
     "codigo organico procesal penal": "Código Orgánico Procesal Penal (COPP)",
     "procesal penal": "Código Orgánico Procesal Penal (COPP)",
-    # Consumidor / INDEPABIS
-    "indepabis": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
-    "ley del consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
-    "consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
-    "proteccion al consumidor": "Ley para la Defensa de las Personas en el Acceso a Bienes y Servicios (INDEPABIS)",
+    # Consumidor / Precios Justos (antes INDEPABIS)
+    "indepabis": "Ley Orgánica de Precios Justos",
+    "precios justos": "Ley Orgánica de Precios Justos",
+    "ley de precios justos": "Ley Orgánica de Precios Justos",
+    "sundde": "Ley Orgánica de Precios Justos",
+    "ley del consumidor": "Ley Orgánica de Precios Justos",
+    "consumidor": "Ley Orgánica de Precios Justos",
+    "proteccion al consumidor": "Ley Orgánica de Precios Justos",
     # Sector Bancario
     "ley de bancos": "Ley de Instituciones del Sector Bancario",
     "sector bancario": "Ley de Instituciones del Sector Bancario",
@@ -697,7 +700,7 @@ CATALOGO_LEYES = {
         ("Impuesto Sobre la Renta (ISLR)", "ISLR, renta"),
         ("Seguro Social (IVSS)", "IVSS, seguro social"),
         ("Sector Bancario", "ley de bancos, sector bancario"),
-        ("Consumidor (INDEPABIS)", "INDEPABIS, consumidor"),
+        ("Consumidor (Precios Justos)", "SUNDDE, consumidor, precios justos"),
     ],
     "Estado y Justicia": [
         ("Ley contra la Corrupcion", "corrupcion"),
@@ -992,8 +995,8 @@ INSTITUCIONES Y PASOS CONCRETOS PARA PROCESO PENAL:
 """,
     "consumidor": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DEFENSA DEL CONSUMIDOR:
-- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Denuncia por precios abusivos, especulación, acaparamiento. Web: sundde.gob.ve. Web: sundde.gob.ve.
-- INDEPABIS: Reclamos por productos defectuosos, garantías incumplidas, publicidad engañosa.
+- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Es el ente encargado de la defensa del consumidor. Denuncia por precios abusivos, especulación, acaparamiento, productos defectuosos, garantías incumplidas, publicidad engañosa. Web: sundde.gob.ve.
+- Ley aplicable: Ley Orgánica de Precios Justos (sustituyó a la antigua INDEPABIS).
 - Si compraste algo defectuoso: Tienes derecho a reparación, reposición o devolución del dinero.
 - Guarda siempre: factura, ticket, fotos del producto, conversaciones con el vendedor.
 """,
@@ -1031,9 +1034,9 @@ INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS INFORMÁTICOS:
     "proteccion_consumidor": """
 INSTITUCIONES Y PASOS CONCRETOS PARA PROTECCIÓN AL CONSUMIDOR:
 - SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Es la institución principal para reclamos de consumidor. Puedes denunciar por su página web o presencialmente.
-- INDEPABIS: Aunque fue sustituida por la SUNDDE, la ley sigue vigente. Tienes derecho a que te cambien o reparen un producto defectuoso.
-- Art. 80 de la Ley INDEPABIS: Tienes derecho a la reposición del bien, reparación gratuita, o devolución del dinero.
-- Plazo: Tienes 7 días para retractarte de una compra (Art. 73).
+- Ley Orgánica de Precios Justos: Es la ley vigente que protege al consumidor. Tienes derecho a que te cambien o reparen un producto defectuoso.
+- Tienes derecho a la reposición del bien, reparación gratuita, o devolución del dinero.
+- Plazo: Tienes 7 días para retractarte de una compra.
 - Si la tienda no responde: Acude a la SUNDDE con factura, fotos del producto y cualquier comunicación con el vendedor.
 """,
     "mala_praxis": """
