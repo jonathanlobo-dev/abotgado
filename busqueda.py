@@ -218,12 +218,10 @@ ARTICULOS_CLAVE = {
     },
     "testamento": {
         "keywords": ["testamento", "testamentario", "hacer testamento",
-                     "heredero", "herederos", "legatario", "legado",
-                     "última voluntad", "ultima voluntad",
-                     "herencia", "heredar", "sucesión", "sucesion",
-                     "desheredar", "legítima", "legitima"],
+                     "legatario", "legado", "última voluntad", "ultima voluntad",
+                     "desheredar", "legítima", "legitima", "quiero testar"],
         "ley": "Código Civil venezolano",
-        # Art 833=definición, 834=capacidad, 835=incapacidad, 840=tipos,
+        # Art 833=definición, 834=disposiciones, 835=acto personal, 840=incapacidad,
         # 849-850=testamento abierto, 853=cerrado, 870=nulidad
         "articulos": [833, 834, 835, 840, 849, 850, 851, 852, 853, 854, 856, 870]
     },
@@ -512,6 +510,73 @@ ARTICULOS_CLAVE = {
                      "funcionario no me atiende", "no me quieren atender"],
         "ley": "Ley Orgánica de Simplificación de Trámites Administrativos",
         "articulos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 35, 36, 37, 38]
+    },
+    # ── Temas nuevos ────────────────────────────────────────────────────────
+    "robo_vehiculo": {
+        "keywords": ["me robaron el carro", "robaron el carro", "robo de vehículo",
+                     "robo de vehiculo", "hurto de vehículo", "hurto de vehiculo",
+                     "se llevaron el carro", "me quitaron el carro",
+                     "se robaron la moto", "me robaron la moto"],
+        "ley": "Código Penal",
+        # 453=hurto simple, 455=hurto agravado, 457=robo, 458=robo agravado
+        "articulos": [453, 455, 457, 458]
+    },
+    "pago_feriados": {
+        "keywords": ["trabajo los domingos", "no me pagan doble", "día feriado",
+                     "dia feriado", "día de descanso", "dia de descanso",
+                     "pago doble", "recargo domingo", "trabajo en feriado",
+                     "descanso semanal", "no descanso"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        # 119=pago día feriado/descanso, 120=pago por trabajar feriado
+        "articulos": [119, 120]
+    },
+    "herencia": {
+        "keywords": ["herencia", "heredero", "herederos", "sucesión",
+                     "sucesion", "falleció mi", "fallecio mi", "murió mi",
+                     "murio mi", "no dejó testamento", "intestado",
+                     "repartir la herencia", "bienes del difunto",
+                     "hermanos no me quieren dar", "parte de la herencia"],
+        "ley": "Código Civil venezolano",
+        # 822-832 = orden de suceder ab-intestato
+        "articulos": [822, 823, 824, 825, 826, 827, 828, 829, 830, 832]
+    },
+    "amenazas": {
+        "keywords": ["me amenaza", "me amenazó", "me amenazo", "amenazas",
+                     "amenaza de muerte", "me quiere matar", "intimidación",
+                     "intimidacion", "me persigue", "acoso",
+                     "amenaza por WhatsApp", "amenaza por whatsapp",
+                     "amenaza por mensaje"],
+        "ley": "Código Penal",
+        # 175=privación de libertad, 176=amenazas/violencias para forzar actos
+        "articulos": [175, 176]
+    },
+    "detencion_arbitraria": {
+        "keywords": ["me detuvieron", "detuvieron sin orden", "preso sin orden",
+                     "detenido sin orden", "arrestaron sin orden",
+                     "se lo llevaron preso", "me agarraron los policías",
+                     "me agarraron los policias", "detención arbitraria",
+                     "detencion arbitraria", "abuso policial",
+                     "me llevaron preso"],
+        "ley": "Constitución de la República Bolivariana de Venezuela",
+        # 44=libertad personal/orden judicial, 46=integridad, 49=debido proceso
+        "articulos": [44, 46, 49]
+    },
+    "sobreprecio": {
+        "keywords": ["me cobraron de más", "me cobraron de mas", "cobro excesivo",
+                     "muy caro", "sobreprecio", "precio abusivo",
+                     "especulación", "especulacion", "usura"],
+        "ley": "Ley Orgánica de Precios Justos",
+        # 51=precios superiores a los fijados, 53=alterar calidad, 62=alterar cantidad
+        "articulos": [49, 51, 53, 62]
+    },
+    "vicios_ocultos": {
+        "keywords": ["vicios ocultos", "casa con defectos", "apartamento dañado",
+                     "filtraciones", "compré una casa y está mala",
+                     "compre una casa y esta mala", "defectos de construcción",
+                     "defectos de construccion", "inmueble defectuoso"],
+        "ley": "Código Civil venezolano",
+        # saneamiento por vicios ocultos - sección del CC sobre compraventa
+        "articulos": [1518, 1519, 1520, 1521, 1522, 1523, 1524, 1525]
     },
 }
 
@@ -1063,6 +1128,49 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TRÁMITES:
 - Derecho a respuesta: Toda petición ante la administración pública debe ser respondida en máximo 20 días hábiles.
 - Si no te atienden: Denuncia ante la Defensoría del Pueblo o la Contraloría General.
 """,
+    "robo_vehiculo": """
+INSTITUCIONES Y PASOS CONCRETOS PARA ROBO DE VEHÍCULO:
+- CICPC (Cuerpo de Investigaciones Científicas, Penales y Criminalísticas): Denuncia formal del robo. Lleva título de propiedad, cédula y última factura de seguro.
+- Aseguradora: Notifica dentro de las primeras 24 horas. Necesitarás la denuncia del CICPC.
+- INTT: Solicita el bloqueo del vehículo para que no pueda ser vendido ni transferido.
+- Si te amenazaron con arma: Es robo agravado (Art. 458 Código Penal), pena más severa.
+""",
+    "herencia": """
+INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
+- Tribunal Civil de Primera Instancia: Para solicitar declaratoria de herederos (si no hay testamento) o apertura del juicio de sucesión.
+- SENIAT: Declaración sucesoral (impuesto sobre herencias). Tienes 180 días desde el fallecimiento para presentarla.
+- Registro Subalterno: Para protocolizar la partición de bienes inmuebles entre los herederos.
+- IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
+""",
+    "detencion_arbitraria": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DETENCIÓN ARBITRARIA:
+- Defensoría del Pueblo: Denuncia abuso de autoridad y detención sin orden judicial.
+- Fiscalía del Ministerio Público: Denuncia formal contra los funcionarios.
+- Tribunal de Control: Si ya estás detenido, tu abogado o un familiar puede solicitar un amparo constitucional o habeas corpus.
+- IMPORTANTE: Nadie puede ser detenido sin orden judicial, salvo flagrancia (Art. 44 Constitución). Si te detienen, tienes derecho a llamar a un abogado o familiar.
+- Deben presentarte ante un juez en máximo 48 horas.
+""",
+    "amenazas": """
+INSTITUCIONES Y PASOS CONCRETOS PARA AMENAZAS:
+- Fiscalía del Ministerio Público: Presenta denuncia formal con las evidencias.
+- CICPC: Si las amenazas son graves o de muerte, denuncia también en el CICPC.
+- IMPORTANTE: Guarda TODA la evidencia — capturas de pantalla de WhatsApp, mensajes, grabaciones, testigos.
+- Si es tu ex pareja: También puedes denunciar bajo la Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia (si aplica), que contempla violencia psicológica y acoso.
+""",
+    "sobreprecio": """
+INSTITUCIONES Y PASOS CONCRETOS PARA COBRO EXCESIVO:
+- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Denuncia el cobro excesivo. Puedes denunciar por su página web sundde.gob.ve o presencialmente.
+- Lleva: factura, ticket de pago, fotos de la lista de precios del establecimiento.
+- Los comercios están obligados a exhibir los precios de sus productos y servicios.
+""",
+    "vicios_ocultos": """
+INSTITUCIONES Y PASOS CONCRETOS PARA VICIOS OCULTOS EN INMUEBLES:
+- Tribunal Civil: Demanda por saneamiento de vicios ocultos (acción redhibitoria del Código Civil).
+- IMPORTANTE: Debes actuar dentro del plazo legal desde que descubriste el vicio.
+- Lleva: contrato de compraventa, documento de propiedad, informes de peritos o ingenieros que documenten los defectos.
+- Puedes solicitar la resolución del contrato (devolver el inmueble y recuperar el dinero) o la rebaja del precio.
+- La SUNDDE NO interviene en compraventa de inmuebles entre particulares.
+""",
 }
 
 
@@ -1463,6 +1571,10 @@ RAMA_POR_TEMA = {
     "trabajadores_residenciales": "laboral",
     "proteccion_consumidor": "civil", "mala_praxis": "penal",
     "deuda_civil": "civil",
+    "robo_vehiculo": "penal", "pago_feriados": "laboral",
+    "herencia": "civil", "amenazas": "penal",
+    "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
+    "vicios_ocultos": "civil",
 }
 
 

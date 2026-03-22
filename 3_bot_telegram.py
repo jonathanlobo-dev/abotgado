@@ -1625,25 +1625,17 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
 
-    # Alerta al admin: DEBUG — enviar info de TODAS las consultas no-admin
-    if not es_admin(user_id):
+    # Alerta al admin: solo consultas de baja/media confianza
+    if confianza in ("baja", "media") and not es_admin(user_id):
         try:
             temas_str = ", ".join(temas) if temas else "ninguno"
-            if confianza in ("baja", "media"):
-                icono_conf = "🔴" if confianza == "baja" else "🟡"
-                await notificar_admins(context,
-                    f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
-                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
-                    f"Temas: {temas_str}\n"
-                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-                    f"Pregunta: {pregunta[:200]}")
-            else:
-                await notificar_admins(context,
-                    f"🟢 DEBUG CONSULTA\n"
-                    f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
-                    f"Temas: {temas_str}\n"
-                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-                    f"Pregunta: {pregunta[:200]}")
+            icono_conf = "🔴" if confianza == "baja" else "🟡"
+            await notificar_admins(context,
+                f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
+                f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
+                f"Temas: {temas_str}\n"
+                f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                f"Pregunta: {pregunta[:200]}")
         except Exception as e:
             logger.error(f"Error enviando alerta de confianza: {e}")
 
