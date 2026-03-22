@@ -429,7 +429,9 @@ ARTICULOS_CLAVE = {
                      "publicidad enganosa", "tienda", "vendedor", "proveedor",
                      "servicio deficiente", "no me quieren devolver"],
         "ley": "Ley Orgánica de Precios Justos",
-        "articulos": [1, 2, 3, 4, 5, 7, 8, 16, 17, 18, 31, 32, 35, 44, 65, 66, 73, 74, 75, 76, 77]
+        # 1=objeto, 7=utilidad pública, 11=atribuciones SUNDDE, 51=precios superiores,
+        # 53=alterar calidad, 58=condicionar venta, 62=alterar cantidad/peso, 63=noticias falsas
+        "articulos": [1, 7, 11, 39, 49, 51, 53, 58, 62, 63]
     },
     "bancario": {
         "keywords": ["cuenta bancaria", "préstamo bancario",
@@ -479,8 +481,8 @@ ARTICULOS_CLAVE = {
                      "producto malo", "producto dañado", "devolver producto",
                      "reclamo de compra", "defensor del consumidor"],
         "ley": "Ley Orgánica de Precios Justos",
-        # 1=objeto, 3=ámbito, 8=derechos, 73=retracto, 78=responsabilidad, 79=solidaria, 80=reposición
-        "articulos": [1, 3, 8, 73, 75, 78, 79, 80]
+        # 53=alterar calidad bienes, 62=alterar calidad/cantidad/peso, 39=inspección, 49=multas
+        "articulos": [1, 39, 49, 53, 58, 62]
     },
     "mala_praxis": {
         "keywords": ["negligencia médica", "negligencia medica", "mala praxis",
