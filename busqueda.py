@@ -791,7 +791,7 @@ REGLAS DE FORMATO Y REDACCIÓN:
 - Si un artículo tiene una LISTA de numerales u opciones, cita SOLO el numeral que responde a la pregunta del usuario. Ignora los numerales que hablen de otros temas. Ejemplo: si el usuario pregunta por el seguro y el artículo lista "1. placas, 2. licencia, 3. seguro", cita SOLO el numeral del seguro.
 - Si mencionas un artículo, DEBES decir qué dice.
 - PROHIBIDO hablar en tercera persona o narrar la pregunta (ej. "La pregunta del usuario es sobre...", "El usuario pregunta...", "La consulta trata sobre..."). Háblale directamente a la persona de tú. Ejemplo correcto: "Sí, pueden despedirte si...". Ejemplo INCORRECTO: "La pregunta del usuario es sobre si puede ser despedido...".
-- PROHIBIDO INVENTAR CANTIDADES — REGLA ESTRICTA: En la sección "Qué hacer" y "Respuesta", SOLO puedes mencionar montos, multas, porcentajes, años de cárcel o unidades tributarias que estén LITERALMENTE escritos en los artículos citados arriba. Si un artículo dice "10 U.T.", puedes decir "10 U.T." pero NO inventes otros montos como "50% del salario mínimo" o "20-30% del ingreso". Si no hay monto específico en el artículo, simplemente di "puedes ser multado" sin inventar la cifra.
+- PROHIBIDO INVENTAR CANTIDADES O PLAZOS — REGLA ESTRICTA: En la sección "Qué hacer" y "Respuesta", SOLO puedes mencionar montos, multas, porcentajes, años de cárcel, unidades tributarias o plazos de tiempo (días, meses, años) que estén LITERALMENTE escritos en los artículos citados arriba. Si un artículo dice "10 U.T.", puedes decir "10 U.T." pero NO inventes otros montos como "50% del salario mínimo" o "20-30% del ingreso". Si no hay monto o plazo específico en el artículo, simplemente di "puedes ser multado" o "dentro del plazo legal" sin inventar la cifra o el tiempo.
 - PROHIBIDO incluir números de teléfono en tu respuesta. NUNCA pongas números 0800, 0212, ni ningún teléfono.
 - Si no tienes el teléfono o página web exacta de una institución, simplemente menciona el nombre de la institución SIN agregar "(no disponible)" ni "no disponible". Ejemplo correcto: "Acude a la Fiscalía del Ministerio Público". Ejemplo INCORRECTO: "Acude a la Fiscalía del Ministerio Público (no disponible)".
 - En "Qué hacer": USA LA INFORMACIÓN DE LA GUÍA INSTITUCIONAL que aparece al final del contexto. Incluye instituciones REALES, plazos legales, documentos que debe llevar. NO incluyas números de teléfono.
@@ -1036,7 +1036,6 @@ INSTITUCIONES Y PASOS CONCRETOS PARA PROTECCIÓN AL CONSUMIDOR:
 - SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Es la institución principal para reclamos de consumidor. Puedes denunciar por su página web o presencialmente.
 - Ley Orgánica de Precios Justos: Es la ley vigente que protege al consumidor. Tienes derecho a que te cambien o reparen un producto defectuoso.
 - Tienes derecho a la reposición del bien, reparación gratuita, o devolución del dinero.
-- Plazo: Tienes 7 días para retractarte de una compra.
 - Si la tienda no responde: Acude a la SUNDDE con factura, fotos del producto y cualquier comunicación con el vendedor.
 """,
     "mala_praxis": """
