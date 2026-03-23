@@ -126,7 +126,8 @@ ARTICULOS_CLAVE = {
                      "no me pagan", "no me pagaron", "sin pagar",
                      "pagar prestaciones", "no me quieren pagar el trabajo"],
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
-        "articulos": [85, 86, 87, 141, 142, 190, 191, 192]
+        # 104=salario normal, 85-87=estabilidad, 141-142=prestaciones, 190-192=vacaciones
+        "articulos": [85, 86, 87, 104, 141, 142, 190, 191, 192]
     },
     "comunicaciones": {
         "keywords": ["comunicaciones", "privacidad",
@@ -312,10 +313,12 @@ ARTICULOS_CLAVE = {
                      "crueldad animal", "fauna doméstica", "fauna domestica",
                      "abandono animal", "abandonar animal", "ladra", "ladrar",
                      "ladrido", "ladridos", "muerde", "mordida", "mordió", "mordio",
-                     "perro suelto", "envenenar", "envenenaron", "matar animal",
+                     "perro suelto", "envenenar", "envenenaron", "envenenando",
+                     "veneno", "matar animal", "matando gatos", "matando perros",
                      "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        "articulos": [46, 52, 66, 67, 68]
+        # Art 65=prohibición venenos, 66=actos crueldad, 67=medidas cautelares, 68=sanciones
+        "articulos": [46, 52, 65, 66, 67, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -534,6 +537,16 @@ ARTICULOS_CLAVE = {
         "ley": "Ley Orgánica del Trabajo (LOTTT)",
         # 119=pago día feriado/descanso, 120=pago por trabajar feriado
         "articulos": [119, 120]
+    },
+    "permiso_medico": {
+        "keywords": ["no me deja ir al médico", "no me deja ir al medico",
+                     "permiso médico", "permiso medico", "reposo",
+                     "reposo médico", "reposo medico", "cita médica", "cita medica",
+                     "estoy enfermo", "enfermedad laboral",
+                     "suspensión por enfermedad", "suspension por enfermedad"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        # 71=suspensión relación, 72=supuestos (enfermedad), 73=efectos, 74=protección, 75=reincorporación
+        "articulos": [71, 72, 73, 74, 75]
     },
     "herencia": {
         "keywords": ["herencia", "heredero", "herederos", "sucesión",
@@ -1580,7 +1593,7 @@ RAMA_POR_TEMA = {
     "trabajadores_residenciales": "laboral",
     "proteccion_consumidor": "civil", "mala_praxis": "penal",
     "deuda_civil": "civil",
-    "robo_vehiculo": "penal", "pago_feriados": "laboral",
+    "robo_vehiculo": "penal", "pago_feriados": "laboral", "permiso_medico": "laboral",
     "herencia": "civil", "amenazas": "penal",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",
@@ -1667,6 +1680,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     _MAPA_GUIA = {
         "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
         "laboral_prestaciones": "laboral", "laboral_general": "laboral",
+        "pago_feriados": "laboral", "permiso_medico": "laboral",
         "transito_infracciones": "transito", "transito_licencia": "transito",
         "transito_accidente": "transito", "transito_vehiculo": "transito",
         "transito_general": "transito",
