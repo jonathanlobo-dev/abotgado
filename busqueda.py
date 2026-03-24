@@ -94,6 +94,17 @@ ARTICULOS_CLAVE = {
         "ley": "Ley de Tránsito Terrestre",
         "articulos": [58, 63, 86, 169, 170, 192]
     },
+    "transito_estacionamiento": {
+        "keywords": ["remolcando", "remolcar", "remolque", "grúa", "grua",
+                     "estacionado", "estacionamiento", "parado frente",
+                     "apartar puesto", "poner objetos", "obstaculizar",
+                     "conos", "no se paren carros", "me llevó la grúa",
+                     "me llevo la grua"],
+        "ley": "Ley de Tránsito Terrestre",
+        # Art 169=multas por infracciones (numeral 10: obstaculizar vía)
+        # NOTA: Art 169 aún no está en DB — necesita reindexar ley completa
+        "articulos": [169, 170, 171]
+    },
     "laboral_despido": {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
                      "botar", "botaron", "botado", "echar", "echaron",
@@ -1577,7 +1588,7 @@ RAMA_POR_TEMA = {
     "laboral_prestaciones": "laboral", "laboral_general": "laboral",
     "transito_infracciones": "transito", "transito_licencia": "transito",
     "transito_accidente": "transito", "transito_vehiculo": "transito",
-    "transito_general": "transito",
+    "transito_general": "transito", "transito_estacionamiento": "transito",
     "drogas": "penal", "corrupcion": "penal", "penal": "penal",
     "civil": "civil", "propiedad": "civil", "testamento": "civil", "divorcio": "civil",
     "comercial": "civil",
@@ -1683,7 +1694,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         "pago_feriados": "laboral", "permiso_medico": "laboral",
         "transito_infracciones": "transito", "transito_licencia": "transito",
         "transito_accidente": "transito", "transito_vehiculo": "transito",
-        "transito_general": "transito",
+        "transito_general": "transito", "transito_estacionamiento": "transito",
         "divorcio": "familia",
     }
     guias_usadas = set()
