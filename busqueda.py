@@ -379,8 +379,7 @@ ARTICULOS_CLAVE = {
                      "musica alta", "perturbación", "perturbacion", "escándalo",
                      "escandalo", "convivencia", "conflicto vecinal",
                      "juez de paz", "justicia de paz", "paz comunal",
-                     "problema con el vecino", "molestia vecinal",
-                     "ladra", "ladrar", "ladrido", "ladridos", "madrugada"],
+                     "problema con el vecino", "molestia vecinal", "madrugada"],
         "ley": "Ley Orgánica de Justicia de Paz Comunal",
         # >10 artículos → usa embedding search dentro de la ley
         "articulos": list(range(1, 60))
@@ -389,8 +388,7 @@ ARTICULOS_CLAVE = {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
                      "musica alta", "perturbación", "perturbacion", "escándalo",
                      "escandalo", "desorden", "alboroto", "molestia",
-                     "gimnasio clandestino", "fiesta ruidosa", "gritos",
-                     "ladra", "ladrar", "ladrido", "ladridos", "madrugada"],
+                     "gimnasio clandestino", "fiesta ruidosa", "gritos", "madrugada"],
         "ley": "Código Penal",
         # 502 = perturbación del sosiego, 503-508 = otras faltas
         # 501 excluido: es sobre agencias/empresas, no ruido
@@ -867,7 +865,7 @@ REGLA DE RELEVANCIA:
 - REGLA DE ORO: Pregúntate "¿este artículo le SIRVE al usuario para resolver SU problema?". Si la respuesta es no, NO lo cites. Ejemplo: si pregunta por vacaciones, NO cites artículos de estabilidad laboral. Si pregunta por drogas, NO cites artículos de tributos ni derogatorias.
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
-- Si un artículo NO está en la lista, NO lo menciones. NUNCA escribas "No disponible en la lista" ni "no se encuentra". Simplemente OMÍTELO y usa otro.
+- Si un artículo NO está en la lista de contexto que te di, NO LO MENCIONES. NUNCA escribas "No disponible en la lista", "no se encuentra", "no está disponible" ni nada similar. TAMPOCO sugieras artículos alternativos que no estén en la lista. Si no tienes el artículo, simplemente cita otro que sí esté en la lista. Si ninguno aplica, omite la sección 📖 completamente.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 
 ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
