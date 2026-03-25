@@ -25,22 +25,37 @@ def main():
     # Verificar si ChromaDB ya existe
     chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
 
-    # Contar PDFs actuales para detectar leyes nuevas
-    pdf_count_file = os.path.join(str(config.DATA_DIR), ".pdf_count")
-    pdfs_actuales = len([f for f in os.listdir(config.PDF_FOLDER) if f.endswith(".pdf")]) if os.path.exists(config.PDF_FOLDER) else 0
-    pdfs_anteriores = 0
-    if os.path.exists(pdf_count_file):
+    # Detectar cambios en PDFs (nombre + tamaño → hash)
+    import hashlib
+    pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
+    pdfs_actuales = 0
+    pdf_fingerprint = ""
+    if os.path.exists(config.PDF_FOLDER):
+        pdfs = sorted(f for f in os.listdir(config.PDF_FOLDER) if f.endswith(".pdf"))
+        pdfs_actuales = len(pdfs)
+        # Hash de nombres + tamaños para detectar reemplazos
+        partes = []
+        for f in pdfs:
+            try:
+                sz = os.path.getsize(os.path.join(config.PDF_FOLDER, f))
+            except OSError:
+                sz = 0
+            partes.append(f"{f}:{sz}")
+        pdf_fingerprint = hashlib.md5("|".join(partes).encode()).hexdigest()
+
+    fingerprint_anterior = ""
+    if os.path.exists(pdf_hash_file):
         try:
-            pdfs_anteriores = int(open(pdf_count_file).read().strip())
-        except (ValueError, IOError):
+            fingerprint_anterior = open(pdf_hash_file).read().strip()
+        except IOError:
             pass
 
-    hay_leyes_nuevas = pdfs_actuales != pdfs_anteriores
+    hay_leyes_nuevas = pdf_fingerprint != fingerprint_anterior
     forzar_reindex = os.getenv("REINDEX", "").lower() in ("1", "true", "si")
 
     if not chroma_existe or forzar_reindex or hay_leyes_nuevas:
         if hay_leyes_nuevas:
-            razon = f"Leyes nuevas detectadas ({pdfs_anteriores} → {pdfs_actuales})"
+            razon = f"Cambios en PDFs detectados ({pdfs_actuales} PDFs, fingerprint cambió)"
         elif forzar_reindex:
             razon = "REINDEX=1 activado"
         else:
@@ -60,9 +75,9 @@ def main():
         indexador = import_module("1_procesar_leyes")
         indexador.main()
 
-        # Guardar contador de PDFs para próxima vez
-        with open(pdf_count_file, "w") as f:
-            f.write(str(pdfs_actuales))
+        # Guardar fingerprint de PDFs para próxima vez
+        with open(pdf_hash_file, "w") as f:
+            f.write(pdf_fingerprint)
 
         print("\n[OK] Indexación completada.\n")
     else:
