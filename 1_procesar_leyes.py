@@ -51,7 +51,7 @@ def guardar_indice(indice: dict):
 
 NOMBRES_CORRECTOS = {
     # ── Leyes base ────────────────────────────────────────────────────────────
-    "Ley_de_Transporte_Terrestre,_Venezuela,_2008.pdf": "Ley de Transporte Terrestre",
+    "Ley_de_Transporte_Terrestre,_Venezuela,_2008.pdf": "Ley de Tránsito Terrestre",
     "constitucion.pdf":                             "Constitución de la República Bolivariana de Venezuela",
     "CONSTITUCIÓN DE LA REPÚBLICA BOLIVARIANA DE VENEZUELA.pdf":
         "Constitución de la República Bolivariana de Venezuela",
@@ -218,7 +218,7 @@ CLASIFICACION_LEYES = {
     "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia": "familia",
 
     # ── Tránsito ─────────────────────────────────────────────────────────────
-    "Ley de Transporte Terrestre":                                      "transito",
+    "Ley de Tránsito Terrestre":                                        "transito",
 
     # ── Tributario ───────────────────────────────────────────────────────────
     "Código Orgánico Tributario":                                       "tributario",
