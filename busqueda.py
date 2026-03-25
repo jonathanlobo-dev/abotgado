@@ -340,8 +340,9 @@ ARTICULOS_CLAVE = {
                      "veneno", "matar animal", "matando gatos", "matando perros",
                      "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        # Art 32=restricciones dueño, 34=autoridad municipal, 65=venenos, 66=crueldad, 67=medidas cautelares, 68=sanciones
-        "articulos": [32, 34, 65, 66, 67, 68]
+        # Art 32=restricciones dueño, 66=crueldad/sanciones, 67=medidas cautelares, 68=incumplimiento circulación
+        # Art 65 excluido: es sobre nulidad administrativa, NO sobre venenos (nombre engañoso)
+        "articulos": [32, 66, 67, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -390,6 +391,9 @@ ARTICULOS_CLAVE = {
                      "musica alta", "perturbación", "perturbacion", "escándalo",
                      "escandalo", "desorden", "alboroto", "molestia",
                      "gimnasio clandestino", "fiesta ruidosa", "gritos", "madrugada"],
+        "excluir": ["envenenó", "enveneno", "envenenaron", "veneno", "mató al",
+                    "mato al", "mataron", "matar gato", "matar perro", "murió mi",
+                    "murio mi", "golpeó", "golpeo", "le pegó", "le pego"],
         "ley": "Código Penal",
         # 508 = perturbación del sosiego (gritos, ruidos). 502-507 son otras faltas NO de ruido
         "articulos": [508]
