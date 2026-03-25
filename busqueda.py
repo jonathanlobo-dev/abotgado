@@ -867,6 +867,7 @@ REGLA DE RELEVANCIA:
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista de contexto que te di, NO LO MENCIONES. NUNCA escribas "No disponible en la lista", "no se encuentra", "no está disponible" ni nada similar. TAMPOCO sugieras artículos alternativos que no estén en la lista. Si no tienes el artículo, simplemente cita otro que sí esté en la lista. Si ninguno aplica, omite la sección 📖 completamente.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
+- Si el artículo citado menciona montos en bolívares (ej: "25 bolívares", "50 bolívares"), agrega entre paréntesis: "(monto desactualizado por reconversión monetaria — consulta la tasa vigente)".
 
 ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 
@@ -1045,9 +1046,10 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS TRIBUTARIOS:
 """,
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:
-- Fiscalía del Ministerio Público: Denuncia por maltrato animal.
+- Fiscalía del Ministerio Público: Denuncia por maltrato animal (es un hecho punible).
+- CICPC: Para casos graves como envenenamiento o muerte de animales — es un delito, no solo una falta.
 - Policía Municipal: Pueden intervenir inmediatamente si hay maltrato visible.
-- Si tu vecino maltrata a un animal: Toma fotos/videos como evidencia y denuncia ante la Fiscalía.
+- Si tu vecino maltrata o envenena un animal: Toma fotos/videos como evidencia y denuncia ante la Fiscalía o el CICPC.
 - Redes de rescate animal: Contacta organizaciones locales de tu ciudad para ayuda inmediata.
 """,
     "justicia_paz": """
