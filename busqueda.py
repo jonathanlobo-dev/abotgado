@@ -339,8 +339,8 @@ ARTICULOS_CLAVE = {
                      "veneno", "matar animal", "matando gatos", "matando perros",
                      "mató al perro", "mato al perro", "le pega al perro"],
         "ley": "Ley de Protección de la Fauna Doméstica",
-        # Art 65=prohibición venenos, 66=actos crueldad, 67=medidas cautelares, 68=sanciones
-        "articulos": [46, 52, 65, 66, 67, 68]
+        # Art 32=restricciones dueño, 34=autoridad municipal, 65=venenos, 66=crueldad, 67=medidas cautelares, 68=sanciones
+        "articulos": [32, 34, 65, 66, 67, 68]
     },
     "ambiente": {
         "keywords": ["contaminación", "contaminacion", "ruido excesivo", "ruido del vecino",
@@ -390,9 +390,8 @@ ARTICULOS_CLAVE = {
                      "escandalo", "desorden", "alboroto", "molestia",
                      "gimnasio clandestino", "fiesta ruidosa", "gritos", "madrugada"],
         "ley": "Código Penal",
-        # 502 = perturbación del sosiego, 503-508 = otras faltas
-        # 501 excluido: es sobre agencias/empresas, no ruido
-        "articulos": [502, 503, 504, 505, 506, 507, 508]
+        # 508 = perturbación del sosiego (gritos, ruidos). 502-507 son otras faltas NO de ruido
+        "articulos": [508]
     },
     "adultos_mayores": {
         "keywords": ["abuelo", "abuela", "anciano", "anciana", "adulto mayor",
