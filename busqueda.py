@@ -101,9 +101,20 @@ ARTICULOS_CLAVE = {
                      "conos", "no se paren carros", "me llevó la grúa",
                      "me llevo la grua"],
         "ley": "Ley de Tránsito Terrestre",
-        # Art 169=multas por infracciones (numeral 10: obstaculizar vía)
-        # NOTA: Art 169 aún no está en DB — necesita reindexar ley completa
-        "articulos": [169, 170, 171]
+        # >10 artículos → fuerza embedding search dentro de la ley
+        # Art 169 (numeral 10: obstaculizar vía) aún no está en DB, pero con
+        # embedding search dentro de Ley de Tránsito se evita traer CC Art. 660
+        "articulos": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 169, 170, 171]
+    },
+    "libre_transito": {
+        "keywords": ["obstaculizar vía", "obstaculizar via", "bloquear la calle",
+                     "cerrar la calle", "apartar puesto", "objetos frente al negocio",
+                     "no dejan pasar", "impedir circulación", "impedir circulacion",
+                     "libre circulación", "libre circulacion", "libre tránsito",
+                     "libre transito", "conos en la calle", "bloquear paso"],
+        "ley": "Constitución de la República Bolivariana de Venezuela",
+        # Art. 50 CRBV: derecho al libre tránsito (SÍ está en DB)
+        "articulos": [50]
     },
     "laboral_despido": {
         "keywords": ["despido", "despidieron", "despedir", "despedido", "despedida",
@@ -1012,6 +1023,13 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TRÁNSITO:
 - Multas: Puedes pagarlas en el INTT o en las oficinas autorizadas.
 - Seguro RCV: Es obligatorio. Si no tienes, la multa es de 50% del salario mínimo.
 """,
+    "transito_estacionamiento": """
+INSTITUCIONES PARA OBSTACULIZACIÓN DE VÍA PÚBLICA / APARTAR PUESTO:
+- Policía Municipal o Policía Nacional Bolivariana (PNB): Primera autoridad para retirar objetos que bloquean la vía pública (conos, cauchos, cadenas, sillas). Pueden actuar de inmediato.
+- Alcaldía de tu municipio (Dirección de Tránsito Municipal): Presenta denuncia formal si el problema persiste. Pueden imponer multas y ordenar el retiro.
+- IMPORTANTE: Las calles son bienes de dominio público. Nadie puede apropiarse de un espacio de estacionamiento en la vía pública, aunque sea frente a su negocio o vivienda. Es ilegal.
+- INTT: Para infracciones formales de tránsito documentadas.
+""",
     "propiedad": """
 INSTITUCIONES Y PASOS CONCRETOS PARA PROPIEDAD:
 - Registro Subalterno (Registro Inmobiliario): Para compraventa, hipotecas, liberación de gravámenes.
@@ -1589,6 +1607,7 @@ RAMA_POR_TEMA = {
     "transito_infracciones": "transito", "transito_licencia": "transito",
     "transito_accidente": "transito", "transito_vehiculo": "transito",
     "transito_general": "transito", "transito_estacionamiento": "transito",
+    "libre_transito": "civil",
     "drogas": "penal", "corrupcion": "penal", "penal": "penal",
     "civil": "civil", "propiedad": "civil", "testamento": "civil", "divorcio": "civil",
     "comercial": "civil",
@@ -1694,7 +1713,9 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         "pago_feriados": "laboral", "permiso_medico": "laboral",
         "transito_infracciones": "transito", "transito_licencia": "transito",
         "transito_accidente": "transito", "transito_vehiculo": "transito",
-        "transito_general": "transito", "transito_estacionamiento": "transito",
+        "transito_general": "transito",
+        "transito_estacionamiento": "transito_estacionamiento",
+        "libre_transito": "transito_estacionamiento",
         "divorcio": "familia",
     }
     guias_usadas = set()
