@@ -320,7 +320,8 @@ ARTICULOS_CLAVE = {
                      "rif empresa", "nit comercial", "actividad comercial",
                      "comerciante", "comercio", "negocio", "registro de comercio"],
         "ley": "Código de Comercio",
-        "articulos": [200, 201, 202, 203, 204, 205, 210, 212, 214, 215, 219, 220]
+        # Art 200=definición, 201=tipos, 202=denominación, 211=documento, 212=registro, 214=requisitos SRL, 215=plazo 15 días
+        "articulos": [200, 201, 202, 211, 212, 214, 215]
     },
     "discapacidad": {
         "keywords": ["discapacidad", "discapacitado", "persona con discapacidad",
@@ -998,11 +999,12 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ARRENDAMIENTO:
 """,
     "comercial": """
 INSTITUCIONES Y PASOS CONCRETOS PARA REGISTRO DE EMPRESA:
-- Registro Mercantil: Acude al de tu jurisdicción. Necesitas: acta constitutiva, estatutos, cédulas de los socios, RIF de los socios, reserva de nombre de la empresa.
+- SAREN en línea (sfrregistros.saren.gob.ve): Paso 1 obligatorio. Reserva de nombre de la empresa (prepara 3 opciones).
+- Abogado: Necesitas un abogado para redactar el acta constitutiva y los estatutos.
+- Registro Mercantil: Acude al de tu jurisdicción con: acta constitutiva, estatutos, cédulas de los socios, RIF de los socios y reserva de nombre aprobada.
 - SENIAT: Después de registrar, solicita el RIF de la empresa. Web: seniat.gob.ve
 - Alcaldía: Solicita la Licencia de Actividades Económicas (patente de industria y comercio).
-- Tipos comunes: C.A. (Compañía Anónima) para 2+ socios, S.R.L. para responsabilidad limitada, Firma Personal para 1 solo dueño.
-- Costo aproximado: Registro ante el Registro Mercantil + honorarios del abogado que redacte el acta constitutiva.
+- Tipo más común: C.A. (Compañía Anónima) para 2+ socios. Firma Personal para 1 solo dueño.
 """,
     "corrupcion": """
 INSTITUCIONES Y PASOS CONCRETOS PARA CORRUPCIÓN:
