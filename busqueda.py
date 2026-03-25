@@ -381,8 +381,8 @@ ARTICULOS_CLAVE = {
                      "juez de paz", "justicia de paz", "paz comunal",
                      "problema con el vecino", "molestia vecinal", "madrugada"],
         "ley": "Ley Orgánica de Justicia de Paz Comunal",
-        # >10 artículos → usa embedding search dentro de la ley
-        "articulos": list(range(1, 60))
+        # Art 8=competencias, 29=casos que conoce, 36=medidas preventivas, 37=conciliación 15 días
+        "articulos": [8, 29, 36, 37]
     },
     "faltas_penales": {
         "keywords": ["vecino", "vecinos", "ruido", "bulla", "música alta",
