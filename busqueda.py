@@ -382,6 +382,11 @@ ARTICULOS_CLAVE = {
                      "escandalo", "convivencia", "conflicto vecinal",
                      "juez de paz", "justicia de paz", "paz comunal",
                      "problema con el vecino", "molestia vecinal", "madrugada"],
+        # Excluir crímenes graves: JdP es para disputas civiles, no delitos penales
+        "excluir": ["envenenó", "enveneno", "envenenaron", "veneno",
+                    "mató al", "mato al", "mataron", "disparó", "disparo",
+                    "golpeó", "golpeo", "apuñaló", "apunalo", "secuestró", "secuestro",
+                    "robo", "robaron", "asaltaron", "violaron", "agredió físicamente"],
         "ley": "Ley Orgánica de Justicia de Paz Comunal",
         # Art 8=competencias, 29=casos que conoce, 36=medidas preventivas, 37=conciliación 15 días
         "articulos": [8, 29, 36, 37]
@@ -1050,11 +1055,10 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS TRIBUTARIOS:
 """,
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:
-- Fiscalía del Ministerio Público: Denuncia por maltrato animal (es un hecho punible).
-- CICPC: Para casos graves como envenenamiento o muerte de animales — es un delito, no solo una falta.
-- Policía Municipal: Pueden intervenir inmediatamente si hay maltrato visible.
-- Si tu vecino maltrata o envenena un animal: Toma fotos/videos como evidencia y denuncia ante la Fiscalía o el CICPC.
-- Redes de rescate animal: Contacta organizaciones locales de tu ciudad para ayuda inmediata.
+- Si envenenaron o mataron al animal: Es un DELITO PENAL. Denuncia ante el CICPC (Cuerpo de Investigaciones Científicas, Penales y Criminalísticas) o la Fiscalía del Ministerio Público. NO es un caso para el Juez de Paz.
+- Si hay maltrato visible (golpes, abandono): Denuncia ante la Policía Municipal y la Fiscalía.
+- Evidencia: Toma fotos/videos del animal herido o muerto, guarda restos si hay veneno, consigue testigos.
+- Para ladridos o molestias: Acude al Juez de Paz Comunal — eso sí es un conflicto vecinal.
 """,
     "justicia_paz": """
 INSTITUCIONES Y PASOS CONCRETOS PARA CONFLICTOS VECINALES:
