@@ -1259,14 +1259,13 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 - IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
 """,
     "negocio_casa": """
-INSTITUCIONES Y PASOS CONCRETOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA:
-- Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio.
-- SACS (Servicio Autónomo de Contraloría Sanitaria, adscrito al Ministerio de Salud): Para negocios de comida, necesitas el Permiso Sanitario del local y el Registro Sanitario del producto (si es procesado).
-- Documentos para vender comida: (1) Certificado de Salud vigente, (2) Constancia del Curso de Manipulación de Alimentos, (3) Permiso Sanitario del Local (inspección del espacio), (4) RIF como persona natural.
-- SENIAT: Inscripción en el RIF como persona natural con actividad comercial.
-- Si es apartamento en condominio: Revisa el Documento de Condominio — algunos prohíben actividades comerciales.
-- Si el carrito/puesto es en la CALLE o acera: también necesitas el Permiso de Ocupación de Espacios Públicos que otorga la Alcaldía (Dirección de Ingeniería Municipal).
-- ADVERTENCIA: Vender comida sin permiso sanitario puede resultar en cierre del local (48 horas a 2 años) y decomiso de productos según Art. 65 Ley Orgánica de Salud.
+PASOS OBLIGATORIOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA O EN LA CALLE:
+Paso 1 — SENIAT: Saca el RIF como persona natural con actividad comercial (seniat.gob.ve).
+Paso 2 — Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio. Lleva: cédula, RIF, título de propiedad o contrato de arrendamiento del local.
+Paso 3 — SACS (Servicio Autónomo de Contraloría Sanitaria): Para negocios que manejen alimentos (abasto, bodega, comida, carrito) necesitas el Permiso Sanitario de Funcionamiento. Lleva: RIF, cédula, plano del local, descripción de actividad.
+Paso 4 (si hay manipulación de alimentos): Cada persona que trabaje en el negocio debe tener: (a) Certificado de Salud vigente, (b) Constancia del Curso de Manipulación de Alimentos.
+Paso 5 (si el puesto es en la CALLE o acera): Permiso de Ocupación de Espacios Públicos — Alcaldía (Dirección de Ingeniería Municipal).
+ADVERTENCIA: Operar sin permiso sanitario puede resultar en cierre del local (48 horas a 2 años) y decomiso de productos (Art. 65 Ley Orgánica de Salud).
 """,
     "recurso_multa": """
 INSTITUCIONES Y PASOS CONCRETOS PARA RECURRIR UNA MULTA:
