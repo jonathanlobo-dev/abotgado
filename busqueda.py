@@ -353,7 +353,10 @@ ARTICULOS_CLAVE = {
                      "empanadas", "arepas", "comida rápida", "comida rapida",
                      "carrito de comida", "carro de comida", "puesto de comida",
                      "carro de perros", "venta en la calle", "venta callejera",
-                     "poner un puesto", "puesto en la calle"],
+                     "poner un puesto", "puesto en la calle",
+                     "abasto", "abastos", "mini mercado", "minimercado",
+                     "mini-market", "supermercado", "bodega", "licorera",
+                     "quiosco", "kiosco", "venta de arepas"],
         "ley": "Ley Orgánica de Salud",
         # 16=competencia municipal salud pública, 32=contraloría sanitaria (registro/inspección alimentos)
         # 33=requisitos ministerio salud, 65=medidas cautelares (cierre local), 66=sanciones
