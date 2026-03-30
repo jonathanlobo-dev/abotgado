@@ -262,12 +262,12 @@ ARTICULOS_CLAVE = {
                      "regimen de visitas", "quitar al niño", "quitar a mi hijo",
                      "no pago la pension", "deja ver"],
         "ley": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-        # 10 arts → lookup directo. 26=vivir con familia, 32=identidad/filiación,
-        # 85=patria potestad contenido, 86=ejercicio PP, 358=guarda,
-        # 359=ejercicio guarda, 360=guarda en divorcio,
+        # 7 arts → lookup directo. Quitados 26/85 (genéricos, LLM los prefería sobre 385)
+        # 86=ejercicio patria potestad, 358=guarda, 359=ejercicio guarda,
+        # 360=guarda en divorcio/separación,
         # 385=derecho de visitas (KEY: independiente del pago pensión),
-        # 386=contenido visitas, 387=fijación régimen
-        "articulos": [26, 32, 85, 86, 358, 359, 360, 385, 386, 387]
+        # 386=contenido visitas, 387=fijación régimen de visitas
+        "articulos": [86, 358, 359, 360, 385, 386, 387]
     },
     "divorcio": {
         "keywords": ["divorcio", "divorciar", "separación", "separacion",
