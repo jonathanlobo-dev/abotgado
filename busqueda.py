@@ -91,6 +91,10 @@ ARTICULOS_CLAVE = {
         "keywords": ["carro", "coche", "vehículo", "vehiculo", "moto", "motocicleta",
                      "camión", "camion", "alcabala", "tránsito", "transito",
                      "conductor", "circulación", "circulacion", "autopista"],
+        # Excluir carritos/puestos de comida: "carro" en ese contexto no es un vehículo
+        "excluir": ["perros calientes", "hot dog", "hotdog", "comida rápida", "comida rapida",
+                    "carrito de comida", "puesto de comida", "empanadas", "hamburguesas",
+                    "vender comida", "carro de comida", "carro de perros"],
         "ley": "Ley de Tránsito Terrestre",
         "articulos": [58, 63, 86, 169, 170, 192]
     },
@@ -344,7 +348,12 @@ ARTICULOS_CLAVE = {
                      "garaje", "comida en casa", "negocio de comida",
                      "permisos para vender", "puedo vender",
                      "permiso sanitario", "registro sanitario",
-                     "manipulacion de alimentos", "manipulación de alimentos"],
+                     "manipulacion de alimentos", "manipulación de alimentos",
+                     "perros calientes", "hot dog", "hotdog", "hamburguesas",
+                     "empanadas", "arepas", "comida rápida", "comida rapida",
+                     "carrito de comida", "carro de comida", "puesto de comida",
+                     "carro de perros", "venta en la calle", "venta callejera",
+                     "poner un puesto", "puesto en la calle"],
         "ley": "Ley Orgánica de Salud",
         # 16=competencia municipal salud pública, 32=contraloría sanitaria (registro/inspección alimentos)
         # 33=requisitos ministerio salud, 65=medidas cautelares (cierre local), 66=sanciones
@@ -366,6 +375,9 @@ ARTICULOS_CLAVE = {
                      "perro suelto", "envenenar", "envenenaron", "envenenando",
                      "veneno", "matar animal", "matando gatos", "matando perros",
                      "mató al perro", "mato al perro", "le pega al perro"],
+        # "perros calientes" = comida, no animales
+        "excluir": ["perros calientes", "hot dog", "hotdog", "carro de perros",
+                    "carrito de comida", "vender comida", "puesto de comida"],
         "ley": "Ley de Protección de la Fauna Doméstica",
         # Art 32=restricciones dueño, 66=crueldad/sanciones, 67=medidas cautelares, 68=incumplimiento circulación
         # Art 65 excluido: es sobre nulidad administrativa, NO sobre venenos (nombre engañoso)
@@ -1250,6 +1262,7 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA:
 - Documentos para vender comida: (1) Certificado de Salud vigente, (2) Constancia del Curso de Manipulación de Alimentos, (3) Permiso Sanitario del Local (inspección del espacio), (4) RIF como persona natural.
 - SENIAT: Inscripción en el RIF como persona natural con actividad comercial.
 - Si es apartamento en condominio: Revisa el Documento de Condominio — algunos prohíben actividades comerciales.
+- Si el carrito/puesto es en la CALLE o acera: también necesitas el Permiso de Ocupación de Espacios Públicos que otorga la Alcaldía (Dirección de Ingeniería Municipal).
 - ADVERTENCIA: Vender comida sin permiso sanitario puede resultar en cierre del local (48 horas a 2 años) y decomiso de productos según Art. 65 Ley Orgánica de Salud.
 """,
     "recurso_multa": """
