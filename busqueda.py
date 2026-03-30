@@ -270,8 +270,10 @@ ARTICULOS_CLAVE = {
                      "no quiere firmar", "no me quiere dar el divorcio",
                      "divorcio contencioso"],
         "ley": "Código Civil venezolano",
-        # 185=causales de divorcio, 186=efectos, 188-191=separación, 148-151=bienes
-        "articulos": [185, 186, 188, 189, 190, 191, 148, 149, 150, 151, 156, 168, 173, 174, 175]
+        # 9 arts → lookup directo (no embedding). 185=causales, 186=efectos,
+        # 188=separación de cuerpos, 148=bienes gananciales, 156=bienes de la comunidad,
+        # 173=extinción comunidad, 174=medidas cautelares divorcio
+        "articulos": [185, 186, 188, 189, 148, 149, 156, 173, 174]
     },
     "maternidad_paternidad": {
         "keywords": ["embarazada", "embarazo", "maternidad", "paternidad", "prenatal",
@@ -594,8 +596,19 @@ ARTICULOS_CLAVE = {
                      "amenaza por WhatsApp", "amenaza por whatsapp",
                      "amenaza por mensaje"],
         "ley": "Código Penal",
-        # 175=privación de libertad, 176=amenazas/violencias para forzar actos
-        "articulos": [175, 176]
+        # 176=coerción mediante amenazas/violencia (forzar a hacer/tolerar algo)
+        # 175 EXCLUIDO: es privación de libertad (secuestro), no amenazas
+        "articulos": [176]
+    },
+    "recurso_multa": {
+        "keywords": ["multa injusta", "multa sin razón", "multa sin razon",
+                     "me pusieron una multa", "multa ilegal", "recurrir multa",
+                     "apelar multa", "impugnar multa", "multa abusiva",
+                     "no estoy de acuerdo con la multa", "multa sin pruebas"],
+        "ley": "Constitución de la República Bolivariana de Venezuela",
+        # 26=acceso a justicia, 49=debido proceso (notificación, derecho a defensa)
+        # 51=derecho de petición, 259=jurisdicción contencioso-administrativa
+        "articulos": [26, 49, 51]
     },
     "detencion_arbitraria": {
         "keywords": ["me detuvieron", "detuvieron sin orden", "preso sin orden",
@@ -1198,6 +1211,16 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 - Registro Subalterno: Para protocolizar la partición de bienes inmuebles entre los herederos.
 - IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
 """,
+    "recurso_multa": """
+INSTITUCIONES Y PASOS CONCRETOS PARA RECURRIR UNA MULTA:
+- Tienes derecho al debido proceso (CRBV Art. 49): ser notificado, tener acceso a pruebas, ejercer tu defensa.
+- Paso 1: Solicita por escrito a la institución que impuso la multa (INTT, Alcaldía, SENIAT, etc.) la revisión o reconsideración del acto administrativo.
+- Paso 2: Si no responden en 20 días hábiles o te niegan, puedes interponer un recurso jerárquico ante el superior.
+- Paso 3: Si agotaste la vía administrativa, puedes acudir al Tribunal Contencioso-Administrativo.
+- Para multas de tránsito (INTT): dirígete al INTT de tu jurisdicción con cédula, el acta de multa y tus pruebas de descargo.
+- Para multas municipales: dirígete a la Alcaldía (Dirección de Rentas o Hacienda Municipal).
+- IMPORTANTE: Guarda siempre la notificación original de la multa — es tu evidencia.
+""",
     "detencion_arbitraria": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DETENCIÓN ARBITRARIA:
 - Defensoría del Pueblo: Denuncia abuso de autoridad y detención sin orden judicial.
@@ -1634,6 +1657,7 @@ RAMA_POR_TEMA = {
     "deuda_civil": "civil",
     "robo_vehiculo": "penal", "pago_feriados": "laboral", "permiso_medico": "laboral",
     "herencia": "civil", "amenazas": "penal",
+    "recurso_multa": "administrativo",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",
 }
