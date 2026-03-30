@@ -342,10 +342,13 @@ ARTICULOS_CLAVE = {
                      "licencia de actividades", "patente de industria",
                      "vender comida", "venta de comida", "vendo comida",
                      "garaje", "comida en casa", "negocio de comida",
-                     "permisos para vender", "puedo vender"],
-        "ley": "Código de Comercio",
-        # 200=definición comercio, 10=actos de comercio. Resto es municipal/ordenanzas
-        "articulos": [200, 10]
+                     "permisos para vender", "puedo vender",
+                     "permiso sanitario", "registro sanitario",
+                     "manipulacion de alimentos", "manipulación de alimentos"],
+        "ley": "Ley Orgánica de Salud",
+        # 16=competencia municipal salud pública, 32=contraloría sanitaria (registro/inspección alimentos)
+        # 33=requisitos ministerio salud, 65=medidas cautelares (cierre local), 66=sanciones
+        "articulos": [16, 32, 33, 65, 66]
     },
     "discapacidad": {
         "keywords": ["discapacidad", "discapacitado", "persona con discapacidad",
@@ -1241,12 +1244,13 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 - IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
 """,
     "negocio_casa": """
-INSTITUCIONES Y PASOS CONCRETOS PARA ABRIR UN NEGOCIO EN CASA:
-- Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio. Es el permiso obligatorio para cualquier negocio, incluso en casa.
+INSTITUCIONES Y PASOS CONCRETOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA:
+- Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio.
+- SACS (Servicio Autónomo de Contraloría Sanitaria, adscrito al Ministerio de Salud): Para negocios de comida, necesitas el Permiso Sanitario del local y el Registro Sanitario del producto (si es procesado).
+- Documentos para vender comida: (1) Certificado de Salud vigente, (2) Constancia del Curso de Manipulación de Alimentos, (3) Permiso Sanitario del Local (inspección del espacio), (4) RIF como persona natural.
 - SENIAT: Inscripción en el RIF como persona natural con actividad comercial.
-- Zonificación: La Alcaldía verificará si la zona residencial permite actividades comerciales. Una bodega pequeña (bodegas de barrio) generalmente se permite.
-- Si es apartamento en condominio: Revisa el Documento de Condominio — algunos prohíben actividades comerciales (Art. 8 Ley de Propiedad Horizontal).
-- IMPORTANTE: Las ordenanzas municipales varían por municipio. Lo que es permitido en uno puede estar restringido en otro.
+- Si es apartamento en condominio: Revisa el Documento de Condominio — algunos prohíben actividades comerciales.
+- ADVERTENCIA: Vender comida sin permiso sanitario puede resultar en cierre del local (48 horas a 2 años) y decomiso de productos según Art. 65 Ley Orgánica de Salud.
 """,
     "recurso_multa": """
 INSTITUCIONES Y PASOS CONCRETOS PARA RECURRIR UNA MULTA:

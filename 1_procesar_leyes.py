@@ -185,6 +185,14 @@ NOMBRES_CORRECTOS = {
     # ── Ley Orgánica de Drogas (2010) ───────────────────────────────────────
     "Ley-Organica-de-Drogas-2010.pdf":
         "Ley Orgánica de Drogas",
+
+    # ── Salud y Permisos Sanitarios ─────────────────────────────────────────
+    "ley-organica-de-salud.pdf":
+        "Ley Orgánica de Salud",
+    "reglamento-general-de-alimentos.pdf":
+        "Reglamento General de Alimentos",
+    "Resolucion-SG-403-96.Permisos-Sanitarios-1.pdf":
+        "Resolución SG-403-96 Permisos Sanitarios",
 }
 
 
