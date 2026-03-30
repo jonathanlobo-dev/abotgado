@@ -325,6 +325,16 @@ ARTICULOS_CLAVE = {
         # Art 200=definición, 201=tipos, 202=denominación, 211=documento, 212=registro, 214=requisitos SRL, 215=plazo 15 días
         "articulos": [200, 201, 202, 211, 212, 214, 215]
     },
+    "negocio_casa": {
+        "keywords": ["bodega en casa", "negocio en casa", "poner una bodega",
+                     "abrir una bodega", "vender desde casa", "venta desde casa",
+                     "local en casa", "tienda en casa", "negocio desde casa",
+                     "puedo poner", "puedo abrir", "permiso para negocio",
+                     "licencia de actividades", "patente de industria"],
+        "ley": "Código de Comercio",
+        # 200=definición comercio, 10=actos de comercio. Resto es municipal/ordenanzas
+        "articulos": [200, 10]
+    },
     "discapacidad": {
         "keywords": ["discapacidad", "discapacitado", "persona con discapacidad",
                      "minusvalía", "minusvalia", "accesibilidad", "inclusión",
@@ -388,7 +398,9 @@ ARTICULOS_CLAVE = {
         "excluir": ["envenenó", "enveneno", "envenenaron", "veneno",
                     "mató al", "mato al", "mataron", "disparó", "disparo",
                     "golpeó", "golpeo", "apuñaló", "apunalo", "secuestró", "secuestro",
-                    "robo", "robaron", "asaltaron", "violaron", "agredió físicamente"],
+                    "robo", "robaron", "asaltaron", "violaron", "agredió físicamente",
+                    "amenaza de muerte", "me quiere matar", "amenazó de muerte",
+                    "amenazo de muerte"],
         "ley": "Ley Orgánica de Justicia de Paz Comunal",
         # Art 8=competencias, 29=casos que conoce, 36=medidas preventivas, 37=conciliación 15 días
         "articulos": [8, 29, 36, 37]
@@ -400,7 +412,9 @@ ARTICULOS_CLAVE = {
                      "gimnasio clandestino", "fiesta ruidosa", "gritos", "madrugada"],
         "excluir": ["envenenó", "enveneno", "envenenaron", "veneno", "mató al",
                     "mato al", "mataron", "matar gato", "matar perro", "murió mi",
-                    "murio mi", "golpeó", "golpeo", "le pegó", "le pego"],
+                    "murio mi", "golpeó", "golpeo", "le pegó", "le pego",
+                    "amenaza", "amenazó", "amenazo", "amenazas", "me quiere matar",
+                    "muerte", "matar"],
         "ley": "Código Penal",
         # 508 = perturbación del sosiego (gritos, ruidos). 502-507 son otras faltas NO de ruido
         "articulos": [508]
@@ -1211,6 +1225,14 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 - Registro Subalterno: Para protocolizar la partición de bienes inmuebles entre los herederos.
 - IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
 """,
+    "negocio_casa": """
+INSTITUCIONES Y PASOS CONCRETOS PARA ABRIR UN NEGOCIO EN CASA:
+- Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio. Es el permiso obligatorio para cualquier negocio, incluso en casa.
+- SENIAT: Inscripción en el RIF como persona natural con actividad comercial.
+- Zonificación: La Alcaldía verificará si la zona residencial permite actividades comerciales. Una bodega pequeña (bodegas de barrio) generalmente se permite.
+- Si es apartamento en condominio: Revisa el Documento de Condominio — algunos prohíben actividades comerciales (Art. 8 Ley de Propiedad Horizontal).
+- IMPORTANTE: Las ordenanzas municipales varían por municipio. Lo que es permitido en uno puede estar restringido en otro.
+""",
     "recurso_multa": """
 INSTITUCIONES Y PASOS CONCRETOS PARA RECURRIR UNA MULTA:
 - Tienes derecho al debido proceso (CRBV Art. 49): ser notificado, tener acceso a pruebas, ejercer tu defensa.
@@ -1658,6 +1680,7 @@ RAMA_POR_TEMA = {
     "robo_vehiculo": "penal", "pago_feriados": "laboral", "permiso_medico": "laboral",
     "herencia": "civil", "amenazas": "penal",
     "recurso_multa": "administrativo",
+    "negocio_casa": "comercial",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",
 }
