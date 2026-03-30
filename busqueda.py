@@ -256,9 +256,18 @@ ARTICULOS_CLAVE = {
     "familia": {
         "keywords": ["hijo", "hija", "niño", "niña", "menor", "adolescente",
                      "custodia", "guarda", "manutención", "pension alimentaria",
-                     "alimentos", "patria potestad", "adopción", "adopcion"],
+                     "alimentos", "patria potestad", "adopción", "adopcion",
+                     "ver a mi hijo", "ver a mi hija", "no me deja ver",
+                     "no me permite ver", "visitas", "régimen de visitas",
+                     "regimen de visitas", "quitar al niño", "quitar a mi hijo",
+                     "no pago la pension", "deja ver"],
         "ley": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-        "articulos": [5, 7, 8, 26, 27, 30, 32, 76, 85, 86, 358, 359, 360]
+        # 10 arts → lookup directo. 26=vivir con familia, 32=identidad/filiación,
+        # 85=patria potestad contenido, 86=ejercicio PP, 358=guarda,
+        # 359=ejercicio guarda, 360=guarda en divorcio,
+        # 385=derecho de visitas (KEY: independiente del pago pensión),
+        # 386=contenido visitas, 387=fijación régimen
+        "articulos": [26, 32, 85, 86, 358, 359, 360, 385, 386, 387]
     },
     "divorcio": {
         "keywords": ["divorcio", "divorciar", "separación", "separacion",
@@ -330,7 +339,10 @@ ARTICULOS_CLAVE = {
                      "abrir una bodega", "vender desde casa", "venta desde casa",
                      "local en casa", "tienda en casa", "negocio desde casa",
                      "puedo poner", "puedo abrir", "permiso para negocio",
-                     "licencia de actividades", "patente de industria"],
+                     "licencia de actividades", "patente de industria",
+                     "vender comida", "venta de comida", "vendo comida",
+                     "garaje", "comida en casa", "negocio de comida",
+                     "permisos para vender", "puedo vender"],
         "ley": "Código de Comercio",
         # 200=definición comercio, 10=actos de comercio. Resto es municipal/ordenanzas
         "articulos": [200, 10]
@@ -1007,6 +1019,7 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:
 - IDENNA (Instituto Nacional de Niños): Para protección de menores.
 - Pensión alimentaria: Se fija en el Tribunal de Protección según las necesidades del niño y la capacidad económica del obligado.
 - Divorcio: Acude al Tribunal de Municipio (mutuo acuerdo) o Tribunal Civil (contencioso).
+- REGLA CRÍTICA — PENSIÓN VS VISITAS: El pago de la pensión y el derecho a ver al hijo son INDEPENDIENTES. Nadie puede negar las visitas porque no se pagó la pensión — eso viola el Art. 385 LOPNA. Si te niegan las visitas por falta de pago, denuncia ante el Tribunal de Protección.
 """,
     "violencia_mujer": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLENCIA DE GÉNERO:
