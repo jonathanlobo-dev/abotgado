@@ -1614,7 +1614,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # ── Filtro: preguntas fuera del área legal ───────────────────────────
     # Solo aplicar si la pregunta es larga (>4 palabras) y no tiene tema legal
     palabras = texto_limpio.split()
-    if len(palabras) > 4 and not busqueda._tiene_tema_legal(texto_limpio):
+    if len(palabras) >= 3 and not busqueda._tiene_tema_legal(texto_limpio):
         await enviar_respuesta(
             update.message,
             "⚖️ Soy <b>aBOTgado</b>, asistente jurídico venezolano.\n\n"
