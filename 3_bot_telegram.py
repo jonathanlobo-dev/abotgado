@@ -1611,6 +1611,19 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return
 
+    # ── Filtro: preguntas fuera del área legal ───────────────────────────
+    # Solo aplicar si la pregunta es larga (>4 palabras) y no tiene tema legal
+    palabras = texto_limpio.split()
+    if len(palabras) > 4 and not busqueda._tiene_tema_legal(texto_limpio):
+        await enviar_respuesta(
+            update.message,
+            "⚖️ Soy <b>aBOTgado</b>, asistente jurídico venezolano.\n\n"
+            "Solo puedo ayudarte con consultas legales: trabajo, vivienda, "
+            "familia, tránsito, penal, comercial, entre otros.\n\n"
+            "¿Tienes alguna duda legal? Escríbela y te oriento."
+        )
+        return
+
     # ── Consulta jurídica normal ─────────────────────────────────────────
     logger.info(f"Consulta recibida del usuario ID: {user_id}")
 
