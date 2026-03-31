@@ -1639,6 +1639,16 @@ def _tiene_tema_legal(texto: str) -> bool:
         "arrendamiento", "contrato", "deuda", "multa", "multar", "licencia",
         "tránsito", "transito", "semáforo", "semaforo", "choque", "drogas",
         "marihuana", "vacaciones", "prestaciones", "carro", "vehículo", "vehiculo",
+        # Venezolanismos laborales
+        "botaron", "botó", "me bota", "me botan", "nos botaron", "me echaron",
+        "echaron", "me sacaron", "sacaron del trabajo", "sin aviso", "sin preaviso",
+        "liquidación", "liquidacion", "me liquidaron", "finiquito",
+        # Venezolanismos generales
+        "preso", "presa", "presos", "metieron preso", "se lo llevaron",
+        "abuso", "abusan", "aprovechan", "me están cobrando", "me cobran de más",
+        "me quitaron", "me robaron", "me estafaron", "me engañaron",
+        "permiso", "certificado", "registro", "negocio", "abasto", "bodega",
+        "pensión alimentaria", "alimentos hijo", "no me deja ver",
     ]
     return any(t in texto for t in temas_legales)
 
