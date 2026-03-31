@@ -1593,6 +1593,24 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             )
             return
 
+    # ── Filtro: saludos/emojis/mensajes no legales ───────────────────────
+    SALUDOS = {"hola", "hello", "hi", "gracias", "ok", "okay", "bien",
+               "perfecto", "entendido", "claro", "buenas", "buenos días",
+               "buenos dias", "buenas tardes", "buenas noches", "excelente",
+               "listo", "dale", "vale", "de acuerdo", "😊", "👍", "❤️",
+               "🙏", "😀", "😁", "👋", "🤝", "chao", "adiós", "adios"}
+    texto_limpio = pregunta.strip().lower()
+    # Es puro saludo/emoji si coincide exactamente o tiene solo emojis
+    es_saludo = (texto_limpio in SALUDOS or
+                 (len(texto_limpio) <= 3 and not any(c.isalpha() for c in texto_limpio)))
+    if es_saludo:
+        await enviar_respuesta(
+            update.message,
+            "¡Con gusto! 😊 Escríbeme tu consulta legal y te ayudo.\n\n"
+            "Ejemplo: <i>Me despidieron sin causa, ¿qué hago?</i>"
+        )
+        return
+
     # ── Consulta jurídica normal ─────────────────────────────────────────
     logger.info(f"Consulta recibida del usuario ID: {user_id}")
 
@@ -1968,6 +1986,16 @@ def main():
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         responder_consulta
+    ))
+
+    # Fotos, stickers, documentos — respuesta amigable
+    async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text(
+            "⚖️ Solo proceso consultas de texto. Escríbeme tu pregunta legal."
+        )
+    app.add_handler(MessageHandler(
+        filters.PHOTO | filters.Sticker.ALL | filters.Document.ALL | filters.VIDEO,
+        handle_media
     ))
 
     # Catch-all: comandos no reconocidos (DEBE ser el último handler)
