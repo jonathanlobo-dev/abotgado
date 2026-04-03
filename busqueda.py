@@ -378,9 +378,12 @@ ARTICULOS_CLAVE = {
                      "perro suelto", "envenenar", "envenenaron", "envenenando",
                      "veneno", "matar animal", "matando gatos", "matando perros",
                      "mató al perro", "mato al perro", "le pega al perro"],
-        # "perros calientes" = comida, no animales
+        # "perros calientes" = comida / "en la vía" = tránsito, no fauna doméstica
         "excluir": ["perros calientes", "hot dog", "hotdog", "carro de perros",
-                    "carrito de comida", "vender comida", "puesto de comida"],
+                    "carrito de comida", "vender comida", "puesto de comida",
+                    "en la vía", "en la carretera", "en la autopista",
+                    "causa accidente", "animales sueltos", "vaca en la vía",
+                    "caballo en la vía", "animal en la carretera"],
         "ley": "Ley de Protección de la Fauna Doméstica",
         # Art 32=restricciones dueño, 66=crueldad/sanciones, 67=medidas cautelares, 68=incumplimiento circulación
         # Art 65 excluido: es sobre nulidad administrativa, NO sobre venenos (nombre engañoso)
@@ -681,6 +684,25 @@ ARTICULOS_CLAVE = {
         "ley": "Código Civil venezolano",
         # NOTA: Art. 1518+ no están en DB (CC solo hasta 999). Usar embedding search.
         "articulos": list(range(1, 999))  # fuerza embedding por ser > 10
+    },
+    "animales_via": {
+        "keywords": ["vaca en la vía", "vaca en la via", "animal en la carretera",
+                     "animal en la vía", "animal en la via",
+                     "caballos en la vía", "caballos en la via",
+                     "animales sueltos en carretera", "animales sueltos en la vía",
+                     "animales sueltos en la via",
+                     "animal causa accidente", "animal atravesado en la vía",
+                     "animal atravesado en la via",
+                     "animal en la autopista", "perro en la carretera",
+                     "animales sin supervisión en la vía",
+                     "animales sin supervision en la via",
+                     "dejar animales en la vía", "dejar animales en la via",
+                     "ganado en la carretera", "ganado en la vía",
+                     "caballo suelto en carretera", "burro en la vía",
+                     "prohibición animales vía", "prohibicion animales via"],
+        "ley": "Ley de Tránsito Terrestre",
+        # Art 169 numeral 21: prohibido dejar animales en la vía pública sin supervisión
+        "articulos": [169]
     },
 }
 
@@ -1306,6 +1328,15 @@ INSTITUCIONES Y PASOS CONCRETOS PARA VICIOS OCULTOS EN INMUEBLES:
 - Puedes solicitar la resolución del contrato (devolver el inmueble y recuperar el dinero) o la rebaja del precio.
 - La SUNDDE NO interviene en compraventa de inmuebles entre particulares.
 """,
+    "animales_via": """
+INSTITUCIONES Y PASOS CONCRETOS PARA ANIMALES EN LA VÍA PÚBLICA:
+- La Ley de Tránsito Terrestre (Art. 169) PROHÍBE dejar animales sueltos en la vía pública sin supervisión.
+- Si un animal causó un accidente: El dueño del animal es RESPONSABLE de los daños (responsabilidad civil).
+- INTT o Policía de Tránsito: Denuncia el animal suelto en carretera. Pueden retirarlo y sancionar al dueño.
+- Alcaldía (Policía Municipal): Para animales sueltos en calles urbanas o urbanizaciones.
+- Si sufriste un accidente por un animal en la vía: Denuncia en el CICPC y en el INTT. Identifica al dueño del animal si es posible.
+- Guardia Nacional (en carreteras nacionales): Tiene competencia en vías nacionales y autopistas.
+""",
 }
 
 
@@ -1649,6 +1680,10 @@ def _tiene_tema_legal(texto: str) -> bool:
         "me quitaron", "me robaron", "me estafaron", "me engañaron",
         "permiso", "certificado", "registro", "negocio", "abasto", "bodega",
         "pensión alimentaria", "alimentos hijo", "no me deja ver",
+        # Animales en vía pública
+        "vaca en la vía", "vaca en la via", "animal en la carretera",
+        "animales sueltos", "caballo en la vía", "caballo en la via",
+        "ganado en la carretera", "animal causa accidente",
     ]
     return any(t in texto for t in temas_legales)
 
@@ -1716,7 +1751,7 @@ RAMA_POR_TEMA = {
     "propiedad_horizontal": "vivienda",
     "derechos": "constitucional", "comunicaciones": "constitucional",
     "tributario": "tributario",
-    "animales": "animales", "ambiente": "ambiente",
+    "animales": "animales", "animales_via": "transito", "ambiente": "ambiente",
     "discapacidad": "administrativo", "municipal": "administrativo",
     "trabajadores_residenciales": "laboral",
     "proteccion_consumidor": "civil", "mala_praxis": "penal",
@@ -1816,6 +1851,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         "transito_general": "transito",
         "transito_estacionamiento": "transito_estacionamiento",
         "libre_transito": "transito_estacionamiento",
+        "animales_via": "animales_via",
         "divorcio": "familia",
     }
     guias_usadas = set()
