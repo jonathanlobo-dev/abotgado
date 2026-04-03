@@ -55,7 +55,7 @@ ARTICULOS_CLAVE = {
                      "luz roja", "sin licencia", "sin seguro", "manos libres",
                      "celular manejando", "rayado", "raya", "línea de parada",
                      "borracho", "ebrio", "alcohol",
-                     "alcoholizado", "tomado", "manejar borracho", "manejar tomado",
+                     "alcoholizado", "tomado", "amanecido", "manejar borracho", "manejar tomado",
                      "manejar ebrio", "conducir borracho", "alcoholímetro",
                      "alcoholimetro", "bebidas alcohólicas", "bebidas alcoholicas"],
         "ley": "Ley de Tránsito Terrestre",
@@ -72,7 +72,9 @@ ARTICULOS_CLAVE = {
     },
     "transito_accidente": {
         "keywords": ["accidente", "choque", "chocaron", "atropello", "atropellar",
-                     "atropellaron", "volcamiento", "colisión", "colision"],
+                     "atropellaron", "volcamiento", "colisión", "colision",
+                     "se dio a la fuga", "se fue sin parar", "huyó del accidente",
+                     "huyo del accidente", "abandonó el accidente", "abandono el accidente"],
         "ley": "Ley de Tránsito Terrestre",
         # Art 86=deberes en accidente, 192-194=responsabilidad civil, 200=procedimiento
         "articulos": [86, 192, 193, 194, 200]
