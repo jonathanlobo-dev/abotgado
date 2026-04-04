@@ -2497,7 +2497,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         response = groq_client.chat.completions.create(
             model=config.LLM_MODEL,
             messages=messages,
-            max_tokens=1000,
+            max_tokens=1800,
             temperature=0.05,
         )
         respuesta = response.choices[0].message.content
