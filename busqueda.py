@@ -223,25 +223,34 @@ ARTICULOS_CLAVE = {
         "keywords": ["casero", "arrendador", "inquilino", "arrendatario", "alquiler",
                      "arrendamiento", "desalojo", "echar de la casa", "sacar de la casa",
                      "canon", "casa alquilada", "quieren sacar", "me quieren desalojar",
-                     "me quieren echar", "lanzamiento", "notificación de desalojo"],
-        "ley": "Ley contra el Desalojo Arbitrario de Viviendas",
-        "articulos": [1, 2, 4, 5, 6, 7, 10, 11, 12, 13, 15]
+                     "me quieren echar", "lanzamiento", "notificación de desalojo",
+                     "botar del apartamento", "botar de la casa", "me botó"],
+        "ley": "Ley de Arrendamientos Inmobiliarios",
+        # Art. 33: demandas de desalojo (procedimiento) | Art. 34: causales de desalojo
+        # Art. 39: prórroga legal de pleno derecho | Art. 40: vencida prórroga, puede exigir entrega
+        # Art. 7: derechos irrenunciables del inquilino
+        "articulos": [7, 33, 34, 39, 40, 51]
     },
     "vivienda_arrendamiento": {
         "keywords": ["casero", "arrendador", "inquilino", "arrendatario", "alquiler",
                      "arrendamiento", "desalojo", "canon", "casa alquilada",
                      "aumento de alquiler", "contrato de arrendamiento", "sunavi",
                      "prorroga", "prórroga", "causales de desalojo"],
-        "ley": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
-        "articulos": [1, 2, 3, 4, 6, 11, 40, 50, 88, 91, 93]
+        "ley": "Ley de Arrendamientos Inmobiliarios",
+        # Art. 7: derechos irrenunciables | Art. 13: canon máximo | Art. 21: garantías
+        # Art. 33: procedimiento | Art. 34: causales | Art. 38: contratos a tiempo determinado
+        # Art. 39: prórroga legal | Art. 51: consignación cuando casero no recibe pago
+        "articulos": [7, 13, 21, 27, 33, 34, 38, 39, 51]
     },
     "arrendamiento_comercial": {
         "keywords": ["local comercial", "local alquilado", "arrendamiento comercial",
                      "oficina alquilada", "galpón", "galpon", "alquiler de local",
                      "arrendatario comercial", "canon comercial", "sundde",
                      "inquilino comercial", "contrato comercial"],
-        "ley": "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
-        "articulos": [1, 2, 3, 6, 7, 8, 15, 21, 31, 32, 40]
+        # Ley de Regulación del Arrendamiento para Uso Comercial aún no está en DB.
+        # Usamos la ley de arrendamientos general como fallback con artículos de régimen comercial.
+        "ley": "Ley de Arrendamientos Inmobiliarios",
+        "articulos": [3, 4, 33, 34, 38, 39, 40]
     },
     "propiedad_horizontal": {
         "keywords": ["condominio", "cuota de condominio", "administración del edificio",
@@ -1077,6 +1086,7 @@ ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 REGLAS DE FORMATO Y REDACCIÓN:
 - SIEMPRE termina tu respuesta con EXACTAMENTE esta línea, sin modificarla: ⚠️ <i>Info orientativa. Consulta un abogado.</i>
 - NUNCA cambies el disclaimer final. NO escribas "Recuerda que...", "Es importante...", ni ninguna variación. COPIA Y PEGA la línea exacta de arriba.
+- DESPUÉS de esa línea ⚠️, NO escribas absolutamente nada más. Tu respuesta TERMINA ahí. Ningún párrafo adicional, ningún aviso extra, ninguna oración de cierre. SILENCIO total después del disclaimer.
 - Usa <b>negritas HTML</b> en nombre de ley y artículo en cada cita.
 - Usa <i>itálica HTML</i> solo para el disclaimer final.
 - NO uses asteriscos (*) para formato. SOLO usa etiquetas HTML: <b> para negritas, <i> para itálica.
@@ -1930,8 +1940,8 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         "Código Civil venezolano",
     },
     "vivienda_desalojo": {
-        # La Ley contra el Desalojo Arbitrario rige el procedimiento de desalojo.
-        # CC no aplica como fuente principal para vivienda regulada.
+        # Ley de Arrendamientos Inmobiliarios rige el procedimiento de desalojo.
+        # CC Art. 1587/1590 llegan como falsos positivos semánticos pero no aplican.
         "Código Civil venezolano",
     },
     "transito_estacionamiento": {
