@@ -1744,7 +1744,14 @@ def es_seguimiento(pregunta: str) -> bool:
 
 
 def _tiene_tema_legal(texto: str) -> bool:
-    """Detecta si el texto contiene un tema legal específico."""
+    """Detecta si el texto contiene un tema legal específico.
+
+    Estrategia en dos capas:
+    1. Lista fija de señales legales comunes (rápida, sin normalizar).
+    2. Verificación contra todos los keywords de ARTICULOS_CLAVE (fuente única
+       de verdad): si la query dispararía algún tema, es una consulta legal.
+       Así no hay que mantener dos listas separadas.
+    """
     temas_legales = [
         "despido", "trabajo", "robo", "policía", "policia", "detener", "detenido",
         "desalojo", "alquiler", "divorcio", "custodia", "pensión", "pension",
@@ -1763,12 +1770,25 @@ def _tiene_tema_legal(texto: str) -> bool:
         "me quitaron", "me robaron", "me estafaron", "me engañaron",
         "permiso", "certificado", "registro", "negocio", "abasto", "bodega",
         "pensión alimentaria", "alimentos hijo", "no me deja ver",
-        # Animales en vía pública
-        "vaca en la vía", "vaca en la via", "animal en la carretera",
-        "animales sueltos", "caballo en la vía", "caballo en la via",
-        "ganado en la carretera", "animal causa accidente",
+        # Señales genéricas de pregunta jurídica
+        "artículo", "articulo", "ley", "código", "codigo", "prohíbe", "prohibe",
+        "prohíba", "prohiba", "prohibición", "prohibicion", "ilegal", "legal",
+        "derecho", "derechos", "puedo", "pueden", "obligación", "obligacion",
     ]
-    return any(t in texto for t in temas_legales)
+    if any(t in texto for t in temas_legales):
+        return True
+
+    # Capa 2: verificar contra ARTICULOS_CLAVE (cubre potro, tequeños, revisen, etc.)
+    texto_norm = normalizar(texto)
+    for cfg in ARTICULOS_CLAVE.values():
+        # Respetar exclusiones del tema
+        excluir = cfg.get("excluir", [])
+        if any(normalizar(e) in texto_norm for e in excluir):
+            continue
+        if any(normalizar(k) in texto_norm for k in cfg["keywords"]):
+            return True
+
+    return False
 
 
 def es_consulta_no_legal(pregunta: str) -> bool:
