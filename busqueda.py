@@ -1928,6 +1928,15 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # CC no aplica como fuente principal para vivienda regulada.
         "Código Civil venezolano",
     },
+    "transito_estacionamiento": {
+        # CC Art. 660 (servidumbre de paso para predios enclavados) llega como
+        # falso positivo semántico en queries sobre apartar puesto / obstaculizar vía.
+        "Código Civil venezolano",
+    },
+    "libre_transito": {
+        # Mismo caso: CC no es relevante para obstaculización de vía pública.
+        "Código Civil venezolano",
+    },
 }
 
 # ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
