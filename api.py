@@ -126,6 +126,10 @@ Este comando requiere verificar tu cuenta y plan en el bot de Telegram.
 
 Abre <b>@aBOTgadoVE</b> en Telegram y úsalo ahí donde el bot puede identificarte y confirmar tu plan activo."""
 
+NO_ADMIN_HTML = """⛔ <b>Acceso denegado</b>
+
+Este comando es exclusivo de administradores."""
+
 # ─── Manejador de comandos ────────────────────────────────────────────────────
 
 def _manejar_comando(cmd_raw: str) -> ConsultaResponse | None:
@@ -160,8 +164,112 @@ def _manejar_comando(cmd_raw: str) -> ConsultaResponse | None:
                "/comparar", "/ley", "/documento"):
         return ConsultaResponse(respuesta=PLAN_TELEGRAM_HTML, temas=[], confianza="n/a")
 
+    # ── Comandos de administrador ──────────────────────────────────
+    CMDS_ADMIN = {"/usuarios", "/stats_admin", "/ping", "/feedback",
+                  "/premium_on", "/premium_off", "/plan_add", "/plan_del",
+                  "/tester", "/anuncio", "/backup", "/debug",
+                  "/regalar_doc", "/regalar_memoria", "/regalar_consultas",
+                  "/add_abogado", "/abogados", "/del_abogado", "/activar_abogado"}
+    if cmd in CMDS_ADMIN:
+        return _manejar_admin(cmd, partes, user_id_raw)
+
     # Comando desconocido → dejar que el RAG lo intente
     return None
+
+
+def _es_admin(user_id_raw: str) -> bool:
+    try:
+        import config
+        return int(user_id_raw) in config.ADMIN_IDS
+    except Exception:
+        return False
+
+
+def _manejar_admin(cmd: str, partes: list, user_id_raw: str) -> ConsultaResponse:
+    """Maneja comandos de administrador en la TMA."""
+    if not _es_admin(user_id_raw):
+        return ConsultaResponse(respuesta=NO_ADMIN_HTML, temas=[], confianza="n/a")
+
+    try:
+        import db as database
+        import config as cfg
+
+        if cmd == "/ping":
+            motor = get_busqueda()
+            total = motor.coleccion.count()
+            return ConsultaResponse(
+                respuesta=f"🏓 <b>Pong</b>\n\nAPI respondiendo. Artículos en DB: <b>{total}</b>",
+                temas=[], confianza="n/a"
+            )
+
+        if cmd == "/usuarios":
+            usuarios = database.listar_usuarios()
+            if not usuarios:
+                return ConsultaResponse(respuesta="No hay usuarios registrados.", temas=[], confianza="n/a")
+            texto = f"👥 <b>{len(usuarios)} usuarios registrados</b>\n\n"
+            for u in usuarios[:30]:
+                plan_info = cfg.PLANES.get(u["plan_id"], cfg.PLANES[0])
+                extras = ""
+                if u.get("bono_memoria"):
+                    extras += " [MEM]"
+                if u.get("docs_disponibles", 0) > 0:
+                    extras += f" [DOC:{u['docs_disponibles']}]"
+                texto += (
+                    f"{plan_info['icono']} <b>{u['nombre']}</b> (@{u['username']}) "
+                    f"— <code>{u['user_id']}</code>"
+                    f" — hoy: {u['consultas_hoy']}{extras}\n"
+                )
+            if len(usuarios) > 30:
+                texto += f"\n<i>…y {len(usuarios) - 30} más</i>"
+            return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+
+        if cmd == "/stats_admin":
+            su = database.stats_usuarios()
+            sc = database.obtener_stats()
+            texto = (
+                f"📊 <b>Estadísticas aBOTgado</b>\n\n"
+                f"👥 Usuarios: <b>{su['total']}</b>\n"
+                f"  🆓 Gratis: {su['gratis']}\n"
+                f"  ⭐ Pionero: {su.get('pionero', 0)}\n"
+                f"  💎 Premium: {su['premium']}\n"
+                f"  🟢 Activos hoy: {su['activos_hoy']}\n\n"
+                f"📈 <b>Consultas:</b>\n"
+                f"  Hoy: {sc['consultas_hoy']}\n"
+                f"  Últimos 7 días: {sc['consultas_7d']}\n"
+                f"  Total: {sc['consultas_total']}\n"
+            )
+            if sc.get("temas_top"):
+                texto += "\n🔥 <b>Temas más consultados:</b>\n"
+                for i, (tema, count) in enumerate(sc["temas_top"][:5], 1):
+                    texto += f"  {i}. {tema} ({count})\n"
+            return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+
+        if cmd == "/abogados":
+            abogados = database.listar_abogados()
+            if not abogados:
+                return ConsultaResponse(respuesta="No hay abogados registrados.", temas=[], confianza="n/a")
+            texto = f"⚖️ <b>{len(abogados)} abogados registrados</b>\n\n"
+            for a in abogados:
+                activo = "✅" if a.get("activo") else "❌"
+                texto += f"{activo} <b>{a['nombre']}</b> — {a['especialidad']} — {a['estado']}\n"
+            return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+
+        # Comandos complejos (requieren argumentos o flujo multi-paso) → redirigir
+        return ConsultaResponse(
+            respuesta=(
+                f"⚠️ <b>Comando disponible en Telegram</b>\n\n"
+                f"<code>{' '.join(partes)}</code> requiere argumentos o un flujo "
+                f"interactivo. Úsalo en el bot de Telegram donde tienes acceso completo."
+            ),
+            temas=[], confianza="n/a"
+        )
+
+    except Exception as e:
+        logger.error(f"Error en comando admin {cmd}: {e}", exc_info=True)
+        return ConsultaResponse(
+            respuesta=f"❌ Error ejecutando <code>{cmd}</code>: {e}",
+            temas=[], confianza="n/a"
+        )
 
 # ─── Endpoints ───────────────────────────────────────────────────────────────
 
