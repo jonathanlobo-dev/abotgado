@@ -688,20 +688,29 @@ ARTICULOS_CLAVE = {
         "articulos": list(range(1, 999))  # fuerza embedding por ser > 10
     },
     "animales_via": {
-        "keywords": ["vaca en la vía", "vaca en la via", "animal en la carretera",
-                     "animal en la vía", "animal en la via",
-                     "caballos en la vía", "caballos en la via",
-                     "animales sueltos en carretera", "animales sueltos en la vía",
-                     "animales sueltos en la via",
-                     "animal causa accidente", "animal atravesado en la vía",
-                     "animal atravesado en la via",
-                     "animal en la autopista", "perro en la carretera",
-                     "animales sin supervisión en la vía",
-                     "animales sin supervision en la via",
-                     "dejar animales en la vía", "dejar animales en la via",
-                     "ganado en la carretera", "ganado en la vía",
-                     "caballo suelto en carretera", "burro en la vía",
-                     "prohibición animales vía", "prohibicion animales via"],
+        "keywords": [
+            # Frases completas
+            "vaca en la vía", "vaca en la via", "animal en la carretera",
+            "animal en la vía", "animal en la via",
+            "caballos en la vía", "caballos en la via",
+            "animales sueltos en carretera", "animales sueltos en la vía",
+            "animales sueltos en la via",
+            "animal causa accidente", "animal atravesado en la vía",
+            "animal atravesado en la via",
+            "animal en la autopista", "perro en la carretera",
+            "animales sin supervisión en la vía",
+            "animales sin supervision en la via",
+            "dejar animales en la vía", "dejar animales en la via",
+            "ganado en la carretera", "ganado en la vía",
+            "caballo suelto en carretera", "burro en la vía",
+            "prohibición animales vía", "prohibicion animales via",
+            # Frases cortas para cubrir typos y variantes naturales
+            "animales en la vía", "animales en la via",
+            "animales sin supervision", "animales sin supervisión",
+            "dejar animales", "dejar un animal",
+            "animal suelto en", "ganado suelto",
+            "vaca suelta", "caballo suelto", "burro suelto",
+        ],
         "ley": "Ley de Tránsito Terrestre",
         # Art 169 numeral 21: prohibido dejar animales en la vía pública sin supervisión
         "articulos": [169]
