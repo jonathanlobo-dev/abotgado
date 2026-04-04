@@ -510,6 +510,7 @@ def stats_admin_endpoint(user_id: str):
     try:
         import db as database
         import config as cfg
+        import embeddings as emb_module
         s = database.stats_globales()
         por_plan = {}
         for plan_id, count in s["por_plan"].items():
@@ -521,6 +522,7 @@ def stats_admin_endpoint(user_id: str):
             "consultas_semana": s["consultas_semana"],
             "consultas_mes":    s["consultas_mes"],
             "por_plan":         por_plan,
+            "embed_cache":      emb_module.cache_info(),
         }
     except Exception as e:
         logger.error(f"Error en /stats/admin: {e}", exc_info=True)

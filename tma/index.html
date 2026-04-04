@@ -1566,7 +1566,12 @@ async function cargarStats() {
           <div class="stat-val">${s.consultas_mes}</div>
           <div class="stat-lbl">🗓️ mes</div>
         </div>
-        ${planesHtml}`;
+        ${planesHtml}
+        ${s.embed_cache ? `
+        <div class="stat-card" style="grid-column:span 2" title="Cache de embeddings HuggingFace">
+          <div class="stat-val">${s.embed_cache.tasa_pct}%</div>
+          <div class="stat-lbl">🧠 caché embed · ${s.embed_cache.size}/${s.embed_cache.maxsize} entradas</div>
+        </div>` : ''}`;
     }
   } catch { /* silencioso — no es admin o no hay conexión */ }
 }
