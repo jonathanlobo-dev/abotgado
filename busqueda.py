@@ -2100,10 +2100,11 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         "divorcio": "familia",
     }
     guias_usadas = set()
+    guia_textos = []
     for tema in temas_detectados:
         guia_key = _MAPA_GUIA.get(tema, tema)
         if guia_key in GUIAS_INSTITUCIONALES and guia_key not in guias_usadas:
-            contexto += GUIAS_INSTITUCIONALES[guia_key]
+            guia_textos.append(GUIAS_INSTITUCIONALES[guia_key])
             guias_usadas.add(guia_key)
 
     # Si no se detectaron temas por keyword, intentar inyectar guía por contexto general
@@ -2121,8 +2122,14 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         }
         for palabra, tema in mapeo_rapido.items():
             if palabra in pregunta_lower and tema in GUIAS_INSTITUCIONALES:
-                contexto += GUIAS_INSTITUCIONALES[tema]
+                guia_textos.append(GUIAS_INSTITUCIONALES[tema])
                 break
+
+    # Añadir guías con separador claro para que el LLM NO las confunda con artículos de ley
+    if guia_textos:
+        contexto += "\n---\nORIENTACIÓN INSTITUCIONAL (esto NO es un artículo de ley, NO lo cites en 📖):\n"
+        for gt in guia_textos:
+            contexto += gt
 
     return relevantes_finales, contexto, temas_detectados, mejor_distancia
 
