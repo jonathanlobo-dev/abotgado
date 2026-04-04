@@ -394,6 +394,23 @@ def renombrar_conversacion(conv_id: int, req: RenombrarRequest):
         raise HTTPException(status_code=500, detail="Error renombrando conversación")
 
 
+@app.delete("/conversaciones/vacias/{user_id}")
+def limpiar_vacias(user_id: str):
+    """Elimina conversaciones sin mensajes (acumuladas por bug anterior)."""
+    try:
+        import db as database
+        with database.get_db() as con:
+            con.execute("""
+                DELETE FROM tma_conversaciones
+                WHERE user_id = ?
+                AND id NOT IN (SELECT DISTINCT conv_id FROM tma_mensajes)
+            """, (user_id,))
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Error limpiando vacías: {e}")
+        raise HTTPException(status_code=500, detail="Error")
+
+
 @app.delete("/conversaciones/{conv_id}")
 def eliminar_conversacion(conv_id: int, req: EliminarRequest):
     """Elimina una conversación y todos sus mensajes."""

@@ -647,11 +647,7 @@ if (tg) {
   window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
 }
 
-// Iniciar conversación automáticamente al cargar
-window.addEventListener('load', () => {
-  // Pequeño delay para que el DOM esté listo
-  setTimeout(() => nuevaConversacion(), 100);
-});
+// NO auto-crear conversación al cargar — se crea lazily al primer mensaje
 
 // ═══════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN
@@ -889,6 +885,9 @@ async function enviar(texto) {
     return;
   }
 
+  // Crear conversación en backend si es el primer mensaje de esta sesión
+  await _asegurarConversacion();
+
   enviando = true;
   btnSend.disabled = true;
   inp.value = '';
@@ -1021,6 +1020,8 @@ async function cargarConversaciones() {
   }
   sbList.innerHTML = '<div class="sb-loading">Cargando…</div>';
   try {
+    // Limpiar conversaciones vacías acumuladas por el bug anterior
+    await fetch(`${API}/conversaciones/vacias/${window._tgUserId}`, { method: 'DELETE' });
     const res  = await fetch(`${API}/conversaciones/${window._tgUserId}`);
     const data = await res.json();
     renderConversaciones(data);
@@ -1053,9 +1054,11 @@ function renderConversaciones(lista) {
     item.querySelector('.sb-item-del').addEventListener('click', async e => {
       e.stopPropagation();
       if (!confirm(`¿Eliminar "${conv.titulo}"?`)) return;
+      const eraActiva = convActualId === conv.id;
       await eliminarConversacion(conv.id);
       await cargarConversaciones();
-      if (convActualId === conv.id) nuevaConversacion();
+      // Si era la conversación activa, limpiar UI sin crear nueva en backend
+      if (eraActiva) nuevaConversacion();
     });
 
     sbList.appendChild(item);
@@ -1096,33 +1099,32 @@ async function eliminarConversacion(convId) {
   } catch { /* silencioso */ }
 }
 
-async function nuevaConversacion() {
-  // Si hay usuario identificado, crear conversación en backend
-  if (window._tgUserId !== 'tma_anonimo') {
-    try {
-      const res  = await fetch(`${API}/conversaciones`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: window._tgUserId }),
-      });
-      const data = await res.json();
-      convActualId = data.id;
-    } catch {
-      convActualId = null;
-    }
-  } else {
-    convActualId = null;
-  }
-
+function nuevaConversacion() {
+  // Solo limpia la UI — NO crea nada en el backend todavía.
+  // La conversación se crea en el backend al enviar el primer mensaje (_asegurarConversacion).
+  convActualId = null;
   hConvTitulo.textContent = 'Asistente jurídico venezolano';
   historial = [];
   [...chat.querySelectorAll('.msg, .meta')].forEach(el => el.remove());
   chat.insertBefore(crearWelcome(), typing);
 }
 
-// Actualizar conv_id en cada envío
-const _enviarOriginal = enviar;
-// (conv_id se pasa directamente en el body de /consultar — ver función enviar)
+async function _asegurarConversacion() {
+  // Crea la conversación en el backend justo antes del primer mensaje.
+  // Si ya existe (convActualId != null) o el usuario es anónimo, no hace nada.
+  if (convActualId !== null || window._tgUserId === 'tma_anonimo') return;
+  try {
+    const res  = await fetch(`${API}/conversaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: window._tgUserId }),
+    });
+    const data = await res.json();
+    convActualId = data.id;
+  } catch {
+    convActualId = null; // Si falla, seguimos sin guardar (no bloquea el envío)
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // AUTOCOMPLETAR COMANDOS
