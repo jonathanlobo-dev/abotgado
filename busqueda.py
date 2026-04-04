@@ -317,6 +317,23 @@ ARTICULOS_CLAVE = {
         "ley": "Ley para la Protección de las Familias, la Maternidad y la Paternidad",
         "articulos": [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14]
     },
+    # Topic específico para despido estando embarazada → LOTTT Art. 335 (inamovilidad por gravidez)
+    # Se complementa con maternidad_paternidad (ambos pueden disparar a la vez)
+    "despido_maternidad": {
+        "keywords": ["despedida embarazada", "me despidieron embarazada",
+                     "me echaron embarazada", "me botaron embarazada",
+                     "me despidieron por embarazo", "me echaron por embarazo",
+                     "no puede pagar el reposo", "no puedo pagar el reposo",
+                     "no me quieren por embarazo", "me dijeron que no vaya",
+                     "estoy embarazada y me despidieron", "embarazada y me botaron",
+                     "embarazada y me echaron", "embarazada y me sacaron",
+                     "le dije que estoy embarazada", "sabe que estoy embarazada"],
+        "ley": "Ley Orgánica del Trabajo (LOTTT)",
+        # Art. 335=inamovilidad desde embarazo hasta 2 años post-parto
+        # Art. 336=protección al padre, 337=prohibición de reducción salarial
+        # Art. 420=fuero sindical y maternidad (protección adicional)
+        "articulos": [335, 336, 337, 338, 420]
+    },
     "trabajadores_residenciales": {
         "keywords": ["portero", "portera", "conserje", "conserjes", "conserjería",
                      "conserjeria", "vigilante residencial", "trabajador residencial",
@@ -656,7 +673,23 @@ ARTICULOS_CLAVE = {
                      "sucesion", "falleció mi", "fallecio mi", "murió mi",
                      "murio mi", "no dejó testamento", "intestado",
                      "repartir la herencia", "bienes del difunto",
-                     "hermanos no me quieren dar", "parte de la herencia"],
+                     "hermanos no me quieren dar", "parte de la herencia",
+                     # Variantes naturales de "mi papá/mamá falleció"
+                     "mi papá falleció", "mi papa fallecio",
+                     "mi mamá falleció", "mi mama fallecio",
+                     "mi padre falleció", "mi padre fallecio",
+                     "mi madre falleció", "mi madre fallecio",
+                     "mi esposo falleció", "mi esposo fallecio",
+                     "mi esposa falleció", "mi esposa fallecio",
+                     "falleció mi papá", "fallecio mi papa",
+                     "falleció mi mamá", "fallecio mi mama",
+                     "falleció mi padre", "fallecio mi padre",
+                     "falleció mi madre", "fallecio mi madre",
+                     # Bienes específicos en herencia
+                     "heredar un carro", "heredar el carro",
+                     "carro del difunto", "vehículo del difunto",
+                     "carro que dejó", "vehiculo que dejo",
+                     "poner el carro a nombre"],
         "ley": "Código Civil venezolano",
         # 822-832 = orden de suceder ab-intestato
         "articulos": [822, 823, 824, 825, 826, 827, 828, 829, 830, 832]
@@ -979,7 +1012,7 @@ TEMAS DISPONIBLES:
 TRÁNSITO: transito_infracciones (multas, semáforos, velocidad, alcohol), transito_licencia (licencias de conducir), transito_accidente (choques, atropellos, colisiones), transito_vehiculo (seguro, placa, RCV, revisión), transito_general (normas de circulación), transito_estacionamiento (mal estacionado, grúa), libre_transito (derecho a circular), animales_via (animales sueltos en vía pública), robo_vehiculo (robo/hurto de carro)
 LABORAL: laboral_despido (despido, indemnización), laboral_vacaciones (vacaciones, días libres), laboral_prestaciones (prestaciones, liquidación, aguinaldo), laboral_general (derechos laborales), pago_feriados (trabajo en feriados), permiso_medico (reposo médico)
 PENAL: penal (delitos, penas, prisión), drogas (drogas, sustancias), faltas_penales (riñas, escándalo, lesiones leves), amenazas (amenazas, intimidación), detencion_arbitraria (detención ilegal, flagrancia), antecedentes_penales (antecedentes, certificado), procesal_penal (juicios penales, procedimiento), delitos_informaticos (hackeo, estafas online), corrupcion (soborno, peculado)
-FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos, inamovilidad laboral), violencia_mujer (violencia de género, maltrato)
+FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos maternidad/paternidad, lactancia), despido_maternidad (despedida por embarazo, inamovilidad LOTTT Art.335), violencia_mujer (violencia de género, maltrato)
 VIVIENDA: vivienda_cc (compra, cláusulas abusivas), vivienda_desalojo (desalojo, desahucio), vivienda_arrendamiento (alquiler, arrendamiento), arrendamiento_comercial (local comercial), propiedad_horizontal (condominio, edificio)
 CIVIL: civil (obligaciones, contratos), propiedad (posesión, invasión, usucapión), testamento (testamento, herencia), herencia (sucesión, herederos), deuda_civil (deudas, cobro, pagaré), vicios_ocultos (defectos ocultos en compraventa)
 COMERCIAL: comercial (empresas, sociedades), negocio_casa (emprendimiento desde casa), bancario (bancos, créditos, tarjetas)
@@ -1222,10 +1255,11 @@ INSTITUCIONES Y PASOS CONCRETOS PARA DISCAPACIDAD:
 """,
     "maternidad_paternidad": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MATERNIDAD/PATERNIDAD:
-- Inspectoría del Trabajo: Si te despidieron estando embarazada o en período de inamovilidad (hasta 2 años después del parto).
-- IVSS: Para tramitar el reposo prenatal y postnatal.
-- Inamovilidad: La madre tiene inamovilidad laboral desde el embarazo hasta 2 años después del parto. El padre tiene 2 años desde el nacimiento.
-- Si te despidieron embarazada: Acude INMEDIATAMENTE a la Inspectoría del Trabajo. Tienes 30 días para solicitar reenganche.
+- Inspectoría del Trabajo: Si te despidieron estando embarazada o en período de inamovilidad. Acude INMEDIATAMENTE. Tienes 30 días para solicitar reenganche.
+- IVSS: Para tramitar el reposo prenatal (6 semanas antes del parto) y postnatal (12 semanas después).
+- Inamovilidad laboral (LOTTT Art. 335): La madre tiene inamovilidad desde el inicio del embarazo hasta 2 años después del parto. El empleador NO puede despedirla sin autorización de la Inspectoría del Trabajo.
+- Inamovilidad del padre (LOTTT Art. 336): El padre tiene inamovilidad desde el nacimiento hasta 2 años.
+- CLAVE: Nadie puede despedirte por estar embarazada. Es nulo de pleno derecho (Art. 335 LOTTT).
 """,
     "trabajadores_residenciales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TRABAJADORES RESIDENCIALES:
@@ -1333,10 +1367,20 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ROBO DE VEHÍCULO:
 """,
     "herencia": """
 INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
-- Tribunal Civil de Primera Instancia: Para solicitar declaratoria de herederos (si no hay testamento) o apertura del juicio de sucesión.
-- SENIAT: Declaración sucesoral (impuesto sobre herencias). Tienes 180 días desde el fallecimiento para presentarla.
-- Registro Subalterno: Para protocolizar la partición de bienes inmuebles entre los herederos.
-- IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ del Código Civil): descendientes, cónyuge, ascendientes, colaterales.
+- SENIAT: PRIMER PASO obligatorio para cualquier bien heredado. Debes presentar la Declaración Sucesoral dentro de los 180 días siguientes al fallecimiento. Web: seniat.gob.ve.
+- Tribunal Civil de Primera Instancia: Para solicitar la declaratoria de herederos (si no hay testamento) o la apertura del juicio de partición.
+
+🚗 SI EL BIEN HEREDADO ES UN VEHÍCULO (carro, moto, camión):
+- Paso 1 — SENIAT: Declaración sucesoral + obtener solvencia sucesoral.
+- Paso 2 — INTT (Instituto Nacional de Transporte Terrestre): Con la solvencia del SENIAT + título de propiedad del vehículo + cédulas de los herederos, tramitar el traspaso. Web: intt.gob.ve.
+- ATENCIÓN: Los vehículos NO se registran en el Registro Subalterno. El Registro Subalterno es solo para bienes inmuebles (casas, terrenos, apartamentos).
+
+🏠 SI EL BIEN HEREDADO ES UN INMUEBLE (casa, apartamento, terreno):
+- Paso 1 — SENIAT: Declaración sucesoral.
+- Paso 2 — Registro Subalterno (Registro Inmobiliario): Para protocolizar la partición entre los herederos.
+
+- IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ Código Civil): descendientes, cónyuge, ascendientes, colaterales.
+- Si son varios herederos y no se ponen de acuerdo: Tribunal Civil para juicio de partición.
 """,
     "negocio_casa": """
 PASOS OBLIGATORIOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA O EN LA CALLE:
@@ -1857,6 +1901,17 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # Mismo caso: CRBV no es relevante para permisos de negocio en casa
         "Constitución de la República Bolivariana de Venezuela",
     },
+    "vivienda_arrendamiento": {
+        # La Ley especial de Arrendamientos de Vivienda (2011) rige todo.
+        # CC Art. 1587/1590 (vicios/reparaciones del arrendador) llegan como
+        # falsos positivos semánticos y no aplican a casos de mora o desalojo.
+        "Código Civil venezolano",
+    },
+    "vivienda_desalojo": {
+        # La Ley contra el Desalojo Arbitrario rige el procedimiento de desalojo.
+        # CC no aplica como fuente principal para vivienda regulada.
+        "Código Civil venezolano",
+    },
 }
 
 # ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
@@ -1870,7 +1925,7 @@ RAMA_POR_TEMA = {
     "drogas": "penal", "corrupcion": "penal", "penal": "penal",
     "civil": "civil", "propiedad": "civil", "testamento": "civil", "divorcio": "civil",
     "comercial": "civil",
-    "familia": "familia", "maternidad_paternidad": "familia",
+    "familia": "familia", "maternidad_paternidad": "familia", "despido_maternidad": "laboral",
     "violencia_mujer": "familia",
     "vivienda_cc": "vivienda", "vivienda_desalojo": "vivienda",
     "vivienda_arrendamiento": "vivienda", "arrendamiento_comercial": "vivienda",
