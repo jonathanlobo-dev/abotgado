@@ -121,7 +121,15 @@ ARTICULOS_CLAVE = {
                      "cerrar la calle", "apartar puesto", "objetos frente al negocio",
                      "no dejan pasar", "impedir circulación", "impedir circulacion",
                      "libre circulación", "libre circulacion", "libre tránsito",
-                     "libre transito", "conos en la calle", "bloquear paso"],
+                     "libre transito", "conos en la calle", "bloquear paso",
+                     # Venezolanismos de "apartar puesto" con objetos
+                     "derecho de frente", "pagan derecho de frente",
+                     "poner objetos para no", "objetos para evitar",
+                     "evitar que se estacionen", "no se estacionen",
+                     "poner cosas para apartar", "apartar con objetos",
+                     "tapar la visibilidad", "tapen la visibilidad",
+                     "sillas para apartar", "conos para apartar",
+                     "cauchos para apartar", "cadenas para apartar"],
         "ley": "Constitución de la República Bolivariana de Venezuela",
         # Art. 50 CRBV: derecho al libre tránsito (SÍ está en DB)
         "articulos": [50]
@@ -400,9 +408,10 @@ ARTICULOS_CLAVE = {
                      "mini-market", "supermercado", "bodega", "licorera",
                      "quiosco", "kiosco", "venta de arepas"],
         "ley": "Ley Orgánica de Salud",
-        # 16=competencia municipal salud pública, 32=contraloría sanitaria (registro/inspección alimentos)
-        # 33=requisitos ministerio salud, 65=medidas cautelares (cierre local), 66=sanciones
-        "articulos": [16, 32, 33, 65, 66]
+        # 16=competencia municipal (Alcaldía), 33=requisitos para establecimientos de alimentos
+        # 32=contraloría sanitaria (qué registra/inspecciona), 65=medidas cautelares si operas sin permiso
+        # Orden: primero los de "qué necesitas" (16, 33), luego los de "consecuencias si no" (32, 65)
+        "articulos": [16, 33, 32, 65]
     },
     "discapacidad": {
         "keywords": ["discapacidad", "discapacitado", "persona con discapacidad",
