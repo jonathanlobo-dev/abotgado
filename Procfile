@@ -1,2 +1,2 @@
 worker: python start.py
-web: uvicorn api:app --host 0.0.0.0 --port $PORT
+web: sh -c 'uvicorn api:app --host 0.0.0.0 --port ${PORT:-8080}'
