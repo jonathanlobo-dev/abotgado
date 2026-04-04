@@ -1748,6 +1748,18 @@ def es_fuera_de_dominio(pregunta: str) -> bool:
     return any(re.search(p, pregunta_lower) for p in patrones_fuera)
 
 
+# ─── LEYES A EXCLUIR DEL RETRIEVAL SECUNDARIO CUANDO UN TEMA ES PRINCIPAL ───
+# Cuando el tema principal ya cubre el caso, estas leyes producen artículos
+# semánticamente cercanos pero contextualmente incorrectos.
+LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
+    "animales_via": {
+        # CP Art. 480 (matar animal ajeno) y Fauna Doméstica Art. 12 (abandono
+        # declarado por municipio) no aplican a la prohibición de animales en vía
+        "Código Penal",
+        "Ley de Protección de la Fauna Doméstica",
+    },
+}
+
 # ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
 RAMA_POR_TEMA = {
     "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
@@ -1833,8 +1845,18 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     MAX_POR_LEY = 4
     MAX_TOTAL = 10
 
+    # Calcular leyes a excluir según temas detectados
+    leyes_excluidas: set[str] = set()
+    for tema in temas_detectados:
+        leyes_excluidas |= LEYES_EXCLUIR_POR_TEMA.get(tema, set())
+
     for art in relevantes:
         ley = art["ley"]
+
+        # Omitir leyes que el tema principal hace irrelevantes
+        if ley in leyes_excluidas:
+            continue
+
         if ley not in por_ley:
             por_ley[ley] = 0
 

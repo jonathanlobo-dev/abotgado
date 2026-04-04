@@ -273,12 +273,15 @@ CLASIFICACION_LEYES = {
 # ─── FUNCIONES DE EXTRACCIÓN ─────────────────────────────────────────────────
 
 def extraer_texto(ruta):
-    """Extrae texto del PDF."""
+    """Extrae texto del PDF y limpia artefactos de paginación."""
     doc   = fitz.open(ruta)
     texto = ""
     for p in doc:
         texto += p.get_text()
     doc.close()
+    # Eliminar números de página sueltos: líneas que contienen solo 1-4 dígitos
+    # (ej: "\n52\n" ó "\n 53 \n" insertados por PyMuPDF al extraer encabezados/pies)
+    texto = re.sub(r'\n[ \t]*\d{1,4}[ \t]*\n', '\n', texto)
     return texto
 
 
