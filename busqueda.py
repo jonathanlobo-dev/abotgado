@@ -254,6 +254,13 @@ ARTICULOS_CLAVE = {
     "propiedad": {
         "keywords": ["propiedad", "dueño", "dueno", "propietario", "comprar",
                      "vender", "escritura", "hipoteca", "bienes"],
+        # "vender" es genérico → no disparar en consultas de venta de comida/negocios en casa
+        "excluir": ["vender comida", "vender desde casa", "venta desde casa",
+                    "negocio en casa", "negocio desde casa", "puesto de comida",
+                    "carrito de comida", "carro de comida", "comida en casa",
+                    "tequeños", "empanadas", "hamburguesas", "perros calientes",
+                    "perro caliente", "comida rápida", "comida rapida",
+                    "vendo comida", "venta de comida", "venta callejera"],
         "ley": "Código Civil venezolano",
         "articulos": [545, 546, 547, 548, 549, 796, 807, 808, 809, 810]
     },
@@ -726,6 +733,17 @@ ARTICULOS_CLAVE = {
             "dejar animales", "dejar un animal",
             "animal suelto en", "ganado suelto",
             "vaca suelta", "caballo suelto", "burro suelto",
+            # Animales específicos sueltos/en accidente (no cubiertos arriba)
+            "potro", "potros", "toro", "toros", "torete",
+            "chivo", "chivos", "cabra", "cabras",
+            "oveja", "ovejas", "carnero", "carneros",
+            "cerdo", "cerdos", "puerco", "puercos", "cochino", "cochinos",
+            "burro suelto", "mula", "mulas",
+            # Verbos de colisión con animales
+            "me embistió", "me embistio", "me chocó un animal", "me choco un animal",
+            "me golpeó un animal", "me golpeo un animal",
+            "un animal me chocó", "un animal me embistio",
+            "embestida", "animal en carretera",
         ],
         "ley": "Ley de Tránsito Terrestre",
         # Art 169 numeral 21: prohibido dejar animales en la vía pública sin supervisión
