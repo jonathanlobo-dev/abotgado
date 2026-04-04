@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>aBOTgado — Asistente Jurídico Venezolano</title>
+  <!-- SDK oficial de Telegram Mini Apps -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     /* ─── TOKENS DE TEMA ─────────────────────────────────────────── */
     :root {
@@ -515,6 +517,25 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
+// TELEGRAM MINI APP SDK
+// ═══════════════════════════════════════════════════════════════════
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();                // Notifica a Telegram que la app cargó
+  tg.expand();               // Expande a pantalla completa
+  // Si Telegram pasa datos del usuario, los usamos como user_id
+  window._tgUserId = tg.initDataUnsafe?.user?.id?.toString() || 'tma_anonimo';
+  // Sincronizar tema con el de Telegram si está disponible
+  if (tg.colorScheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else if (tg.colorScheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+} else {
+  window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════════════════
 const API = 'https://worker-production-89db.up.railway.app';
@@ -766,7 +787,7 @@ async function enviar(texto) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pregunta:  texto,
-        user_id:   'tma_anonimo',
+        user_id:   window._tgUserId || 'tma_anonimo',
         historial: historial.slice(-10).slice(0, -1).map(m => ({
           rol:   m.rol,
           texto: m.texto,

@@ -12,7 +12,7 @@ from datetime import date
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
     InlineQueryResultArticle, InputTextMessageContent,
-    InlineQueryResultsButton
+    InlineQueryResultsButton, WebAppInfo, MenuButtonWebApp
 )
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
@@ -758,6 +758,29 @@ async def cmd_referir(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Amigos referidos: <b>{refs}</b>"
     )
 
+
+# ─── INTERFAZ WEB (TMA) ──────────────────────────────────────────────────────
+
+TMA_URL = "https://deft-platypus-a7a0e7.netlify.app/"
+
+async def cmd_app(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Abre la interfaz web de aBOTgado (Telegram Mini App)."""
+    teclado = InlineKeyboardMarkup([[
+        InlineKeyboardButton(
+            "🖥️ Abrir interfaz web",
+            web_app=WebAppInfo(url=TMA_URL)
+        )
+    ]])
+    await update.message.reply_text(
+        "🖥️ <b>Interfaz web de aBOTgado</b>\n\n"
+        "Puedes usar aBOTgado de dos formas:\n\n"
+        "💬 <b>Chat (aquí mismo):</b> Escribe tu consulta directamente en este chat.\n\n"
+        "🖥️ <b>Interfaz web:</b> Toca el botón para abrir la versión visual con "
+        "historial, tema oscuro/claro y más.\n\n"
+        "<i>Ambas opciones usan el mismo motor jurídico y consumen el mismo límite diario de consultas.</i>",
+        reply_markup=teclado,
+        parse_mode="HTML"
+    )
 
 # ─── SOPORTE ─────────────────────────────────────────────────────────────────
 
@@ -1962,6 +1985,17 @@ def main():
 
     # Notificar admins que el bot arrancó
     async def post_init(application):
+        # Botón de menú inferior → abre la TMA directamente
+        try:
+            await application.bot.set_chat_menu_button(
+                menu_button=MenuButtonWebApp(
+                    text="🖥️ Abrir App",
+                    web_app=WebAppInfo(url=TMA_URL)
+                )
+            )
+        except Exception as e:
+            print(f"[!] No se pudo configurar menu button: {e}")
+
         usuarios = db.listar_usuarios()
         for admin_id in config.ADMIN_IDS:
             try:
@@ -1998,6 +2032,7 @@ def main():
     app.add_handler(CommandHandler("borrar_guardados",cmd_borrar_guardados))
     app.add_handler(CommandHandler("referir",         cmd_referir))
     app.add_handler(CommandHandler("soporte",         cmd_soporte))
+    app.add_handler(CommandHandler("app",             cmd_app))
 
     # Comandos de admin
     app.add_handler(CommandHandler("premium_on",      cmd_premium_on))
