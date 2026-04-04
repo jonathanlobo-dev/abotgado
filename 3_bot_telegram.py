@@ -1428,7 +1428,9 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await enviar_respuesta(
                 update.message,
                 f"No encontré el <b>Art. {num_art}</b> de <b>{ley_real}</b>.\n\n"
-                "Puede que ese artículo no esté en mi base de datos."
+                "Puede que ese número no exista en esa ley. "
+                "Escríbeme tu consulta como pregunta y la busco por tema. "
+                "Ej: <i>¿Qué dice la Ley de Tránsito sobre animales en la vía?</i>"
             )
             return
 
@@ -1573,13 +1575,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                     ])
                     await enviar_respuesta(update.message, _resp, reply_markup=_kb)
                     return
-                else:
-                    await enviar_respuesta(
-                        update.message,
-                        f"No encontré el <b>Art. {_num_art}</b> de <b>{_ley_real}</b>.\n\n"
-                        "Puede que ese artículo no esté en mi base de datos."
-                    )
-                    return
+                # Artículo no encontrado → continuar al pipeline RAG
         else:
             # No tiene ley → preguntar
             esperando_ley[user_id] = {"num_art": _num_art}
