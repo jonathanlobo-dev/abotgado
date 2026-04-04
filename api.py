@@ -76,6 +76,23 @@ class RenombrarRequest(BaseModel):
 class EliminarRequest(BaseModel):
     user_id: str
 
+# ─── Startup: asegurar que el DB esté inicializado ───────────────────────────
+@app.on_event("startup")
+def _startup():
+    """
+    Garantiza que las tablas (incluyendo tma_conversaciones/tma_mensajes)
+    existen antes de que llegue la primera petición.
+    El bot también llama a inicializar_db() al arrancar, pero la API
+    puede recibir peticiones antes que el bot termine de cargar.
+    """
+    try:
+        import db as database
+        database.inicializar_db()
+        logger.info("DB inicializada correctamente.")
+    except Exception as e:
+        logger.error(f"Error inicializando DB en startup: {e}")
+
+
 # ─── Motor de búsqueda (lazy) ─────────────────────────────────────────────────
 _busqueda = None
 

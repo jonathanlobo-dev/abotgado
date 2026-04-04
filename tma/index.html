@@ -1097,13 +1097,17 @@ async function cargarConversaciones() {
   }
   sbList.innerHTML = '<div class="sb-loading">Cargando…</div>';
   try {
-    // Limpiar conversaciones vacías acumuladas por el bug anterior
-    await fetch(`${API}/conversaciones/vacias/${window._tgUserId}`, { method: 'DELETE' });
+    // Limpiar conversaciones vacías acumuladas (ignorar si falla — no es crítico)
+    fetch(`${API}/conversaciones/vacias/${window._tgUserId}`, { method: 'DELETE' }).catch(() => {});
+
     const res  = await fetch(`${API}/conversaciones/${window._tgUserId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('Respuesta inesperada del servidor');
     renderConversaciones(data);
-  } catch {
-    sbList.innerHTML = '<div class="sb-empty">Error cargando historial.</div>';
+  } catch (e) {
+    console.error('Error cargando conversaciones:', e);
+    sbList.innerHTML = '<div class="sb-empty">Error cargando historial.<br><small>Intenta cerrar y abrir el sidebar.</small></div>';
   }
 }
 
