@@ -87,6 +87,25 @@ def main():
     docs_dir = os.path.join(str(config.DATA_DIR), "documentos_generados")
     os.makedirs(docs_dir, exist_ok=True)
 
+    # Arrancar API REST en hilo de fondo (para Telegram Mini App)
+    # Hilo daemon: si start.py termina, el hilo termina con él.
+    # Si el hilo falla, el bot de Telegram NO se ve afectado.
+    try:
+        import threading
+        import uvicorn
+
+        api_port = int(os.getenv("PORT", 8080))
+
+        def _run_api():
+            print(f"[>>] Arrancando API REST en puerto {api_port}...")
+            uvicorn.run("api:app", host="0.0.0.0", port=api_port, log_level="info")
+
+        api_thread = threading.Thread(target=_run_api, daemon=True, name="api-rest")
+        api_thread.start()
+        print(f"[OK] API REST arrancando en segundo plano (puerto {api_port})\n")
+    except Exception as e:
+        print(f"[!] No se pudo arrancar API REST: {e} — el bot continúa igual.\n")
+
     # Arrancar el bot
     print("\n[>>] Arrancando bot de Telegram...\n")
     from importlib import import_module
