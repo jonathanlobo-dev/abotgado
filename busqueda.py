@@ -1261,6 +1261,13 @@ INSTITUCIONES Y PASOS CONCRETOS PARA MATERNIDAD/PATERNIDAD:
 - Inamovilidad del padre (LOTTT Art. 336): El padre tiene inamovilidad desde el nacimiento hasta 2 años.
 - CLAVE: Nadie puede despedirte por estar embarazada. Es nulo de pleno derecho (Art. 335 LOTTT).
 """,
+    "despido_maternidad": """
+PROTECCIÓN LEGAL ESPECÍFICA — DESPIDO POR EMBARAZO:
+⚠️ ARTÍCULO CLAVE: LOTTT Art. 335 (inamovilidad por gravidez). Es la norma ESPECÍFICA para despido por embarazo y debe citarse como fundamento PRINCIPAL. Los artículos de estabilidad laboral general (Art. 85, 86, 87) son secundarios; no los cites solos sin el Art. 335.
+- LOTTT Art. 335: Las trabajadoras embarazadas tienen inamovilidad laboral desde el inicio del embarazo hasta 2 años después del parto. El empleador NO puede despedirlas sin autorización previa de la Inspectoría del Trabajo. El despido sin esa autorización es NULO DE PLENO DERECHO.
+- Inspectoría del Trabajo: Solicitar reenganche y pago de salarios caídos. Plazo: 30 días desde el despido. Llevar: cédula, certificado médico de embarazo, constancia de trabajo o cualquier evidencia de relación laboral.
+- IVSS: Tramitar reposo prenatal (6 semanas antes del parto) y postnatal (12 semanas después).
+""",
     "trabajadores_residenciales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TRABAJADORES RESIDENCIALES:
 - Inspectoría del Trabajo: Para reclamar derechos laborales del conserje/portero.
