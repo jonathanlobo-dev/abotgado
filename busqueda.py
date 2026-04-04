@@ -165,6 +165,12 @@ ARTICULOS_CLAVE = {
         "keywords": ["comunicaciones", "privacidad",
                      "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
                      "revisar telefono", "revisar mi celular", "revisar mi teléfono",
+                     # Formas subjuntivas / imperativas (ej: "que me revisen el teléfono")
+                     "revisen el telefono", "revisen el celular",
+                     "revisen mi telefono", "revisen mi celular",
+                     "me revisen el telefono", "me revisen el celular",
+                     "que me revisen", "me pueden revisar el telefono",
+                     "pueden revisar mi telefono", "pueden revisar mi celular",
                      "galería", "galeria", "fotos", "correo",
                      "interceptar", "pinchar", "espiar", "grabar conversación",
                      "grabar conversacion", "pedir mi teléfono", "pedir mi celular",
@@ -355,9 +361,11 @@ ARTICULOS_CLAVE = {
                      "permisos para vender", "puedo vender",
                      "permiso sanitario", "registro sanitario",
                      "manipulacion de alimentos", "manipulación de alimentos",
-                     "perros calientes", "hot dog", "hotdog", "hamburguesas",
+                     "perros calientes", "perro caliente", "perro calientes",
+                     "hot dog", "hotdog", "hamburguesas",
                      "empanadas", "arepas", "comida rápida", "comida rapida",
                      "carrito de comida", "carro de comida", "puesto de comida",
+                     "carrito de perro", "carrito de perros",
                      "carro de perros", "venta en la calle", "venta callejera",
                      "poner un puesto", "puesto en la calle",
                      "abasto", "abastos", "mini mercado", "minimercado",
@@ -1795,6 +1803,17 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # declarado por municipio) no aplican a la prohibición de animales en vía
         "Código Penal",
         "Ley de Protección de la Fauna Doméstica",
+    },
+    "comercial": {
+        # CRBV Art. 44 (libertad personal/arresto) llega como falso positivo BM25
+        # en queries de registro de empresa. Los derechos constitucionales
+        # al emprendimiento (Art. 112) deben incluirse directamente en ARTICULOS_CLAVE
+        # si son necesarios, no via retrieval secundario.
+        "Constitución de la República Bolivariana de Venezuela",
+    },
+    "negocio_casa": {
+        # Mismo caso: CRBV no es relevante para permisos de negocio en casa
+        "Constitución de la República Bolivariana de Venezuela",
     },
 }
 
