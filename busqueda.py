@@ -1769,7 +1769,7 @@ def explicar_articulo(texto_articulo: str, ley: str, num: int) -> str:
                     f"Explica este artículo:\n\n"
                     f"{ley}, Artículo {num}:\n{texto_articulo}"}
             ],
-            max_tokens=300,
+            max_tokens=400,
             temperature=0.1,
         )
         return r.choices[0].message.content.strip()
@@ -2482,7 +2482,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         response = groq_client.chat.completions.create(
             model=config.LLM_MODEL,
             messages=messages,
-            max_tokens=700,
+            max_tokens=1000,
             temperature=0.05,
         )
         respuesta = response.choices[0].message.content
