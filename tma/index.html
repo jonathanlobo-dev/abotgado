@@ -178,16 +178,24 @@
       flex: 1; font-size: 13px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .sb-item-del  {
-      background: none; border: none;
-      color: var(--text2); font-size: 15px;
-      cursor: pointer; padding: 3px 5px;
-      border-radius: 6px; opacity: 0;
-      transition: opacity .2s, background .2s;
+    .sb-item-actions {
+      display: flex; gap: 2px;
       flex-shrink: 0;
     }
-    .sb-item:hover .sb-item-del { opacity: 1; }
-    .sb-item-del:hover { background: #fee2e2; color: #dc2626; }
+
+    .sb-item-btn {
+      background: none; border: none;
+      color: var(--text2); font-size: 14px;
+      cursor: pointer; padding: 4px 6px;
+      border-radius: 6px;
+      transition: background .2s, color .2s;
+      line-height: 1;
+    }
+    .sb-item-btn:hover { background: var(--surface2); }
+    .sb-item-btn.del:hover { background: #fee2e2; color: #dc2626; }
+    .sb-item-btn.edit:hover { background: var(--accent-soft); color: var(--accent); }
+    [data-theme="dark"] .sb-item-btn.del:hover  { background: #450a0a; color: #f87171; }
+    [data-theme="dark"] .sb-item-btn.edit:hover { background: var(--accent-soft); color: var(--accent); }
 
     .sb-empty {
       text-align: center; color: var(--text2);
@@ -1124,21 +1132,35 @@ function renderConversaciones(lista) {
     item.innerHTML = `
       <span class="sb-item-ico">💬</span>
       <span class="sb-item-txt" title="${conv.titulo}">${conv.titulo}</span>
-      <button class="sb-item-del" title="Eliminar" data-id="${conv.id}">🗑</button>`;
+      <div class="sb-item-actions">
+        <button class="sb-item-btn edit" title="Renombrar">✏️</button>
+        <button class="sb-item-btn del"  title="Eliminar">🗑</button>
+      </div>`;
 
+    // Abrir conversación (clic en la fila, no en botones)
     item.addEventListener('click', e => {
-      if (e.target.closest('.sb-item-del')) return;
+      if (e.target.closest('.sb-item-actions')) return;
       cerrarSidebar();
       cargarConversacion(conv.id, conv.titulo);
     });
 
-    item.querySelector('.sb-item-del').addEventListener('click', async e => {
+    // Renombrar
+    item.querySelector('.sb-item-btn.edit').addEventListener('click', async e => {
+      e.stopPropagation();
+      const nuevoTitulo = prompt('Nuevo nombre para la conversación:', conv.titulo);
+      if (!nuevoTitulo || nuevoTitulo.trim() === conv.titulo) return;
+      await renombrarConversacion(conv.id, nuevoTitulo.trim());
+      await cargarConversaciones();
+      if (convActualId === conv.id) hConvTitulo.textContent = nuevoTitulo.trim();
+    });
+
+    // Eliminar
+    item.querySelector('.sb-item-btn.del').addEventListener('click', async e => {
       e.stopPropagation();
       if (!confirm(`¿Eliminar "${conv.titulo}"?`)) return;
       const eraActiva = convActualId === conv.id;
       await eliminarConversacion(conv.id);
       await cargarConversaciones();
-      // Si era la conversación activa, limpiar UI sin crear nueva en backend
       if (eraActiva) nuevaConversacion();
     });
 
@@ -1176,11 +1198,22 @@ async function eliminarConversacion(convId) {
     const res = await fetch(`${API}/conversaciones/${convId}?user_id=${uid}`, {
       method: 'DELETE',
     });
-    if (!res.ok) {
-      console.error(`Error eliminando conversación ${convId}: HTTP ${res.status}`);
-    }
+    if (!res.ok) console.error(`Error eliminando conversación ${convId}: HTTP ${res.status}`);
   } catch (e) {
     console.error('Error de red al eliminar conversación:', e);
+  }
+}
+
+async function renombrarConversacion(convId, titulo) {
+  try {
+    const res = await fetch(`${API}/conversaciones/${convId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: window._tgUserId, titulo }),
+    });
+    if (!res.ok) console.error(`Error renombrando conversación ${convId}: HTTP ${res.status}`);
+  } catch (e) {
+    console.error('Error de red al renombrar conversación:', e);
   }
 }
 
