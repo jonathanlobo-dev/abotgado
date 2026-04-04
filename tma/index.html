@@ -633,6 +633,123 @@
       margin: 6px 0 10px;
     }
 
+    /* ─── DIRECTORIO DE ABOGADOS ────────────────────────────────── */
+    .dir-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 30;
+    }
+    .dir-overlay.open { display: block; }
+
+    .dir-panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 300px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 40;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .25s ease;
+      box-shadow: -4px 0 20px var(--shadow);
+    }
+    .dir-panel.open { transform: translateX(0); }
+
+    .dir-header {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .dir-logo  { font-size: 20px; }
+    .dir-title { font-size: 14px; font-weight: 700; flex: 1; }
+    .dir-close {
+      background: none; border: none;
+      color: var(--text2); font-size: 18px;
+      cursor: pointer; padding: 4px;
+      border-radius: 6px; transition: background .2s;
+    }
+    .dir-close:hover { background: var(--surface2); }
+
+    .dir-search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .dir-search input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .dir-search input:focus { border-color: var(--accent); }
+    .dir-search input::placeholder { color: var(--text2); }
+
+    .dir-list {
+      flex: 1; overflow-y: auto;
+      padding: 8px 10px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .dir-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 13px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .dir-card-nombre {
+      font-size: 13px; font-weight: 700; color: var(--text);
+    }
+    .dir-card-inpre {
+      font-size: 10px; color: var(--text2);
+    }
+    .dir-card-esp {
+      font-size: 12px; color: var(--accent);
+      font-weight: 600; margin-top: 2px;
+    }
+    .dir-card-loc {
+      font-size: 11px; color: var(--text2);
+    }
+    .dir-card-notas {
+      font-size: 11px; color: var(--text2);
+      font-style: italic; margin-top: 2px;
+    }
+    .dir-card-footer {
+      margin-top: 8px; display: flex; gap: 6px;
+    }
+    .dir-btn-contact {
+      flex: 1;
+      background: var(--accent);
+      color: #fff; border: none;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; text-align: center;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: background .2s;
+    }
+    .dir-btn-contact:hover { background: var(--accent-h); }
+    .dir-btn-contact.wa { background: #25d366; }
+    .dir-btn-contact.wa:hover { background: #1ebe57; }
+
+    .dir-empty {
+      text-align: center; color: var(--text2);
+      font-size: 13px; padding: 30px 16px;
+      line-height: 1.7;
+    }
+    .dir-count {
+      font-size: 11px; color: var(--text2);
+      padding: 4px 2px 2px;
+    }
+
     /* ─── SCROLLBAR ──────────────────────────────────────────────── */
     ::-webkit-scrollbar       { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -646,6 +763,22 @@
   </style>
 </head>
 <body>
+
+<!-- ═══ DIRECTORIO DE ABOGADOS ══════════════════════════════════════ -->
+<div class="dir-overlay" id="dir-overlay"></div>
+<div class="dir-panel" id="dir-panel">
+  <div class="dir-header">
+    <span class="dir-logo">👨‍⚖️</span>
+    <span class="dir-title">Directorio de Abogados</span>
+    <button class="dir-close" id="dir-close" title="Cerrar">✕</button>
+  </div>
+  <div class="dir-search">
+    <input type="text" id="dir-filtro" placeholder="🔍 Buscar por especialidad o estado…" />
+  </div>
+  <div class="dir-list" id="dir-list">
+    <div class="sb-loading">Cargando…</div>
+  </div>
+</div>
 
 <!-- ═══ SIDEBAR ═════════════════════════════════════════════════════ -->
 <div class="sidebar-overlay" id="sb-overlay"></div>
@@ -698,9 +831,10 @@
     </div>
   </div>
   <div class="h-actions">
+    <button class="btn-icon" id="btn-dir"    title="Directorio de abogados">👨‍⚖️</button>
     <button class="btn-icon" id="btn-export" title="Exportar conversación">📥</button>
-    <button class="btn-icon" id="btn-nuevo" title="Nueva consulta">✏️ Nuevo</button>
-    <button class="btn-icon" id="btn-theme" title="Cambiar tema">🌙</button>
+    <button class="btn-icon" id="btn-nuevo"  title="Nueva consulta">✏️ Nuevo</button>
+    <button class="btn-icon" id="btn-theme"  title="Cambiar tema">🌙</button>
   </div>
 </header>
 
@@ -1496,6 +1630,98 @@ async function cargarPerfil() {
       meta.innerHTML = html;
     }
   } catch { /* silencioso — el perfil no bloquea el sidebar */ }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DIRECTORIO DE ABOGADOS
+// ═══════════════════════════════════════════════════════════════════
+const dirPanel   = document.getElementById('dir-panel');
+const dirOverlay = document.getElementById('dir-overlay');
+const dirList    = document.getElementById('dir-list');
+const dirFiltro  = document.getElementById('dir-filtro');
+let   _dirDatos  = [];   // cache local de la lista completa
+
+function abrirDirectorio() {
+  dirPanel.classList.add('open');
+  dirOverlay.classList.add('open');
+  cargarDirectorio();
+}
+function cerrarDirectorio() {
+  dirPanel.classList.remove('open');
+  dirOverlay.classList.remove('open');
+}
+
+document.getElementById('btn-dir').addEventListener('click', abrirDirectorio);
+document.getElementById('dir-close').addEventListener('click', cerrarDirectorio);
+dirOverlay.addEventListener('click', cerrarDirectorio);
+
+async function cargarDirectorio() {
+  if (_dirDatos.length) { renderDirectorio(_dirDatos); return; }
+  dirList.innerHTML = '<div class="sb-loading">Cargando directorio…</div>';
+  try {
+    const res = await fetch(`${API}/directorio`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _dirDatos = await res.json();
+    renderDirectorio(_dirDatos);
+  } catch (e) {
+    dirList.innerHTML = '<div class="dir-empty">⚠️ Error cargando el directorio.<br><small>Intenta cerrar y volver a abrir.</small></div>';
+  }
+}
+
+function renderDirectorio(lista) {
+  const q = (dirFiltro.value || '').toLowerCase().trim();
+  const filtrada = q
+    ? lista.filter(a =>
+        a.especialidad.toLowerCase().includes(q) ||
+        a.estado.toLowerCase().includes(q) ||
+        a.nombre.toLowerCase().includes(q)
+      )
+    : lista;
+
+  if (!filtrada.length) {
+    dirList.innerHTML = q
+      ? `<div class="dir-empty">Sin resultados para "<b>${q}</b>".<br>Prueba con otro término.</div>`
+      : `<div class="dir-empty">👨‍⚖️<br><br>Aún no hay abogados registrados.<br><small>Próximamente podrás encontrar<br>profesionales verificados aquí.</small></div>`;
+    return;
+  }
+
+  dirList.innerHTML = `<div class="dir-count">${filtrada.length} abogado${filtrada.length !== 1 ? 's' : ''} encontrado${filtrada.length !== 1 ? 's' : ''}</div>`;
+  filtrada.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'dir-card';
+
+    // Detectar si el teléfono parece WhatsApp (número venezolano móvil 04xx)
+    const telLimpio = (a.telefono || '').replace(/\D/g, '');
+    const esMovil   = telLimpio.startsWith('04') || telLimpio.startsWith('58');
+    const numWA     = telLimpio.startsWith('04') ? '58' + telLimpio.slice(1) : telLimpio;
+    const enlace    = esMovil
+      ? `https://wa.me/${numWA}`
+      : `tel:${a.telefono}`;
+    const btnClass  = esMovil ? 'dir-btn-contact wa' : 'dir-btn-contact';
+    const btnIcon   = esMovil ? '💬' : '📞';
+    const btnLabel  = esMovil ? 'WhatsApp' : 'Llamar';
+
+    card.innerHTML = `
+      <div class="dir-card-nombre">${_esc(a.nombre)}</div>
+      <div class="dir-card-inpre">INPRE ${_esc(a.inpreabogado)}</div>
+      <div class="dir-card-esp">🏛️ ${_esc(a.especialidad)}</div>
+      <div class="dir-card-loc">📍 ${_esc(a.estado)}</div>
+      ${a.notas ? `<div class="dir-card-notas">${_esc(a.notas)}</div>` : ''}
+      <div class="dir-card-footer">
+        <a class="${btnClass}" href="${enlace}" target="_blank" rel="noopener">
+          ${btnIcon} ${btnLabel}
+        </a>
+      </div>`;
+    dirList.appendChild(card);
+  });
+}
+
+// Filtro en tiempo real (client-side, no vuelve a la API)
+dirFiltro.addEventListener('input', () => renderDirectorio(_dirDatos));
+
+function _esc(txt) {
+  return String(txt || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ═══════════════════════════════════════════════════════════════════

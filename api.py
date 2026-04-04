@@ -480,6 +480,37 @@ def health():
     return {"status": "ok", "servicio": "aBOTgado API"}
 
 
+@app.get("/directorio")
+def directorio_abogados(especialidad: str = None, estado: str = None):
+    """
+    Lista pública de abogados verificados del directorio.
+    Acepta filtros opcionales: ?especialidad=laboral&estado=miranda
+    """
+    try:
+        import db as database
+        abogados = database.listar_abogados(
+            especialidad=especialidad,
+            estado=estado,
+            solo_activos=True
+        )
+        # Excluir cédula de la respuesta pública
+        return [
+            {
+                "id":            a["id"],
+                "nombre":        a["nombre"],
+                "inpreabogado":  a["inpreabogado"],
+                "especialidad":  a["especialidad"],
+                "telefono":      a["telefono"],
+                "estado":        a["estado"],
+                "notas":         a.get("notas", ""),
+            }
+            for a in abogados
+        ]
+    except Exception as e:
+        logger.error(f"Error en /directorio: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error obteniendo directorio")
+
+
 @app.get("/stats/usuario/{user_id}")
 def stats_usuario_endpoint(user_id: str):
     """Estadísticas personales para el dashboard de la TMA."""
