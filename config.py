@@ -41,7 +41,11 @@ PLANTILLAS_DIR  = str(BASE_DIR / "plantillas")    # Plantillas siempre en el có
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 HF_EMBED_URL    = f"https://router.huggingface.co/hf-inference/models/{EMBEDDING_MODEL}/pipeline/feature-extraction"
-LLM_MODEL       = "llama-3.3-70b-versatile"
+
+# Modelo LLM principal — se puede sobreescribir con la variable de entorno LLM_MODEL
+# Historial: llama-3.3-70b-versatile → openai/gpt-oss-120b (Llama 4 Maverick deprecado Feb 2026)
+# Alternativa más rápida: openai/gpt-oss-20b (1000 tok/s, 20B params)
+LLM_MODEL       = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
 
 # ─── NIVELES DE PLAN ─────────────────────────────────────────────────────────
 # 0 = Gratis, 1 = Tester/Pionero, 2 = Premium
