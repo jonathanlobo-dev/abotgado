@@ -1937,6 +1937,14 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # Mismo caso: CC no es relevante para obstaculización de vía pública.
         "Código Civil venezolano",
     },
+    "herencia": {
+        # Ley de Tránsito Art. 58 (RCV/seguro obligatorio) y
+        # Ley de Registros y Notarías Art. 40 (certificaciones) llegan como
+        # falsos positivos semánticos cuando la query involucra un vehículo
+        # heredado. El CC (Art. 822+) y el SENIAT son la fuente correcta.
+        "Ley de Tránsito Terrestre",
+        "Ley de Registros y Notarías",
+    },
 }
 
 # ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
