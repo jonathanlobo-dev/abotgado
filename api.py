@@ -44,6 +44,7 @@ class ConsultaRequest(BaseModel):
     pregunta: str
     user_id: str = "tma_anonimo"
     historial: list[MensajeHistorial] = []
+    conv_id: int | None = None   # ID de conversación del sidebar (opcional)
 
     @field_validator("pregunta")
     @classmethod
@@ -63,6 +64,17 @@ class ConsultaResponse(BaseModel):
 class FeedbackRequest(BaseModel):
     msg_id: str
     valor: int   # 1 = 👍, -1 = 👎
+
+class ConversacionRequest(BaseModel):
+    user_id: str
+    titulo: str = "Nueva consulta"
+
+class RenombrarRequest(BaseModel):
+    user_id: str
+    titulo: str
+
+class EliminarRequest(BaseModel):
+    user_id: str
 
 # ─── Motor de búsqueda (lazy) ─────────────────────────────────────────────────
 _busqueda = None
@@ -173,6 +185,7 @@ def consultar(req: ConsultaRequest):
 
     # ── RAG normal ─────────────────────────────────────────────────
     try:
+        import db as database
         motor = get_busqueda()
 
         historial_fmt = [
@@ -180,20 +193,38 @@ def consultar(req: ConsultaRequest):
             for m in req.historial
         ]
 
+        # Convertir user_id a int si es posible (para que el bot lo reconozca)
+        try:
+            uid_int = int(req.user_id)
+        except (ValueError, TypeError):
+            uid_int = None
+
         resultado = motor.buscar_y_responder(
             pregunta=req.pregunta,
             historial=historial_fmt if historial_fmt else None,
-            user_id=None,
+            user_id=uid_int,
         )
 
         if isinstance(resultado, dict):
-            return ConsultaResponse(
-                respuesta=resultado.get("respuesta", ""),
-                temas=resultado.get("temas", []),
-                confianza=str(resultado.get("confianza", "n/a")),
-            )
+            resp_html  = resultado.get("respuesta", "")
+            temas      = resultado.get("temas", [])
+            confianza  = str(resultado.get("confianza", "n/a"))
+        else:
+            resp_html  = str(resultado)
+            temas      = []
+            confianza  = "n/a"
 
-        return ConsultaResponse(respuesta=str(resultado), temas=[], confianza="n/a")
+        # ── Auto-guardar en conversación TMA si se indicó conv_id ──
+        if req.conv_id and req.user_id != "tma_anonimo":
+            try:
+                database.tma_guardar_mensaje(req.conv_id, "usuario", req.pregunta)
+                database.tma_guardar_mensaje(req.conv_id, "bot", resp_html, temas)
+                # Generar título automático del primer mensaje
+                database.tma_actualizar_titulo_auto(req.conv_id, req.pregunta)
+            except Exception as e_db:
+                logger.warning(f"No se pudo guardar en TMA DB: {e_db}")
+
+        return ConsultaResponse(respuesta=resp_html, temas=temas, confianza=confianza)
 
     except Exception as e:
         logger.error(f"Error en /consultar: {e}", exc_info=True)
@@ -201,6 +232,70 @@ def consultar(req: ConsultaRequest):
             status_code=500,
             detail="Error interno procesando la consulta. Intenta de nuevo."
         )
+
+
+# ─── Endpoints de conversaciones TMA ────────────────────────────────────────
+
+@app.get("/conversaciones/{user_id}")
+def listar_conversaciones(user_id: str):
+    """Lista las conversaciones del sidebar para un usuario."""
+    if user_id == "tma_anonimo":
+        return []
+    try:
+        import db as database
+        return database.tma_listar_conversaciones(user_id)
+    except Exception as e:
+        logger.error(f"Error listando conversaciones: {e}")
+        raise HTTPException(status_code=500, detail="Error obteniendo conversaciones")
+
+
+@app.post("/conversaciones")
+def crear_conversacion(req: ConversacionRequest):
+    """Crea una nueva conversación en el sidebar."""
+    if req.user_id == "tma_anonimo":
+        raise HTTPException(status_code=400, detail="Se requiere user_id de Telegram")
+    try:
+        import db as database
+        conv_id = database.tma_nueva_conversacion(req.user_id, req.titulo)
+        return {"id": conv_id, "titulo": req.titulo}
+    except Exception as e:
+        logger.error(f"Error creando conversación: {e}")
+        raise HTTPException(status_code=500, detail="Error creando conversación")
+
+
+@app.get("/conversaciones/{user_id}/{conv_id}")
+def obtener_mensajes(user_id: str, conv_id: int):
+    """Retorna los mensajes de una conversación."""
+    try:
+        import db as database
+        return database.tma_obtener_mensajes(conv_id, user_id)
+    except Exception as e:
+        logger.error(f"Error obteniendo mensajes: {e}")
+        raise HTTPException(status_code=500, detail="Error obteniendo mensajes")
+
+
+@app.put("/conversaciones/{conv_id}")
+def renombrar_conversacion(conv_id: int, req: RenombrarRequest):
+    """Renombra una conversación."""
+    try:
+        import db as database
+        database.tma_renombrar_conversacion(conv_id, req.user_id, req.titulo)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Error renombrando: {e}")
+        raise HTTPException(status_code=500, detail="Error renombrando conversación")
+
+
+@app.delete("/conversaciones/{conv_id}")
+def eliminar_conversacion(conv_id: int, req: EliminarRequest):
+    """Elimina una conversación y todos sus mensajes."""
+    try:
+        import db as database
+        database.tma_eliminar_conversacion(conv_id, req.user_id)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Error eliminando: {e}")
+        raise HTTPException(status_code=500, detail="Error eliminando conversación")
 
 
 @app.post("/feedback")

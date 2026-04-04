@@ -105,6 +105,101 @@
 
     .h-actions { display: flex; gap: 6px; }
 
+    /* ─── SIDEBAR ────────────────────────────────────────────────── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 30;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      z-index: 40;
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+      box-shadow: 4px 0 20px var(--shadow);
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sb-header {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sb-logo { font-size: 22px; }
+    .sb-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .sb-close {
+      background: none; border: none;
+      color: var(--text2); font-size: 18px;
+      cursor: pointer; padding: 4px;
+      border-radius: 6px; transition: background .2s;
+    }
+    .sb-close:hover { background: var(--surface2); }
+
+    .sb-new {
+      margin: 10px 12px;
+      background: var(--accent);
+      color: #fff; border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; width: calc(100% - 24px);
+      display: flex; align-items: center; gap: 8px;
+      transition: background .2s;
+    }
+    .sb-new:hover { background: var(--accent-h); }
+
+    .sb-list {
+      flex: 1; overflow-y: auto;
+      padding: 4px 8px 12px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+
+    .sb-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+      min-height: 44px;
+    }
+    .sb-item:hover   { background: var(--surface2); }
+    .sb-item.active  { background: var(--accent-soft); }
+
+    .sb-item-ico  { font-size: 15px; flex-shrink: 0; }
+    .sb-item-txt  {
+      flex: 1; font-size: 13px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sb-item-del  {
+      background: none; border: none;
+      color: var(--text2); font-size: 15px;
+      cursor: pointer; padding: 3px 5px;
+      border-radius: 6px; opacity: 0;
+      transition: opacity .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .sb-item:hover .sb-item-del { opacity: 1; }
+    .sb-item-del:hover { background: #fee2e2; color: #dc2626; }
+
+    .sb-empty {
+      text-align: center; color: var(--text2);
+      font-size: 13px; padding: 24px 12px;
+      line-height: 1.6;
+    }
+
+    .sb-loading {
+      text-align: center; color: var(--text2);
+      font-size: 13px; padding: 16px;
+    }
+
     .btn-icon {
       background: none;
       border: 1px solid var(--border);
@@ -451,13 +546,30 @@
 </head>
 <body>
 
+<!-- ═══ SIDEBAR ═════════════════════════════════════════════════════ -->
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sb-header">
+    <span class="sb-logo">⚖️</span>
+    <span class="sb-title">aBOTgado</span>
+    <button class="sb-close" id="sb-close" title="Cerrar">✕</button>
+  </div>
+  <button class="sb-new" id="sb-new">
+    ✏️ Nueva conversación
+  </button>
+  <div class="sb-list" id="sb-list">
+    <div class="sb-loading">Cargando…</div>
+  </div>
+</aside>
+
 <!-- ═══ HEADER ══════════════════════════════════════════════════════ -->
 <header>
   <div class="h-left">
+    <button class="btn-icon" id="btn-sidebar" title="Historial">☰</button>
     <div class="logo">⚖️</div>
     <div>
       <div class="h-title">aBOTgado</div>
-      <div class="h-sub">Asistente jurídico venezolano</div>
+      <div class="h-sub" id="h-conv-titulo">Asistente jurídico venezolano</div>
     </div>
   </div>
   <div class="h-actions">
@@ -534,6 +646,12 @@ if (tg) {
 } else {
   window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
 }
+
+// Iniciar conversación automáticamente al cargar
+window.addEventListener('load', () => {
+  // Pequeño delay para que el DOM esté listo
+  setTimeout(() => nuevaConversacion(), 100);
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN
@@ -788,6 +906,7 @@ async function enviar(texto) {
       body: JSON.stringify({
         pregunta:  texto,
         user_id:   window._tgUserId || 'tma_anonimo',
+        conv_id:   convActualId || null,
         historial: historial.slice(-10).slice(0, -1).map(m => ({
           rol:   m.rol,
           texto: m.texto,
@@ -866,7 +985,144 @@ function bindChips(ctx) {
 
 // Bind inicial
 bindChips(document);
-document.getElementById('btn-nuevo').addEventListener('click', limpiarChat);
+document.getElementById('btn-nuevo').addEventListener('click', () => nuevaConversacion());
+
+// ═══════════════════════════════════════════════════════════════════
+// SIDEBAR — HISTORIAL DE CONVERSACIONES
+// ═══════════════════════════════════════════════════════════════════
+let convActualId  = null;   // ID de la conversación activa
+const sidebar     = document.getElementById('sidebar');
+const sbOverlay   = document.getElementById('sb-overlay');
+const sbList      = document.getElementById('sb-list');
+const hConvTitulo = document.getElementById('h-conv-titulo');
+
+function abrirSidebar() {
+  sidebar.classList.add('open');
+  sbOverlay.classList.add('open');
+  cargarConversaciones();
+}
+function cerrarSidebar() {
+  sidebar.classList.remove('open');
+  sbOverlay.classList.remove('open');
+}
+
+document.getElementById('btn-sidebar').addEventListener('click', abrirSidebar);
+document.getElementById('sb-close').addEventListener('click', cerrarSidebar);
+sbOverlay.addEventListener('click', cerrarSidebar);
+document.getElementById('sb-new').addEventListener('click', () => {
+  cerrarSidebar();
+  nuevaConversacion();
+});
+
+async function cargarConversaciones() {
+  if (window._tgUserId === 'tma_anonimo') {
+    sbList.innerHTML = '<div class="sb-empty">Abre la app desde Telegram para ver tu historial.</div>';
+    return;
+  }
+  sbList.innerHTML = '<div class="sb-loading">Cargando…</div>';
+  try {
+    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}`);
+    const data = await res.json();
+    renderConversaciones(data);
+  } catch {
+    sbList.innerHTML = '<div class="sb-empty">Error cargando historial.</div>';
+  }
+}
+
+function renderConversaciones(lista) {
+  if (!lista.length) {
+    sbList.innerHTML = '<div class="sb-empty">Aún no tienes conversaciones guardadas.<br>¡Empieza una consulta!</div>';
+    return;
+  }
+  sbList.innerHTML = '';
+  lista.forEach(conv => {
+    const item = document.createElement('div');
+    item.className = 'sb-item' + (conv.id === convActualId ? ' active' : '');
+    item.dataset.id = conv.id;
+    item.innerHTML = `
+      <span class="sb-item-ico">💬</span>
+      <span class="sb-item-txt" title="${conv.titulo}">${conv.titulo}</span>
+      <button class="sb-item-del" title="Eliminar" data-id="${conv.id}">🗑</button>`;
+
+    item.addEventListener('click', e => {
+      if (e.target.closest('.sb-item-del')) return;
+      cerrarSidebar();
+      cargarConversacion(conv.id, conv.titulo);
+    });
+
+    item.querySelector('.sb-item-del').addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm(`¿Eliminar "${conv.titulo}"?`)) return;
+      await eliminarConversacion(conv.id);
+      await cargarConversaciones();
+      if (convActualId === conv.id) nuevaConversacion();
+    });
+
+    sbList.appendChild(item);
+  });
+}
+
+async function cargarConversacion(convId, titulo) {
+  convActualId = convId;
+  hConvTitulo.textContent = titulo;
+
+  // Limpiar chat visualmente
+  [...chat.querySelectorAll('.msg, .meta')].forEach(el => el.remove());
+  historial = [];
+
+  try {
+    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}/${convId}`);
+    const msgs = await res.json();
+
+    msgs.forEach(m => {
+      addMessage(m.rol, m.texto, m.temas || []);
+      historial.push({ rol: m.rol, texto: m.texto });
+    });
+
+    // Si no hay mensajes, mostrar bienvenida
+    if (!msgs.length) limpiarChat();
+  } catch {
+    addMessage('bot', '⚠️ Error cargando la conversación.', []);
+  }
+}
+
+async function eliminarConversacion(convId) {
+  try {
+    await fetch(`${API}/conversaciones/${convId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: window._tgUserId }),
+    });
+  } catch { /* silencioso */ }
+}
+
+async function nuevaConversacion() {
+  // Si hay usuario identificado, crear conversación en backend
+  if (window._tgUserId !== 'tma_anonimo') {
+    try {
+      const res  = await fetch(`${API}/conversaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: window._tgUserId }),
+      });
+      const data = await res.json();
+      convActualId = data.id;
+    } catch {
+      convActualId = null;
+    }
+  } else {
+    convActualId = null;
+  }
+
+  hConvTitulo.textContent = 'Asistente jurídico venezolano';
+  historial = [];
+  [...chat.querySelectorAll('.msg, .meta')].forEach(el => el.remove());
+  chat.insertBefore(crearWelcome(), typing);
+}
+
+// Actualizar conv_id en cada envío
+const _enviarOriginal = enviar;
+// (conv_id se pasa directamente en el body de /consultar — ver función enviar)
 
 // ═══════════════════════════════════════════════════════════════════
 // AUTOCOMPLETAR COMANDOS

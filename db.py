@@ -158,10 +158,123 @@ def inicializar_db():
             )
         """)
 
+        # ── Tablas TMA (historial de conversaciones por sidebar) ─────
+        # Completamente separadas del bot de Telegram.
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS tma_conversaciones (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id      TEXT NOT NULL,
+                titulo       TEXT NOT NULL DEFAULT 'Nueva consulta',
+                creado_en    TEXT DEFAULT CURRENT_TIMESTAMP,
+                actualizado  TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS tma_mensajes (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                conv_id      INTEGER NOT NULL,
+                rol          TEXT NOT NULL,
+                texto        TEXT NOT NULL,
+                temas        TEXT DEFAULT '',
+                creado_en    TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (conv_id) REFERENCES tma_conversaciones(id) ON DELETE CASCADE
+            )
+        """)
+        con.execute("CREATE INDEX IF NOT EXISTS idx_tma_conv_user ON tma_conversaciones(user_id)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_tma_msg_conv ON tma_mensajes(conv_id)")
+
     # Log de ruta para diagnóstico
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"DB inicializada en: {config.SQLITE_DB_FILE}")
+
+
+# ─── TMA: CONVERSACIONES ──────────────────────────────────────────────────────
+
+def tma_nueva_conversacion(user_id: str, titulo: str = "Nueva consulta") -> int:
+    """Crea una nueva conversación en el sidebar. Retorna el ID."""
+    with get_db() as con:
+        cur = con.execute(
+            "INSERT INTO tma_conversaciones (user_id, titulo) VALUES (?, ?)",
+            (str(user_id), titulo[:80])
+        )
+        return cur.lastrowid
+
+
+def tma_listar_conversaciones(user_id: str) -> list[dict]:
+    """Lista las conversaciones del usuario, más recientes primero."""
+    with get_db() as con:
+        rows = con.execute("""
+            SELECT id, titulo, creado_en, actualizado
+            FROM tma_conversaciones
+            WHERE user_id = ?
+            ORDER BY actualizado DESC
+            LIMIT 50
+        """, (str(user_id),)).fetchall()
+    return [{"id": r[0], "titulo": r[1], "creado_en": r[2], "actualizado": r[3]} for r in rows]
+
+
+def tma_renombrar_conversacion(conv_id: int, user_id: str, titulo: str):
+    """Renombra una conversación (verifica que pertenezca al usuario)."""
+    with get_db() as con:
+        con.execute(
+            "UPDATE tma_conversaciones SET titulo = ? WHERE id = ? AND user_id = ?",
+            (titulo[:80], conv_id, str(user_id))
+        )
+
+
+def tma_eliminar_conversacion(conv_id: int, user_id: str):
+    """Elimina una conversación y todos sus mensajes (CASCADE)."""
+    with get_db() as con:
+        con.execute(
+            "DELETE FROM tma_conversaciones WHERE id = ? AND user_id = ?",
+            (conv_id, str(user_id))
+        )
+
+
+def tma_guardar_mensaje(conv_id: int, rol: str, texto: str, temas: list[str] = None):
+    """Guarda un mensaje en una conversación y actualiza su timestamp."""
+    temas_str = ",".join(temas or [])
+    with get_db() as con:
+        con.execute(
+            "INSERT INTO tma_mensajes (conv_id, rol, texto, temas) VALUES (?, ?, ?, ?)",
+            (conv_id, rol, texto, temas_str)
+        )
+        con.execute(
+            "UPDATE tma_conversaciones SET actualizado = CURRENT_TIMESTAMP WHERE id = ?",
+            (conv_id,)
+        )
+
+
+def tma_obtener_mensajes(conv_id: int, user_id: str) -> list[dict]:
+    """Retorna los mensajes de una conversación (verifica dueño)."""
+    with get_db() as con:
+        # Verificar que la conversación pertenece al usuario
+        dueño = con.execute(
+            "SELECT id FROM tma_conversaciones WHERE id = ? AND user_id = ?",
+            (conv_id, str(user_id))
+        ).fetchone()
+        if not dueño:
+            return []
+        rows = con.execute("""
+            SELECT rol, texto, temas, creado_en
+            FROM tma_mensajes WHERE conv_id = ?
+            ORDER BY creado_en ASC
+        """, (conv_id,)).fetchall()
+    return [{"rol": r[0], "texto": r[1], "temas": r[2].split(",") if r[2] else [], "creado_en": r[3]} for r in rows]
+
+
+def tma_actualizar_titulo_auto(conv_id: int, primer_mensaje: str):
+    """Genera título automático del primer mensaje si el título es el default."""
+    titulo = primer_mensaje[:50].strip()
+    if len(primer_mensaje) > 50:
+        titulo += "…"
+    with get_db() as con:
+        con.execute("""
+            UPDATE tma_conversaciones
+            SET titulo = ?
+            WHERE id = ? AND titulo = 'Nueva consulta'
+        """, (titulo, conv_id))
 
     # Verificar cuántos usuarios hay
     with get_db() as con:
