@@ -141,6 +141,18 @@ Este comando requiere verificar tu cuenta y plan en el bot de Telegram.
 
 Abre <b>@aBOTgadoVE</b> en Telegram y úsalo ahí donde el bot puede identificarte y confirmar tu plan activo."""
 
+AYUDA_ADMIN_HTML = """
+
+👑 <b>Comandos de Administrador</b>
+• <code>/ping</code> — Estado del servidor y artículos en DB
+• <code>/usuarios</code> — Listar usuarios registrados (últimos 30)
+• <code>/stats_admin</code> — Estadísticas generales del bot
+• <code>/abogados</code> — Directorio de abogados registrados
+
+<i>Comandos avanzados (requieren argumentos, disponibles en el bot de Telegram):</i>
+<code>/premium_on</code> · <code>/premium_off</code> · <code>/plan_add</code> · <code>/anuncio</code>
+<code>/add_abogado</code> · <code>/del_abogado</code> · <code>/activar_abogado</code> · <code>/backup</code>"""
+
 NO_ADMIN_HTML = """⛔ <b>Acceso denegado</b>
 
 Este comando es exclusivo de administradores."""
@@ -156,7 +168,10 @@ def _manejar_comando(cmd_raw: str, user_id_raw: str = "tma_anonimo") -> Consulta
     cmd = partes[0].lower()
 
     if cmd == "/ayuda":
-        return ConsultaResponse(respuesta=AYUDA_HTML, temas=[], confianza="n/a")
+        texto = AYUDA_HTML
+        if _es_admin(user_id_raw):
+            texto += AYUDA_ADMIN_HTML
+        return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
 
     if cmd == "/soporte":
         return ConsultaResponse(respuesta=SOPORTE_HTML, temas=[], confianza="n/a")

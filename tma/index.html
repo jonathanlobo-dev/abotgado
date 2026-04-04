@@ -657,7 +657,8 @@
     </div>
   </div>
   <div class="h-actions">
-    <button class="btn-icon" id="btn-nuevo" title="Nueva consulta">🗑 Nuevo</button>
+    <button class="btn-icon" id="btn-export" title="Exportar conversación">📥</button>
+    <button class="btn-icon" id="btn-nuevo" title="Nueva consulta">✏️ Nuevo</button>
     <button class="btn-icon" id="btn-theme" title="Cambiar tema">🌙</button>
   </div>
 </header>
@@ -860,7 +861,7 @@ function hideTyping()  { typing.classList.remove('show'); }
 // ═══════════════════════════════════════════════════════════════════
 let msgCounter = 0;
 
-function addMessage(rol, texto, temas = [], msgId = null) {
+function addMessage(rol, texto, temas = [], msgId = null, preguntaOrigen = null) {
   hideWelcome();
 
   const id  = msgId || `m${++msgCounter}`;
@@ -911,10 +912,13 @@ function addMessage(rol, texto, temas = [], msgId = null) {
     btnCopy.textContent = '📋';
     btnCopy.title = 'Copiar respuesta';
     btnCopy.addEventListener('click', () => {
-      // Copiar texto plano (sin HTML)
       const tmp = document.createElement('div');
       tmp.innerHTML = texto;
-      navigator.clipboard.writeText(tmp.textContent).then(() => {
+      const respTxt = tmp.textContent.trim();
+      const contenido = preguntaOrigen
+        ? `Usuario: ${preguntaOrigen}\n\naBOTgado: ${respTxt}`
+        : respTxt;
+      navigator.clipboard.writeText(contenido).then(() => {
         btnCopy.textContent = '✅';
         btnCopy.classList.add('btn-copy-done');
         setTimeout(() => { btnCopy.textContent = '📋'; btnCopy.classList.remove('btn-copy-done'); }, 2000);
@@ -1003,7 +1007,7 @@ async function enviar(texto) {
     const data = await res.json();
 
     const respuesta = data.respuesta || 'Sin respuesta.';
-    addMessage('bot', respuesta, data.temas || []);
+    addMessage('bot', respuesta, data.temas || [], null, texto);
     historial.push({ rol: 'bot', texto: respuesta });
 
   } catch (e) {
@@ -1069,6 +1073,48 @@ function bindChips(ctx) {
 // Bind inicial
 bindChips(document);
 document.getElementById('btn-nuevo').addEventListener('click', () => nuevaConversacion());
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPORTAR CONVERSACIÓN
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('btn-export').addEventListener('click', () => {
+  if (!historial.length) {
+    alert('No hay conversación activa para exportar.');
+    return;
+  }
+
+  // Generar texto plano de la conversación
+  const lineas = [];
+  const fecha = new Date().toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' });
+  lineas.push(`aBOTgado — Exportación de conversación`);
+  lineas.push(`Fecha: ${fecha}`);
+  lineas.push('─'.repeat(50));
+  lineas.push('');
+
+  for (let i = 0; i < historial.length; i++) {
+    const m = historial[i];
+    if (m.rol === 'usuario') {
+      lineas.push(`Usuario: ${m.texto}`);
+    } else {
+      // Quitar HTML del texto del bot
+      const tmp = document.createElement('div');
+      tmp.innerHTML = m.texto;
+      lineas.push(`aBOTgado: ${tmp.textContent.trim()}`);
+    }
+    lineas.push('');
+  }
+
+  lineas.push('─'.repeat(50));
+  lineas.push('⚠️ Info orientativa. No sustituye asesoría legal.');
+
+  const blob = new Blob([lineas.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `abotgado_${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // SIDEBAR — HISTORIAL DE CONVERSACIONES
