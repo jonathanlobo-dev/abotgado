@@ -604,6 +604,35 @@
       transition: width .4s;
     }
 
+    /* ─── STATS DASHBOARD ───────────────────────────────────────── */
+    .sb-stats {
+      padding: 10px 12px 4px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-stats-title {
+      font-size: 10px; font-weight: 700;
+      color: var(--text2); text-transform: uppercase; letter-spacing: .05em;
+      margin-bottom: 7px;
+    }
+
+    .sb-stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5px; margin-bottom: 8px;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border-radius: 8px; padding: 7px 9px;
+    }
+    .stat-val { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .stat-lbl { font-size: 10px; color: var(--text2); margin-top: 1px; }
+
+    .sb-stats-sep {
+      border: none; border-top: 1px solid var(--border);
+      margin: 6px 0 10px;
+    }
+
     /* ─── SCROLLBAR ──────────────────────────────────────────────── */
     ::-webkit-scrollbar       { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -631,6 +660,18 @@
   </button>
   <div class="sb-list" id="sb-list">
     <div class="sb-loading">Cargando…</div>
+  </div>
+
+  <!-- Dashboard de estadísticas -->
+  <div class="sb-stats" id="sb-stats" style="display:none">
+    <div class="sb-stats-title">📊 Mis estadísticas</div>
+    <div class="sb-stats-grid" id="sb-stats-user"></div>
+    <!-- Sección admin (solo visible para administradores) -->
+    <div id="sb-stats-admin" style="display:none">
+      <hr class="sb-stats-sep">
+      <div class="sb-stats-title">🔧 Dashboard admin</div>
+      <div class="sb-stats-grid" id="sb-stats-admin-grid"></div>
+    </div>
   </div>
 
   <!-- Perfil del usuario -->
@@ -1136,6 +1177,7 @@ function abrirSidebar() {
   sbOverlay.classList.add('open');
   cargarConversaciones();
   cargarPerfil();
+  cargarStats();
 }
 function cerrarSidebar() {
   sidebar.classList.remove('open');
@@ -1454,6 +1496,79 @@ async function cargarPerfil() {
       meta.innerHTML = html;
     }
   } catch { /* silencioso — el perfil no bloquea el sidebar */ }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STATS DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+async function cargarStats() {
+  if (window._tgUserId === 'tma_anonimo') return;
+
+  const statsSection   = document.getElementById('sb-stats');
+  const statsUserGrid  = document.getElementById('sb-stats-user');
+  const statsAdmin     = document.getElementById('sb-stats-admin');
+  const statsAdminGrid = document.getElementById('sb-stats-admin-grid');
+
+  statsSection.style.display = 'block';
+  statsUserGrid.innerHTML = '<span style="font-size:11px;color:var(--text2)">Cargando…</span>';
+
+  // ── Estadísticas personales ──────────────────────────────────────
+  try {
+    const res = await fetch(`${API}/stats/usuario/${window._tgUserId}`);
+    if (res.ok) {
+      const s = await res.json();
+      statsUserGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-val">${s.consultas_total}</div>
+          <div class="stat-lbl">📬 consultas totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">${s.consultas_hoy}</div>
+          <div class="stat-lbl">📅 hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">${s.favoritos}</div>
+          <div class="stat-lbl">⭐ favoritos</div>
+        </div>`;
+    } else {
+      statsUserGrid.innerHTML = '';
+    }
+  } catch { statsUserGrid.innerHTML = ''; }
+
+  // ── Estadísticas globales (solo admins) ─────────────────────────
+  try {
+    const res = await fetch(`${API}/stats/admin?user_id=${window._tgUserId}`);
+    if (res.ok) {
+      const s = await res.json();
+      statsAdmin.style.display = 'block';
+      let planesHtml = '';
+      for (const [nombre, count] of Object.entries(s.por_plan)) {
+        planesHtml += `
+          <div class="stat-card">
+            <div class="stat-val">${count}</div>
+            <div class="stat-lbl">${nombre}</div>
+          </div>`;
+      }
+      statsAdminGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-val">${s.total_usuarios}</div>
+          <div class="stat-lbl">👥 usuarios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">${s.consultas_hoy}</div>
+          <div class="stat-lbl">📬 hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">${s.consultas_semana}</div>
+          <div class="stat-lbl">📅 semana</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">${s.consultas_mes}</div>
+          <div class="stat-lbl">🗓️ mes</div>
+        </div>
+        ${planesHtml}`;
+    }
+  } catch { /* silencioso — no es admin o no hay conexión */ }
 }
 
 // Inicializar nombre/avatar en cuanto cargue la página (datos del SDK, sin API)

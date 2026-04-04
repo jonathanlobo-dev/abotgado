@@ -480,6 +480,53 @@ def health():
     return {"status": "ok", "servicio": "aBOTgado API"}
 
 
+@app.get("/stats/usuario/{user_id}")
+def stats_usuario_endpoint(user_id: str):
+    """Estadísticas personales para el dashboard de la TMA."""
+    if user_id == "tma_anonimo":
+        raise HTTPException(status_code=401, detail="No autenticado")
+    try:
+        uid = int(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="user_id inválido")
+    try:
+        import db as database
+        s = database.stats_usuario(uid)
+        return {
+            "consultas_total": s["consultas_total"],
+            "consultas_hoy":   s["consultas_hoy"],
+            "favoritos":       s["favoritos"],
+        }
+    except Exception as e:
+        logger.error(f"Error en /stats/usuario: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.get("/stats/admin")
+def stats_admin_endpoint(user_id: str):
+    """Estadísticas globales — solo para administradores."""
+    if not _es_admin(user_id):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        import config as cfg
+        s = database.stats_globales()
+        por_plan = {}
+        for plan_id, count in s["por_plan"].items():
+            plan_info = cfg.PLANES.get(plan_id, {"nombre": f"Plan {plan_id}", "icono": ""})
+            por_plan[plan_info["nombre"]] = count
+        return {
+            "total_usuarios":   s["total_usuarios"],
+            "consultas_hoy":    s["consultas_hoy"],
+            "consultas_semana": s["consultas_semana"],
+            "consultas_mes":    s["consultas_mes"],
+            "por_plan":         por_plan,
+        }
+    except Exception as e:
+        logger.error(f"Error en /stats/admin: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
 @app.post("/consultar", response_model=ConsultaResponse)
 def consultar(req: ConsultaRequest):
     """
