@@ -86,6 +86,7 @@ async def enviar_respuesta(message, texto: str, reply_markup=None):
 feedback_pendiente = set()
 soporte_pendiente  = set()
 ultima_respuesta   = {}  # user_id -> {"pregunta": ..., "respuesta": ...}
+ultima_ley         = {}  # user_id -> ley_real — última ley discutida (para inferir contexto)
 registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
 esperando_ley      = {}  # user_id -> {"num_art": int} — esperando nombre de ley
 debug_mode         = False  # /debug on|off — enviar 🟢 de TODAS las consultas
@@ -1447,6 +1448,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if explicacion:
             respuesta += f"{'━' * 25}\n{explicacion}\n\n"
         respuesta += "<i>Usa /comparar para comparar con otro artículo.</i>"
+        ultima_ley[user_id] = ley_real  # Guardar para inferir contexto futuro
         ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
         db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
         kb = InlineKeyboardMarkup([
@@ -1567,6 +1569,7 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                         _resp += f"{'━' * 25}\n{_explicacion}\n\n"
                     _resp += "<i>Usa /comparar para comparar con otro artículo.</i>"
                     db.registrar_consulta(user_id)
+                    ultima_ley[user_id] = _ley_real  # Guardar para inferir contexto futuro
                     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": _resp}
                     db.guardar_ultima_respuesta(user_id, pregunta, _resp)
                     _kb = InlineKeyboardMarkup([
@@ -1577,7 +1580,35 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
                     return
                 # Artículo no encontrado → continuar al pipeline RAG
         else:
-            # No tiene ley → preguntar
+            # No tiene ley → intentar inferir del contexto previo
+            _ley_ctx = ultima_ley.get(user_id)
+            if _ley_ctx:
+                _arts_ctx = busqueda.buscar_articulo_en_db(_ley_ctx, _num_art)
+                if _arts_ctx:
+                    await context.bot.send_chat_action(
+                        chat_id=update.effective_chat.id, action="typing"
+                    )
+                    _texto_ctx = _arts_ctx[0]["texto"]
+                    if len(_texto_ctx) > 3000:
+                        _texto_ctx = _texto_ctx[:3000] + "... [truncado]"
+                    _expl_ctx = await asyncio.to_thread(
+                        busqueda.explicar_articulo, _arts_ctx[0]["texto"], _ley_ctx, _num_art
+                    )
+                    _resp_ctx = f"📖 <b>{_ley_ctx}</b>\n<b>Artículo {_num_art}</b>\n\n{_texto_ctx}\n\n"
+                    if _expl_ctx:
+                        _resp_ctx += f"{'━' * 25}\n{_expl_ctx}\n\n"
+                    _resp_ctx += "<i>Usa /comparar para comparar con otro artículo.</i>"
+                    db.registrar_consulta(user_id)
+                    ultima_ley[user_id] = _ley_ctx
+                    ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": _resp_ctx}
+                    db.guardar_ultima_respuesta(user_id, pregunta, _resp_ctx)
+                    _kb_ctx = InlineKeyboardMarkup([
+                        [InlineKeyboardButton("👍", callback_data=f"fb_up_{user_id}"),
+                         InlineKeyboardButton("👎", callback_data=f"fb_down_{user_id}")]
+                    ])
+                    await enviar_respuesta(update.message, _resp_ctx, reply_markup=_kb_ctx)
+                    return
+            # Sin contexto previo ni ley mencionada → preguntar al usuario
             esperando_ley[user_id] = {"num_art": _num_art}
             await enviar_respuesta(
                 update.message,
@@ -1666,6 +1697,13 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if con_memoria:
         db.guardar_mensaje(user_id, "user", pregunta)
         db.guardar_mensaje(user_id, "assistant", respuesta)
+
+    # Actualizar ultima_ley si los temas RAG apuntan a una sola ley
+    if temas:
+        leyes_rag = {busqueda.ARTICULOS_CLAVE[t]["ley"]
+                     for t in temas if t in busqueda.ARTICULOS_CLAVE and "ley" in busqueda.ARTICULOS_CLAVE[t]}
+        if len(leyes_rag) == 1:
+            ultima_ley[user_id] = leyes_rag.pop()
 
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
