@@ -171,18 +171,23 @@ ARTICULOS_CLAVE = {
     },
     "comunicaciones": {
         "keywords": ["comunicaciones", "privacidad",
-                     "whatsapp", "chats", "mensajes", "revisar celular", "revisar teléfono",
-                     "revisar telefono", "revisar mi celular", "revisar mi teléfono",
-                     # Formas subjuntivas / imperativas (ej: "que me revisen el teléfono")
+                     "whatsapp", "chats", "mensajes",
+                     # Con artículo "el/la/mi" — variantes comunes en español coloquial
+                     "revisar el celular", "revisar el teléfono", "revisar el telefono",
+                     "revisar mi celular", "revisar mi teléfono", "revisar mi telefono",
+                     "revisar celular", "revisar teléfono", "revisar telefono",
                      "revisen el telefono", "revisen el celular",
                      "revisen mi telefono", "revisen mi celular",
                      "me revisen el telefono", "me revisen el celular",
+                     "me quieren revisar", "quieren revisar el",
                      "que me revisen", "me pueden revisar el telefono",
                      "pueden revisar mi telefono", "pueden revisar mi celular",
-                     "galería", "galeria", "fotos", "correo",
+                     "me piden el teléfono", "me piden el celular",
+                     "galería", "galeria", "fotos del celular", "correo",
                      "interceptar", "pinchar", "espiar", "grabar conversación",
                      "grabar conversacion", "pedir mi teléfono", "pedir mi celular",
-                     "me quitaron el teléfono", "me quitaron el celular"],
+                     "me quitaron el teléfono", "me quitaron el celular",
+                     "inviolabilidad de las comunicaciones", "secreto de las comunicaciones"],
         "ley": "Constitución de la República Bolivariana de Venezuela",
         # Art 48 = inviolabilidad comunicaciones (PRIORIDAD para casos de teléfono)
         # Art 47 = inviolabilidad del hogar, Art 60 = protección honor/privacidad

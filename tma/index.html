@@ -1096,10 +1096,16 @@ document.getElementById('btn-export').addEventListener('click', () => {
     if (m.rol === 'usuario') {
       lineas.push(`Usuario: ${m.texto}`);
     } else {
-      // Quitar HTML del texto del bot
+      // Quitar HTML y limpiar texto del bot
       const tmp = document.createElement('div');
       tmp.innerHTML = m.texto;
-      lineas.push(`aBOTgado: ${tmp.textContent.trim()}`);
+      let txt = tmp.textContent.trim();
+      // Eliminar el disclaimer extra que el modelo a veces añade tras el estándar
+      const corte = txt.indexOf('⚠️ Info orientativa. Consulta un abogado.');
+      if (corte !== -1) {
+        txt = txt.slice(0, corte + '⚠️ Info orientativa. Consulta un abogado.'.length).trim();
+      }
+      lineas.push(`aBOTgado: ${txt}`);
     }
     lineas.push('');
   }
