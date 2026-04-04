@@ -1172,12 +1172,16 @@ async function cargarConversacion(convId, titulo) {
 
 async function eliminarConversacion(convId) {
   try {
-    await fetch(`${API}/conversaciones/${convId}`, {
+    const uid = encodeURIComponent(window._tgUserId);
+    const res = await fetch(`${API}/conversaciones/${convId}?user_id=${uid}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: window._tgUserId }),
     });
-  } catch { /* silencioso */ }
+    if (!res.ok) {
+      console.error(`Error eliminando conversación ${convId}: HTTP ${res.status}`);
+    }
+  } catch (e) {
+    console.error('Error de red al eliminar conversación:', e);
+  }
 }
 
 function nuevaConversacion() {

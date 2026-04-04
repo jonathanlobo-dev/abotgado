@@ -73,8 +73,6 @@ class RenombrarRequest(BaseModel):
     user_id: str
     titulo: str
 
-class EliminarRequest(BaseModel):
-    user_id: str
 
 # ─── Startup: asegurar que el DB esté inicializado ───────────────────────────
 @app.on_event("startup")
@@ -601,11 +599,14 @@ def limpiar_vacias(user_id: str):
 
 
 @app.delete("/conversaciones/{conv_id}")
-def eliminar_conversacion(conv_id: int, req: EliminarRequest):
-    """Elimina una conversación y todos sus mensajes."""
+def eliminar_conversacion(conv_id: int, user_id: str):
+    """
+    Elimina una conversación y todos sus mensajes.
+    user_id se pasa como query param: DELETE /conversaciones/123?user_id=456
+    """
     try:
         import db as database
-        database.tma_eliminar_conversacion(conv_id, req.user_id)
+        database.tma_eliminar_conversacion(conv_id, user_id)
         return {"ok": True}
     except Exception as e:
         logger.error(f"Error eliminando: {e}")
