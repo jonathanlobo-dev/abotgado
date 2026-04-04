@@ -132,7 +132,7 @@ Este comando es exclusivo de administradores."""
 
 # ─── Manejador de comandos ────────────────────────────────────────────────────
 
-def _manejar_comando(cmd_raw: str) -> ConsultaResponse | None:
+def _manejar_comando(cmd_raw: str, user_id_raw: str = "tma_anonimo") -> ConsultaResponse | None:
     """
     Si el texto es un comando (/leyes, /ayuda…), devuelve la respuesta directamente
     sin pasar por el RAG. Retorna None si no es un comando conocido.
@@ -159,9 +159,18 @@ def _manejar_comando(cmd_raw: str) -> ConsultaResponse | None:
                 temas=[], confianza="n/a"
             )
 
-    if cmd in ("/estado", "/referir", "/guardar", "/mis_consultas",
-               "/ver_guardado", "/borrar_guardados", "/stats",
-               "/comparar", "/ley", "/documento"):
+    # ── Comandos de usuario que sí podemos implementar en TMA ────────
+    if cmd == "/estado":
+        return _cmd_estado(user_id_raw)
+
+    if cmd == "/stats":
+        return _cmd_stats_usuario(user_id_raw)
+
+    if cmd == "/referir":
+        return _cmd_referir(user_id_raw)
+
+    if cmd in ("/guardar", "/mis_consultas", "/ver_guardado",
+               "/borrar_guardados", "/comparar", "/ley", "/documento"):
         return ConsultaResponse(respuesta=PLAN_TELEGRAM_HTML, temas=[], confianza="n/a")
 
     # ── Comandos de administrador ──────────────────────────────────
@@ -175,6 +184,124 @@ def _manejar_comando(cmd_raw: str) -> ConsultaResponse | None:
 
     # Comando desconocido → dejar que el RAG lo intente
     return None
+
+
+def _cmd_estado(user_id_raw: str) -> ConsultaResponse:
+    """Muestra plan, consultas usadas/disponibles y estado de memoria."""
+    try:
+        uid = int(user_id_raw)
+    except (ValueError, TypeError):
+        return ConsultaResponse(
+            respuesta="⚠️ Abre la app desde Telegram para ver tu estado.",
+            temas=[], confianza="n/a"
+        )
+    try:
+        import db as database
+        import config as cfg
+
+        plan_id   = database.obtener_plan(uid)
+        plan      = cfg.PLANES.get(plan_id, cfg.PLANES[0])
+        usadas    = database.consultas_hoy(uid)
+        limite    = plan["consultas"]
+        restantes = database.consultas_restantes(uid)
+        memoria   = plan["memoria"] or bool(database.info_plan(uid) if hasattr(database, 'info_plan') else False)
+
+        # Barra de progreso visual
+        if limite == -1:
+            barra = "∞ ilimitadas"
+            pct_txt = ""
+        else:
+            pct = min(int((usadas / limite) * 10), 10) if limite > 0 else 0
+            barra = "🟦" * pct + "⬜" * (10 - pct)
+            pct_txt = f" ({usadas}/{limite})"
+
+        # Info de memoria
+        try:
+            u_info = database.resolver_usuario(uid)
+            tiene_memoria = plan["memoria"] or u_info.get("bono_memoria", 0)
+        except Exception:
+            tiene_memoria = plan["memoria"]
+
+        texto = (
+            f"📍 <b>Tu estado en aBOTgado</b>\n\n"
+            f"{plan['icono']} <b>Plan:</b> {plan['nombre']}\n\n"
+            f"📊 <b>Consultas hoy:</b>\n"
+            f"{barra}{pct_txt}\n"
+        )
+        if limite == -1:
+            texto += "✅ Consultas ilimitadas\n"
+        else:
+            texto += f"Usadas: <b>{usadas}</b> · Restantes: <b>{restantes}</b>\n"
+
+        texto += f"\n🧠 <b>Memoria:</b> {'✅ Activa' if tiene_memoria else '❌ No disponible en tu plan'}\n"
+
+        if plan_id == cfg.PLAN_GRATIS:
+            texto += "\n💡 <i>Actualiza a Pionero para más consultas y memoria.</i>"
+
+        return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+
+    except Exception as e:
+        logger.error(f"Error en /estado: {e}", exc_info=True)
+        return ConsultaResponse(
+            respuesta="❌ Error obteniendo tu estado. Intenta de nuevo.",
+            temas=[], confianza="n/a"
+        )
+
+
+def _cmd_stats_usuario(user_id_raw: str) -> ConsultaResponse:
+    """Muestra estadísticas personales del usuario."""
+    try:
+        uid = int(user_id_raw)
+    except (ValueError, TypeError):
+        return ConsultaResponse(
+            respuesta="⚠️ Abre la app desde Telegram para ver tus estadísticas.",
+            temas=[], confianza="n/a"
+        )
+    try:
+        import db as database
+        s = database.stats_usuario(uid)
+        texto = (
+            f"📈 <b>Tus estadísticas</b>\n\n"
+            f"💬 Consultas hoy: <b>{s['consultas_hoy']}</b>\n"
+            f"📚 Consultas totales: <b>{s['consultas_total']}</b>\n"
+            f"⭐ Respuestas guardadas: <b>{s.get('favoritos', 0)}</b>\n"
+        )
+        return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+    except Exception as e:
+        logger.error(f"Error en /stats usuario: {e}", exc_info=True)
+        return ConsultaResponse(
+            respuesta="❌ Error obteniendo estadísticas.",
+            temas=[], confianza="n/a"
+        )
+
+
+def _cmd_referir(user_id_raw: str) -> ConsultaResponse:
+    """Muestra el enlace de referido del usuario."""
+    try:
+        uid = int(user_id_raw)
+    except (ValueError, TypeError):
+        return ConsultaResponse(
+            respuesta="⚠️ Abre la app desde Telegram para obtener tu enlace de referido.",
+            temas=[], confianza="n/a"
+        )
+    try:
+        import db as database
+        count = database.obtener_referidos_count(uid)
+        enlace = f"https://t.me/aBOTgadoVEBot?start=ref_{uid}"
+        texto = (
+            f"🔗 <b>Tu enlace de referido</b>\n\n"
+            f"<code>{enlace}</code>\n\n"
+            f"👥 Personas referidas: <b>{count}</b>\n\n"
+            f"<i>Comparte este enlace. Cuando alguien se registre con él, "
+            f"ambos obtienen beneficios.</i>"
+        )
+        return ConsultaResponse(respuesta=texto, temas=[], confianza="n/a")
+    except Exception as e:
+        logger.error(f"Error en /referir: {e}", exc_info=True)
+        return ConsultaResponse(
+            respuesta="❌ Error obteniendo enlace de referido.",
+            temas=[], confianza="n/a"
+        )
 
 
 def _es_admin(user_id_raw: str) -> bool:
@@ -273,6 +400,51 @@ def _manejar_admin(cmd: str, partes: list, user_id_raw: str) -> ConsultaResponse
 
 # ─── Endpoints ───────────────────────────────────────────────────────────────
 
+@app.get("/perfil/{user_id}")
+def perfil_usuario(user_id: str):
+    """
+    Devuelve información de perfil del usuario para mostrar en el sidebar de la TMA:
+    plan, consultas hoy / límite / restantes, y si tiene memoria activa.
+    """
+    if user_id == "tma_anonimo":
+        return {"plan_id": None, "plan_nombre": None, "plan_icono": "👤",
+                "consultas_hoy": 0, "consultas_limite": 0, "consultas_restantes": 0,
+                "memoria": False}
+    try:
+        uid = int(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="user_id inválido")
+
+    try:
+        import db as database
+        import config as cfg
+
+        plan_id   = database.obtener_plan(uid)
+        plan      = cfg.PLANES.get(plan_id, cfg.PLANES[0])
+        usadas    = database.consultas_hoy(uid)
+        limite    = plan["consultas"]
+        restantes = database.consultas_restantes(uid)
+
+        try:
+            u_info      = database.resolver_usuario(uid)
+            tiene_mem   = bool(plan["memoria"] or u_info.get("bono_memoria", 0))
+        except Exception:
+            tiene_mem = plan["memoria"]
+
+        return {
+            "plan_id":             plan_id,
+            "plan_nombre":         plan["nombre"],
+            "plan_icono":          plan["icono"],
+            "consultas_hoy":       usadas,
+            "consultas_limite":    limite,   # -1 = ilimitadas
+            "consultas_restantes": restantes,
+            "memoria":             tiene_mem,
+        }
+    except Exception as e:
+        logger.error(f"Error en /perfil: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error obteniendo perfil")
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "servicio": "aBOTgado API"}
@@ -287,7 +459,7 @@ def consultar(req: ConsultaRequest):
     """
     # ── Detectar comandos ──────────────────────────────────────────
     if req.pregunta.startswith("/"):
-        resultado_cmd = _manejar_comando(req.pregunta)
+        resultado_cmd = _manejar_comando(req.pregunta, req.user_id)
         if resultado_cmd is not None:
             return resultado_cmd
 

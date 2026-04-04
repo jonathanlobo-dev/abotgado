@@ -532,6 +532,70 @@
     [data-theme="dark"] .plan-tag.p { background:#451a03; color:#fcd34d; }
     [data-theme="dark"] .plan-tag.x { background:#2e1065; color:#c4b5fd; }
 
+    /* ─── PERFIL (pie del sidebar) ───────────────────────────────── */
+    .sb-profile {
+      border-top: 1px solid var(--border);
+      padding: 12px 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .sb-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 17px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      letter-spacing: -1px;
+    }
+
+    .sb-profile-info { flex: 1; min-width: 0; }
+
+    .sb-profile-name {
+      font-size: 13px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .sb-profile-meta {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 3px; flex-wrap: wrap;
+    }
+
+    .sb-plan-tag {
+      font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .sb-plan-tag.gratis  { background:#dcfce7; color:#166534; }
+    .sb-plan-tag.pionero { background:#fef3c7; color:#92400e; }
+    .sb-plan-tag.premium { background:#ede9fe; color:#5b21b6; }
+    [data-theme="dark"] .sb-plan-tag.gratis  { background:#14532d; color:#86efac; }
+    [data-theme="dark"] .sb-plan-tag.pionero { background:#451a03; color:#fcd34d; }
+    [data-theme="dark"] .sb-plan-tag.premium { background:#2e1065; color:#c4b5fd; }
+
+    .sb-uso-txt {
+      font-size: 10px; color: var(--text2);
+    }
+
+    .sb-uso-bar {
+      margin-top: 5px;
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .sb-uso-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width .4s;
+    }
+
     /* ─── SCROLLBAR ──────────────────────────────────────────────── */
     ::-webkit-scrollbar       { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -559,6 +623,18 @@
   </button>
   <div class="sb-list" id="sb-list">
     <div class="sb-loading">Cargando…</div>
+  </div>
+
+  <!-- Perfil del usuario -->
+  <div class="sb-profile" id="sb-profile">
+    <div class="sb-avatar" id="sb-avatar">👤</div>
+    <div class="sb-profile-info">
+      <div class="sb-profile-name" id="sb-profile-name">—</div>
+      <div class="sb-profile-meta" id="sb-profile-meta"></div>
+      <div class="sb-uso-bar" id="sb-uso-bar" style="display:none">
+        <div class="sb-uso-fill" id="sb-uso-fill" style="width:0%"></div>
+      </div>
+    </div>
   </div>
 </aside>
 
@@ -999,6 +1075,7 @@ function abrirSidebar() {
   sidebar.classList.add('open');
   sbOverlay.classList.add('open');
   cargarConversaciones();
+  cargarPerfil();
 }
 function cerrarSidebar() {
   sidebar.classList.remove('open');
@@ -1218,6 +1295,76 @@ document.addEventListener('click', e => {
 });
 
 btnSend.addEventListener('click', () => enviar(inp.value));
+
+// ═══════════════════════════════════════════════════════════════════
+// PERFIL DE USUARIO (pie del sidebar)
+// ═══════════════════════════════════════════════════════════════════
+const AVATAR_COLORES = ['#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2','#db2777','#ea580c'];
+
+function _colorAvatar(uid) {
+  let h = 0;
+  for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORES[h % AVATAR_COLORES.length];
+}
+
+function _initPerfilSDK() {
+  // Muestra nombre e avatar desde los datos del SDK (sin necesidad de API)
+  const user   = tg?.initDataUnsafe?.user || {};
+  const nombre = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Usuario';
+  const uname  = user.username ? ` @${user.username}` : '';
+
+  const elNombre = document.getElementById('sb-profile-name');
+  const elAvatar = document.getElementById('sb-avatar');
+
+  elNombre.textContent = nombre + uname;
+  const letra = nombre[0].toUpperCase();
+  elAvatar.textContent = letra;
+  if (window._tgUserId && window._tgUserId !== 'tma_anonimo') {
+    elAvatar.style.background = _colorAvatar(window._tgUserId);
+  }
+}
+
+async function cargarPerfil() {
+  if (window._tgUserId === 'tma_anonimo') {
+    document.getElementById('sb-profile-name').textContent = 'Modo sin sesión';
+    document.getElementById('sb-profile-meta').innerHTML =
+      '<span class="sb-uso-txt">Abre desde Telegram para ver tu perfil</span>';
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API}/perfil/${window._tgUserId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const meta = document.getElementById('sb-profile-meta');
+
+    if (data.plan_nombre) {
+      const planClass = data.plan_id === 0 ? 'gratis' : data.plan_id === 1 ? 'pionero' : 'premium';
+      let html = `<span class="sb-plan-tag ${planClass}">${data.plan_icono} ${data.plan_nombre}</span>`;
+
+      if (data.consultas_limite === -1) {
+        html += `<span class="sb-uso-txt">∞ consultas</span>`;
+      } else {
+        html += `<span class="sb-uso-txt">${data.consultas_restantes} restantes hoy</span>`;
+        // Barra de uso
+        const pct = data.consultas_limite > 0
+          ? Math.min((data.consultas_hoy / data.consultas_limite) * 100, 100)
+          : 0;
+        const bar  = document.getElementById('sb-uso-bar');
+        const fill = document.getElementById('sb-uso-fill');
+        bar.style.display = 'block';
+        fill.style.width   = pct + '%';
+        // Rojo si >85%
+        fill.style.background = pct > 85 ? '#ef4444' : 'var(--accent)';
+      }
+      meta.innerHTML = html;
+    }
+  } catch { /* silencioso — el perfil no bloquea el sidebar */ }
+}
+
+// Inicializar nombre/avatar en cuanto cargue la página (datos del SDK, sin API)
+_initPerfilSDK();
 </script>
 </body>
 </html>
