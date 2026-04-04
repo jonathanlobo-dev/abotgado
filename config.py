@@ -39,7 +39,7 @@ PLANTILLAS_DIR  = str(BASE_DIR / "plantillas")    # Plantillas siempre en el có
 
 # ─── MODELOS ─────────────────────────────────────────────────────────────────
 
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 HF_EMBED_URL    = f"https://router.huggingface.co/hf-inference/models/{EMBEDDING_MODEL}/pipeline/feature-extraction"
 LLM_MODEL       = "llama-3.3-70b-versatile"
 

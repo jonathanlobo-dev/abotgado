@@ -2,7 +2,7 @@
 aBOTgado - Motor de embeddings (HuggingFace API)
 ==================================================
 Reemplaza Ollama por la API gratuita de HuggingFace.
-Modelo: paraphrase-multilingual-mpnet-base-v2 (768 dims, multilingue)
+Modelo: paraphrase-multilingual-MiniLM-L12-v2 (384 dims, multilingue, 50+ idiomas)
 """
 
 import time

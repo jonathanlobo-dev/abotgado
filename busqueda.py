@@ -936,12 +936,25 @@ CATALOGO_LEYES = {
 
 # ─── PROMPTS ─────────────────────────────────────────────────────────────────
 
-PROMPT_REFORMULAR = """Eres un experto en derecho venezolano. Transforma la pregunta en términos jurídicos formales venezolanos para búsqueda en base de datos legal.
+PROMPT_REFORMULAR_Y_CLASIFICAR = """Eres un experto en derecho venezolano. Haz DOS tareas con la pregunta del usuario:
 
-Identifica: área del derecho, figuras jurídicas, leyes aplicables.
-Si la pregunta menciona ley o artículo específico, inclúyelo exactamente.
-Si es muy corta, expándela con contexto jurídico.
-Responde con 5-10 términos jurídicos clave, sin explicaciones."""
+1. TEMA: Clasifica la pregunta en exactamente UNO de los temas listados abajo (o "ninguno" si ninguno aplica).
+2. QUERY: Transforma la pregunta en 5-10 términos jurídicos formales venezolanos para búsqueda.
+
+Responde EXACTAMENTE en este formato (2 líneas, sin explicaciones):
+TEMA: <nombre_del_tema>
+QUERY: <términos jurídicos>
+
+TEMAS DISPONIBLES:
+TRÁNSITO: transito_infracciones (multas, semáforos, velocidad, alcohol), transito_licencia (licencias de conducir), transito_accidente (choques, atropellos, colisiones), transito_vehiculo (seguro, placa, RCV, revisión), transito_general (normas de circulación), transito_estacionamiento (mal estacionado, grúa), libre_transito (derecho a circular), animales_via (animales sueltos en vía pública), robo_vehiculo (robo/hurto de carro)
+LABORAL: laboral_despido (despido, indemnización), laboral_vacaciones (vacaciones, días libres), laboral_prestaciones (prestaciones, liquidación, aguinaldo), laboral_general (derechos laborales), pago_feriados (trabajo en feriados), permiso_medico (reposo médico)
+PENAL: penal (delitos, penas, prisión), drogas (drogas, sustancias), faltas_penales (riñas, escándalo, lesiones leves), amenazas (amenazas, intimidación), detencion_arbitraria (detención ilegal, flagrancia), antecedentes_penales (antecedentes, certificado), procesal_penal (juicios penales, procedimiento), delitos_informaticos (hackeo, estafas online), corrupcion (soborno, peculado)
+FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos, inamovilidad laboral), violencia_mujer (violencia de género, maltrato)
+VIVIENDA: vivienda_cc (compra, cláusulas abusivas), vivienda_desalojo (desalojo, desahucio), vivienda_arrendamiento (alquiler, arrendamiento), arrendamiento_comercial (local comercial), propiedad_horizontal (condominio, edificio)
+CIVIL: civil (obligaciones, contratos), propiedad (posesión, invasión, usucapión), testamento (testamento, herencia), herencia (sucesión, herederos), deuda_civil (deudas, cobro, pagaré), vicios_ocultos (defectos ocultos en compraventa)
+COMERCIAL: comercial (empresas, sociedades), negocio_casa (emprendimiento desde casa), bancario (bancos, créditos, tarjetas)
+PROTECCIÓN: consumidor (derechos del consumidor), proteccion_consumidor (reclamos, SUNDDE), discapacidad (personas con discapacidad), adultos_mayores (tercera edad, jubilados), animales (maltrato animal, fauna doméstica)
+OTROS: comunicaciones (privacidad, teléfono, interceptación), derechos (derechos constitucionales), seguro_social (IVSS, pensiones), islr (impuesto sobre la renta), tributario (impuestos, tributos), zonas_economicas (zonas especiales), mala_praxis (negligencia médica), tramites (documentos, apostilla, legalización), recurso_multa (impugnar multa), sobreprecio (especulación, precios), municipal (ordenanzas, alcaldía), ambiente (ambiente, contaminación), trabajadores_residenciales (conserjes, trabajadores de edificio), justicia_paz (juez de paz, conciliación)"""
 
 SYSTEM_PROMPT = """Eres aBOTgado, asistente jurídico virtual especializado en leyes venezolanas para Telegram. Tono profesional, accesible y en español venezolano.
 
@@ -1430,20 +1443,45 @@ def normalizar(texto: str) -> str:
     return texto
 
 
-def reformular(pregunta: str) -> str:
+def reformular_y_clasificar(pregunta: str) -> tuple[str, str]:
+    """
+    Reformula la pregunta en términos jurídicos Y clasifica el tema.
+    Una sola llamada LLM (cero latencia extra vs el reformular original).
+    Retorna: (query_reformulada, tema_clasificado)
+    """
     try:
         r = groq_client.chat.completions.create(
             model=config.LLM_MODEL,
             messages=[
-                {"role": "system", "content": PROMPT_REFORMULAR},
+                {"role": "system", "content": PROMPT_REFORMULAR_Y_CLASIFICAR},
                 {"role": "user",   "content": pregunta}
             ],
-            max_tokens=100,
-            temperature=0.1,
+            max_tokens=120,
+            temperature=0.0,
         )
-        return r.choices[0].message.content.strip()
-    except Exception:
-        return pregunta
+        texto = r.choices[0].message.content.strip()
+
+        # Parsear respuesta: "TEMA: xxx\nQUERY: yyy"
+        tema = "ninguno"
+        query = pregunta
+        for linea in texto.split("\n"):
+            linea = linea.strip()
+            if linea.upper().startswith("TEMA:"):
+                tema = linea.split(":", 1)[1].strip().lower()
+            elif linea.upper().startswith("QUERY:"):
+                query = linea.split(":", 1)[1].strip()
+
+        # Validar que el tema existe en ARTICULOS_CLAVE
+        if tema not in ARTICULOS_CLAVE and tema != "ninguno":
+            logger.info(f"  Clasificador: tema '{tema}' no reconocido, descartando")
+            tema = "ninguno"
+
+        logger.info(f"  Clasificador LLM: tema={tema}")
+        return (query or pregunta, tema)
+
+    except Exception as e:
+        logger.warning(f"  Error en reformular_y_clasificar: {e}")
+        return (pregunta, "ninguno")
 
 
 def buscar_bm25(query: str, top_n: int = 10) -> list[dict]:
@@ -1502,7 +1540,7 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
             # Si hay muchos artículos, usar embedding para encontrar los más relevantes
             if len(arts_lista) > 10:
                 try:
-                    query_emb = embeddings.get_embedding(pregunta)
+                    query_emb = embeddings.generar_embedding(pregunta)
                     resultado = coleccion.query(
                         query_embeddings=[query_emb],
                         n_results=6,
@@ -1797,7 +1835,7 @@ RAMA_POR_TEMA = {
 def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], float]:
     """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados, mejor_distancia)."""
 
-    pregunta_juridica = reformular(pregunta)
+    pregunta_juridica, tema_llm = reformular_y_clasificar(pregunta)
     logger.info(f"  Original:    {pregunta}")
     logger.info(f"  Reformulada: {pregunta_juridica}")
 
@@ -1817,9 +1855,47 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         agregar(directos)
         logger.info(f"  Búsqueda directa: {len(directos)} artículos")
 
-    # 1. Artículos Clave (más precisos)
+    # 1. Artículos Clave (más precisos — keywords)
     arts_clave, temas_detectados = buscar_articulos_clave(pregunta)
     agregar(arts_clave)
+
+    # 1b. Fallback: si keywords no detectaron nada pero el LLM sí → usar tema del LLM
+    if not temas_detectados and tema_llm != "ninguno" and tema_llm in ARTICULOS_CLAVE:
+        logger.info(f"  Clasificador LLM fallback activado: {tema_llm}")
+        temas_detectados = [tema_llm]
+        cfg = ARTICULOS_CLAVE[tema_llm]
+        arts_lista = cfg["articulos"]
+        if len(arts_lista) > 10:
+            try:
+                query_emb = embeddings.generar_embedding(pregunta)
+                resultado = coleccion.query(
+                    query_embeddings=[query_emb],
+                    n_results=6,
+                    where={"ley": {"$eq": cfg["ley"]}},
+                    include=["documents", "metadatas", "distances"]
+                )
+                for i in range(len(resultado["documents"][0])):
+                    agregar([{
+                        "texto":    resultado["documents"][0][i],
+                        "ley":      resultado["metadatas"][0][i]["ley"],
+                        "articulo": resultado["metadatas"][0][i]["articulo"],
+                    }])
+            except Exception as e:
+                logger.warning(f"  Embedding fallback para {tema_llm}: {e}")
+        else:
+            resultado = coleccion.get(
+                where={"$and": [
+                    {"ley":      {"$eq": cfg["ley"]}},
+                    {"articulo": {"$in": arts_lista}}
+                ]},
+                include=["documents", "metadatas"]
+            )
+            for i in range(len(resultado["documents"])):
+                agregar([{
+                    "texto":    resultado["documents"][i],
+                    "ley":      resultado["metadatas"][i]["ley"],
+                    "articulo": resultado["metadatas"][i]["articulo"],
+                }])
 
     # 2. Determinar ramas para filtrar embeddings
     ramas_detectadas = list(set(
@@ -1923,13 +1999,14 @@ def debug_busqueda(pregunta: str) -> str:
     """Diagnóstico completo del pipeline de búsqueda para una pregunta."""
     lineas = [f"🔍 DEBUG: \"{pregunta}\"\n"]
 
-    # 1. Reformulación
-    pregunta_juridica = reformular(pregunta)
-    lineas.append(f"📝 Reformulada: {pregunta_juridica}\n")
+    # 1. Reformulación + Clasificación LLM
+    pregunta_juridica, tema_llm = reformular_y_clasificar(pregunta)
+    lineas.append(f"📝 Reformulada: {pregunta_juridica}")
+    lineas.append(f"🤖 Tema LLM: {tema_llm}\n")
 
     # 2. Artículos Clave (keywords)
     arts_clave, temas = buscar_articulos_clave(pregunta)
-    lineas.append(f"🏷️ Temas detectados: {temas if temas else 'NINGUNO'}")
+    lineas.append(f"🏷️ Temas detectados (keywords): {temas if temas else 'NINGUNO'}")
     lineas.append(f"📋 Artículos clave: {len(arts_clave)}")
     for a in arts_clave[:5]:
         lineas.append(f"  • {a['ley']}, Art. {a['articulo']}")
@@ -2123,7 +2200,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                     {"role": "user", "content": pregunta}
                 ],
                 max_tokens=100,
-                temperature=0.3,
+                temperature=0.1,
             )
             return {"respuesta": response.choices[0].message.content,
                     "temas": [], "confianza": "n/a"}
