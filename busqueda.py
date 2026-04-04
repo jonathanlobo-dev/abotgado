@@ -700,8 +700,8 @@ ARTICULOS_CLAVE = {
                      "carro que dejó", "vehiculo que dejo",
                      "poner el carro a nombre"],
         "ley": "Código Civil venezolano",
-        # 822-832 = orden de suceder ab-intestato
-        "articulos": [822, 823, 824, 825, 826, 827, 828, 829, 830, 832]
+        # 807=sucesión intestada, 822-832=orden de suceder ab-intestato
+        "articulos": [807, 822, 823, 824, 825, 826, 827, 828, 829, 830, 832]
     },
     "amenazas": {
         "keywords": ["me amenaza", "me amenazó", "me amenazo", "amenazas",
@@ -1397,6 +1397,12 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 
 - IMPORTANTE: Si no hay testamento, la herencia se reparte según el orden legal (Art. 822+ Código Civil): descendientes, cónyuge, ascendientes, colaterales.
 - Si son varios herederos y no se ponen de acuerdo: Tribunal Civil para juicio de partición.
+
+⚠️ INSTRUCCIÓN PARA CITAS LEGALES (📖):
+- El artículo PRINCIPAL a citar es CC Art. 822 (orden de herederos ab-intestato) y/o Art. 823 (cónyuge + hijos), 824 (solo cónyuge), 825 (ascendientes), según corresponda.
+- Art. 807 también es útil: define que la sucesión se defiere por ley cuando no hay testamento.
+- NO cites Art. 545 ni Art. 548 del CC: son artículos de propiedad general, NO de sucesión. No explican cómo se hereda.
+- Si hay vehículo involucrado: menciona el trámite INTT en el 💡, pero NO cites la Ley de Tránsito en el 📖 (no es la ley que regula la herencia).
 """,
     "negocio_casa": """
 PASOS OBLIGATORIOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA O EN LA CALLE:
