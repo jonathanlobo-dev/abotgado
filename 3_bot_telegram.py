@@ -1734,22 +1734,28 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Alertas al admin
     if not es_admin(user_id):
         try:
+            import re as _re
             temas_str = ", ".join(temas) if temas else "ninguno"
+            # Versión limpia de la respuesta (sin etiquetas HTML) para el mensaje admin
+            resp_limpia = _re.sub(r"<[^>]+>", "", respuesta).strip()[:600]
+
             if confianza in ("baja", "media"):
                 icono_conf = "🔴" if confianza == "baja" else "🟡"
                 await notificar_admins(context,
-                    f"{icono_conf} CONSULTA BAJA CONFIANZA\n"
+                    f"{icono_conf} CONSULTA {'BAJA' if confianza == 'baja' else 'MEDIA'} CONFIANZA\n"
                     f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
                     f"Temas: {temas_str}\n"
-                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-                    f"Pregunta: {pregunta[:200]}")
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n\n"
+                    f"❓ Pregunta: {pregunta[:300]}\n\n"
+                    f"🤖 Respuesta:\n{resp_limpia}")
             elif debug_mode:
                 await notificar_admins(context,
                     f"🟢 DEBUG CONSULTA\n"
                     f"Confianza: {confianza} | Dist: {distancia:.3f}\n"
                     f"Temas: {temas_str}\n"
-                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
-                    f"Pregunta: {pregunta[:200]}")
+                    f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n\n"
+                    f"❓ Pregunta: {pregunta[:300]}\n\n"
+                    f"🤖 Respuesta:\n{resp_limpia}")
         except Exception as e:
             logger.error(f"Error enviando alerta de confianza: {e}")
 
