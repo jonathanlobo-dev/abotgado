@@ -1115,14 +1115,19 @@ function addMessage(rol, texto, temas = [], msgId = null, preguntaOrigen = null)
     btnDown.textContent = '👎';
     btnDown.title = 'Respuesta mejorable';
 
+    // Extraer texto plano de la respuesta del bot para guardarlo con el feedback
+    const _tmp = document.createElement('div');
+    _tmp.innerHTML = texto;
+    const respuestaPlano = _tmp.textContent.trim();
+
     btnUp.addEventListener('click', () => {
-      enviarFeedback(id, 1, preguntaOrigen || '');
+      enviarFeedback(id, 1, preguntaOrigen || '', respuestaPlano);
       btnUp.remove();
       btnDown.remove();
     });
 
     btnDown.addEventListener('click', () => {
-      enviarFeedback(id, -1, preguntaOrigen || '');
+      enviarFeedback(id, -1, preguntaOrigen || '', respuestaPlano);
       btnUp.remove();
       btnDown.remove();
     });
@@ -1202,7 +1207,7 @@ async function enviar(texto) {
 // ═══════════════════════════════════════════════════════════════════
 // FEEDBACK
 // ═══════════════════════════════════════════════════════════════════
-async function enviarFeedback(msgId, valor, pregunta = '') {
+async function enviarFeedback(msgId, valor, pregunta = '', respuesta = '') {
   try {
     await fetch(`${API}/feedback`, {
       method: 'POST',
@@ -1212,6 +1217,7 @@ async function enviarFeedback(msgId, valor, pregunta = '') {
         valor,
         user_id: window._tgUserId || 'tma_anonimo',
         pregunta,
+        respuesta,
       }),
     });
   } catch (_) { /* silencioso */ }

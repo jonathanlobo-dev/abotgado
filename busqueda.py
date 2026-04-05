@@ -321,6 +321,7 @@ REGLA DE RELEVANCIA:
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista de contexto que te di, NO LO MENCIONES. NUNCA escribas "No disponible en la lista", "no se encuentra", "no está disponible" ni nada similar. TAMPOCO sugieras artículos alternativos que no estén en la lista. Si no tienes el artículo, simplemente cita otro que sí esté en la lista. Si ninguno aplica, omite la sección 📖 completamente.
 - RAMA CORRECTA DEL DERECHO (REGLA CRÍTICA): Antes de citar un artículo, verifica que pertenezca a la RAMA DEL DERECHO que corresponde a la pregunta. Ejemplo: si la pregunta es LABORAL ("despido", "vacaciones", "salario"), NO cites el Código de Comercio, el Código Civil ni leyes mercantiles aunque contengan la palabra "despedir" o "trabajo" — esos artículos hablan del factor mercantil, NO del trabajador. Si la pregunta es LABORAL, solo cita la LOTTT u otras leyes laborales. Si la pregunta es PENAL, solo cita el Código Penal u otras leyes penales. Si en la lista NO hay ningún artículo de la rama correcta, OMITE completamente la sección 📖 y da la respuesta sin citas — es mejor no citar nada que citar un artículo de la rama incorrecta.
+- COHERENCIA RESPUESTA ↔ QUÉ HACER (REGLA CRÍTICA): Las secciones 📌 Respuesta y 💡 Qué hacer DEBEN ser coherentes entre sí. Si la Respuesta dice que una conducta del usuario está prohibida por ley o que el empleador SÍ puede despedir/sancionar, el Qué hacer NO debe asumir automáticamente que es "injustificado" ni mandar a denunciar como si la persona tuviera la razón. En ese caso, el Qué hacer debe ser defensivo/informativo: "acude a la Inspectoría del Trabajo para que evalúen si hubo circunstancias atenuantes (fuerza mayor, violación del descanso obligatorio, procedimiento irregular del patrono)". Solo recomienda "denuncia por despido injustificado" cuando la Respuesta haya dicho claramente que el despido es ilegal o que el usuario tiene la razón. Nunca contradigas en el Qué hacer lo que afirmaste en la Respuesta.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 - Si el artículo citado menciona montos en bolívares (ej: "25 bolívares", "50 bolívares"), agrega entre paréntesis: "(monto desactualizado por reconversión monetaria — consulta la tasa vigente)".
 
@@ -410,10 +411,11 @@ Sé breve. Máximo 5 líneas total."""
 GUIAS_INSTITUCIONALES = {
     "laboral": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS LABORALES:
-- Inspectoría del Trabajo: Presenta denuncia por despido injustificado, cobro de prestaciones, o reenganche. Lleva cédula, contrato (si tienes), y recibos de pago.
-- Si te despidieron: Tienes 10 días hábiles para solicitar reenganche ante la Inspectoría del Trabajo de tu jurisdicción.
-- Prestaciones: El patrono tiene 5 días después del despido para pagar. Si no paga, denuncia en la Inspectoría.
-- Si es acoso laboral: Denuncia ante la Inspectoría y ante la Fiscalía del Ministerio Público.
+- Inspectoría del Trabajo de tu jurisdicción: es el órgano competente para disputas laborales. Lleva cédula, contrato (si tienes) y recibos de pago.
+- IMPORTANTE: NO todo despido es injustificado. La LOTTT (Art. 79) lista causas justas (falta de probidad, incumplimiento de obligaciones, inasistencia, etc.). Si la conducta del trabajador encaja en el Art. 79, el despido puede ser justificado y la denuncia puede no prosperar. Evalúa primero si hay circunstancias atenuantes (fuerza mayor, violación del descanso obligatorio por parte del patrono, ausencia de procedimiento de calificación de faltas).
+- Reenganche por despido INJUSTIFICADO: si el despido fue sin causa legal, tienes 10 días hábiles para solicitar reenganche ante la Inspectoría.
+- Cobro de prestaciones sociales: el patrono tiene 5 días para pagar tras cualquier despido (justificado o no). Si no paga, denuncia en la Inspectoría.
+- Acoso laboral: denuncia ante la Inspectoría y ante la Fiscalía del Ministerio Público.
 """,
     "comunicaciones": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLACIÓN DE COMUNICACIONES/PRIVACIDAD:

@@ -66,6 +66,7 @@ class FeedbackRequest(BaseModel):
     valor: int        # 1 = 👍, -1 = 👎
     user_id: str = "tma_anonimo"
     pregunta: str = ""
+    respuesta: str = ""
 
 class ConversacionRequest(BaseModel):
     user_id: str
@@ -720,7 +721,14 @@ def feedback(req: FeedbackRequest):
             uid = int(req.user_id)
         except (ValueError, TypeError):
             uid = 0
-        database.guardar_feedback(uid, tipo, req.pregunta[:500] if req.pregunta else "")
+        # Formato compatible con el admin viewer del bot: pregunta\n---\nrespuesta
+        pregunta_lim = (req.pregunta or "").strip()[:400]
+        respuesta_lim = (req.respuesta or "").strip()[:800]
+        if pregunta_lim and respuesta_lim:
+            comentario = f"{pregunta_lim}\n---\n{respuesta_lim}"
+        else:
+            comentario = pregunta_lim or respuesta_lim
+        database.guardar_feedback(uid, tipo, comentario)
         logger.info(f"Feedback guardado: user={req.user_id} tipo={tipo} msg={req.msg_id}")
         return {"ok": True}
     except Exception as e:
