@@ -1994,18 +1994,23 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
         # Reemplazar disclaimer genérico si confianza es baja
         if confianza == "baja":
-            # Reemplazar el "Info orientativa" del LLM por uno más honesto
-            for frase_gen in ["⚠️ Info orientativa. Consulta un abogado.",
-                              "⚠️ Info orientativa. Consulta un abogado"]:
+            disclaimer_baja = ("⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
+                               "Te recomiendo consultar con un abogado para orientación específica.</i>")
+            # Variantes que puede generar el LLM (con o sin <i>)
+            variantes_disclaimer = [
+                "⚠️ <i>Info orientativa. Consulta un abogado.</i>",
+                "⚠️ Info orientativa. Consulta un abogado.",
+                "⚠️ Info orientativa. Consulta un abogado",
+            ]
+            reemplazado = False
+            for frase_gen in variantes_disclaimer:
                 if frase_gen in respuesta:
-                    respuesta = respuesta.replace(frase_gen,
-                        "⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
-                        "Te recomiendo consultar con un abogado para orientación específica.</i>")
+                    respuesta = respuesta.replace(frase_gen, disclaimer_baja, 1)
+                    reemplazado = True
                     break
-            else:
-                # Si no tiene el disclaimer genérico, agregar el específico
-                respuesta += ("\n\n⚠️ <i>Esta respuesta puede no ser exacta para tu caso. "
-                              "Te recomiendo consultar con un abogado para orientación específica.</i>")
+            if not reemplazado:
+                # No tiene ningún disclaimer — agregar al final
+                respuesta += f"\n\n{disclaimer_baja}"
 
         return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza, "distancia": dist}
     except Exception as e:
