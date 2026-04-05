@@ -1116,17 +1116,15 @@ function addMessage(rol, texto, temas = [], msgId = null, preguntaOrigen = null)
     btnDown.title = 'Respuesta mejorable';
 
     btnUp.addEventListener('click', () => {
-      if (btnUp.classList.contains('up')) return;
-      btnUp.classList.add('up');
-      btnDown.classList.remove('down');
       enviarFeedback(id, 1, preguntaOrigen || '');
+      btnUp.remove();
+      btnDown.remove();
     });
 
     btnDown.addEventListener('click', () => {
-      if (btnDown.classList.contains('down')) return;
-      btnDown.classList.add('down');
-      btnUp.classList.remove('up');
       enviarFeedback(id, -1, preguntaOrigen || '');
+      btnUp.remove();
+      btnDown.remove();
     });
 
     acts.appendChild(btnCopy);
