@@ -1846,39 +1846,51 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 "temas": [], "confianza": "n/a"}
 
     es_premium = user_id and db.es_premium(user_id)
-    seguimiento = es_premium and historial and es_seguimiento(pregunta)
+    es_follow_up = bool(historial and es_seguimiento(pregunta))
+    seguimiento_premium = es_premium and es_follow_up
     temas_detectados = []
     mejor_dist = 0.0  # default; se actualiza en buscar_articulos_nuevos
 
-    if seguimiento:
-        logger.info(f"  → Pregunta de seguimiento detectada")
+    def _enriquecer_query(pregunta_orig: str) -> str:
+        """Extrae la última pregunta del usuario del historial y la antepone."""
+        tema_previo = ""
+        for msg in reversed(historial):
+            if msg.get("role") == "user":
+                tema_previo = msg["content"].split("\n")[0][:100]
+                break
+        return f"{tema_previo}. {pregunta_orig}" if tema_previo else pregunta_orig
+
+    if seguimiento_premium:
+        logger.info(f"  → Seguimiento premium — cargando contexto persistente")
         contexto_previo = db.cargar_contexto(user_id)
 
         if contexto_previo:
-            # Extraer tema previo del historial para enriquecer la búsqueda
-            tema_previo = ""
-            if historial:
-                for msg in reversed(historial):
-                    if msg.get("role") == "user":
-                        tema_previo = msg["content"].split("\n")[0][:80]
-                        break
-
-            # Búsqueda complementaria: reformular pregunta CON contexto del tema anterior
-            pregunta_enriquecida = f"{tema_previo}. {pregunta}" if tema_previo else pregunta
+            pregunta_enriquecida = _enriquecer_query(pregunta)
             _, contexto_nuevo, temas_detectados, _ = buscar_articulos_nuevos(pregunta_enriquecida)
 
-            # Combinar: contexto previo + artículos nuevos relevantes
             if contexto_nuevo:
                 contexto = contexto_previo + "\n\n--- ARTÍCULOS ADICIONALES ---\n" + contexto_nuevo
             else:
                 contexto = contexto_previo
         else:
-            # Si no hay contexto previo, buscar normalmente
-            _, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta)
-            if not contexto:
+            # Contexto persistente vacío → buscar con query enriquecida
+            pregunta_enriquecida = _enriquecer_query(pregunta)
+            relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
+            if not relevantes:
                 return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
                         "⚠️ Consulta con un abogado.",
                         "temas": [], "confianza": "ninguna"}
+
+    elif es_follow_up:
+        # Todos los usuarios: enriquecer la query con la pregunta anterior del historial
+        logger.info(f"  → Seguimiento detectado — enriqueciendo query con historial")
+        pregunta_enriquecida = _enriquecer_query(pregunta)
+        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
+        if not relevantes:
+            return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
+                    "⚠️ Consulta con un abogado.",
+                    "temas": [], "confianza": "ninguna"}
+
     else:
         relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta)
         if not relevantes:
@@ -1887,7 +1899,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                     "temas": [], "confianza": "ninguna"}
 
     # Determinar nivel de confianza (keyword + embedding combinados)
-    dist = mejor_dist if not seguimiento else 0.0
+    dist = mejor_dist if not seguimiento_premium else 0.0
     if temas_detectados and dist < 0.55:
         confianza = "alta"
     elif temas_detectados and dist >= 0.55:
@@ -1926,7 +1938,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         "aunque el usuario lo pida."
     )
 
-    if seguimiento:
+    if es_follow_up:
         messages.append({"role": "user", "content":
             f"CONTEXTO LEGAL:\n{contexto}\n\n"
             f"--- INICIO DE LA PREGUNTA DEL USUARIO ---\n"
