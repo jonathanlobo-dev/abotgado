@@ -352,6 +352,13 @@ Señales de VÍCTIMA: "me robaron", "me golpearon", "fui víctima de", "me estaf
 
 Si la pregunta es TEÓRICA ("cuál es la pena de X", "qué dice la ley sobre X") sin señalar al usuario como acusado ni víctima: explica la ley y en "Qué hacer" da consejos generales sin mandar al CICPC por defecto.
 
+DELITOS GRAVES — REGLA ESPECIAL (penas ≥ 8 años):
+Si la consulta involucra delitos con penas iguales o superiores a 8 años (tráfico de drogas, homicidio, secuestro, extorsión, violación, terrorismo, crimen organizado, delitos de lesa humanidad), DEBES incluir SIEMPRE esta advertencia al inicio de la sección 💡 Qué hacer:
+<b>⚠️ Delito grave:</b> No te presentes ante ninguna autoridad sin un abogado. Contacta primero a un abogado penalista o solicita un Defensor Público en el Tribunal de Control de tu circuito judicial.
+
+LESA HUMANIDAD Y DROGAS — REGLA DE PRECISIÓN:
+El Art. 163 de la Ley Orgánica de Drogas establece expresamente que los delitos de tráfico de drogas SON calificados como delitos de lesa humanidad. Jurisprudencia vinculante del TSJ (Sala Constitucional) confirma esto. Consecuencias prácticas: no prescriben, no admiten amnistía ni indulto, y generalmente no se conceden medidas cautelares sustitutivas de privación de libertad. NUNCA digas que el tráfico de drogas "no es delito de lesa humanidad" — eso es incorrecto bajo la ley venezolana.
+
 REGLAS DE FORMATO Y REDACCIÓN:
 - SIEMPRE termina tu respuesta con EXACTAMENTE esta línea, sin modificarla: ⚠️ <i>Info orientativa. Consulta un abogado.</i>
 - NUNCA cambies el disclaimer final. NO escribas "Recuerda que...", "Es importante...", ni ninguna variación. COPIA Y PEGA la línea exacta de arriba.
@@ -536,6 +543,16 @@ INSTITUCIONES Y PASOS CONCRETOS PARA CONFLICTOS VECINALES:
 - Consejo Comunal: Puede mediar en conflictos vecinales antes de llegar al Juez de Paz.
 - Si el ruido es excesivo: Primero habla con tu vecino. Si no funciona, denuncia ante el Juez de Paz o la policía municipal.
 - Ordenanzas municipales: Tu alcaldía tiene normas sobre ruido, mascotas, y convivencia. Consulta en la alcaldía.
+""",
+    "drogas": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS DE DROGAS:
+⚠️ ATENCIÓN — DELITO GRAVE: Los delitos de drogas (tráfico, distribución, microtráfico) tienen penas que van de 8 a 25 años de prisión. Por mandato del Art. 163 de la Ley Orgánica de Drogas y jurisprudencia vinculante del TSJ (Sala Constitucional), el tráfico de drogas ES calificado como delito de lesa humanidad en Venezuela, lo que implica que: no prescribe, no admite amnistía ni indulto, y en la mayoría de los casos no se otorgan medidas cautelares sustitutivas.
+- SI TE ACUSAN O DETIENEN: NO te presentes ante ninguna autoridad (CICPC, Fiscalía, SEBIN) sin un abogado. Puedes quedar detenido de inmediato.
+- Abogado penalista: Es URGENTE. Contacta uno de confianza antes de cualquier actuación.
+- Defensor Público: Si no tienes recursos, solicítalo en el Tribunal de Control del Circuito Judicial Penal de tu jurisdicción. Lleva cédula.
+- Derecho constitucional: El Art. 49 CRBV garantiza tu derecho a la defensa. No hagas ninguna declaración sin tu abogado presente.
+- Consumo personal (Art. 153 LOD): Es una falta, no un delito, y se tramita ante el Juez de Control. El consumidor puede ser enviado a tratamiento en lugar de prisión.
+- Para familiares de detenidos: El abogado debe solicitar el expediente y los cargos ante el Tribunal de Control. Tienen derecho a visitas.
 """,
     "adultos_mayores": """
 INSTITUCIONES Y PASOS CONCRETOS PARA ADULTOS MAYORES:
@@ -1442,6 +1459,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
         "libre_transito": "transito_estacionamiento",
         "animales_via": "animales_via",
         "divorcio": "familia",
+        "drogas": "drogas",
     }
     guias_usadas = set()
     guia_textos = []
@@ -1463,6 +1481,8 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
             "divorc": "familia", "custodia": "familia", "hijo": "familia",
             "golpe": "violencia_mujer", "maltrat": "violencia_mujer",
             "impuesto": "tributario", "seniat": "tributario",
+            "droga": "drogas", "narco": "drogas", "trafic": "drogas",
+            "estupefaciente": "drogas", "lesa humanidad": "drogas",
         }
         for palabra, tema in mapeo_rapido.items():
             if palabra in pregunta_lower and tema in GUIAS_INSTITUCIONALES:
