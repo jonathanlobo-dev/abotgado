@@ -356,7 +356,25 @@
       "no me pagaron",
       "sin pagar",
       "pagar prestaciones",
-      "no me quieren pagar el trabajo"
+      "no me quieren pagar el trabajo",
+      "jornada laboral",
+      "jornada diaria",
+      "horario de trabajo",
+      "horas de trabajo",
+      "horas máximo",
+      "horas maximas",
+      "cuántas horas trabajar",
+      "cuantas horas trabajar",
+      "máximo de horas",
+      "horas máximas de trabajo",
+      "horas por día",
+      "horas por dia",
+      "período de prueba",
+      "periodo de prueba",
+      "tiempo de prueba",
+      "contrato de prueba",
+      "cuánto es el período",
+      "cuanto es el periodo"
     ],
     "ley": "Ley Orgánica del Trabajo (LOTTT)",
     "articulos": [
@@ -368,7 +386,11 @@
       142,
       190,
       191,
-      192
+      192,
+      167,
+      173,
+      174,
+      175
     ]
   },
   "comunicaciones": {
@@ -1566,7 +1588,18 @@
       "notificación de desalojo",
       "botar del apartamento",
       "botar de la casa",
-      "me botó"
+      "me botó",
+      "desalojar",
+      "plazo para desalojar",
+      "cuánto tiempo para desalojar",
+      "cuanto tiempo para desalojar",
+      "tiempo para desalojar",
+      "plazo desalojo",
+      "me notificaron",
+      "si me notificaron",
+      "notificación de desalojo",
+      "días para desalojar",
+      "dias para desalojar"
     ],
     "ley": "Ley de Arrendamientos Inmobiliarios",
     "articulos": [
@@ -1680,7 +1713,21 @@
       "contrato",
       "incumplimiento",
       "daños",
-      "perjuicios"
+      "perjuicios",
+      "no pagó",
+      "no pago",
+      "no me pagó",
+      "no me pago",
+      "cuota pendiente",
+      "segunda cuota",
+      "comprador no pagó",
+      "vendedor no pagó",
+      "incumplió el pago",
+      "incumplio",
+      "no cumplió el contrato",
+      "no cumplio",
+      "pagó la cuota",
+      "pago la cuota"
     ],
     "ley": "Código Civil venezolano",
     "articulos": [
@@ -2694,7 +2741,24 @@
       "vender",
       "escritura",
       "hipoteca",
-      "bienes"
+      "bienes",
+      "posesión",
+      "posesion",
+      "prescripción adquisitiva",
+      "prescripcion adquisitiva",
+      "sin título",
+      "sin escritura",
+      "sin titulo",
+      "usucapión",
+      "usucapion",
+      "20 años posesión",
+      "20 anos posesion",
+      "posesion de 20 años",
+      "años de posesión",
+      "anos de posesion",
+      "poseer sin titulo",
+      "titulo de propiedad",
+      "título de propiedad"
     ],
     "excluir": [
       "vender comida",
@@ -2728,7 +2792,12 @@
       807,
       808,
       809,
-      810
+      810,
+      1952,
+      1953,
+      1954,
+      1959,
+      1977
     ]
   },
   "testamento": {
@@ -3048,7 +3117,14 @@
       "comerciante",
       "comercio",
       "negocio",
-      "registro de comercio"
+      "registro de comercio",
+      "sociedad de responsabilidad limitada",
+      "responsabilidad limitada",
+      "compañia de responsabilidad limitada",
+      "compania de responsabilidad limitada",
+      "c.r.l.",
+      "que es una srl",
+      "que es srl"
     ],
     "ley": "Código de Comercio",
     "articulos": [
@@ -3058,7 +3134,11 @@
       211,
       212,
       214,
-      215
+      215,
+      312,
+      314,
+      315,
+      316
     ]
   },
   "negocio_casa": {
@@ -3132,14 +3212,34 @@
       "licorera",
       "quiosco",
       "kiosco",
-      "venta de arepas"
+      "venta de arepas",
+      "decomisar",
+      "decomiso",
+      "mercancía",
+      "mercancia",
+      "confiscar mercancía",
+      "confiscar mercancia",
+      "me decomisaron",
+      "decomisar mercancía",
+      "decomisar la mercancia",
+      "vendo sin permiso",
+      "venta sin permiso",
+      "vender sin permiso"
     ],
-    "ley": "Ley Orgánica de Salud",
+    "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
-      16,
-      33,
-      32,
-      65
+      1,
+      39,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      58,
+      62,
+      100,
+      101
     ]
   },
   "discapacidad": {
@@ -3280,22 +3380,30 @@
       "permiso municipal",
       "bomberos",
       "recolección de basura",
-      "recoleccion de basura"
+      "recoleccion de basura",
+      "permiso de la alcaldía",
+      "permiso de la alcaldia",
+      "permisos para abrir un negocio",
+      "permisos para negocio",
+      "licencia de funcionamiento",
+      "permiso de funcionamiento"
     ],
-    "ley": "Ley Orgánica del Poder Público Municipal",
+    "ley": "Ley Orgánica de Simplificación de Trámites Administrativos",
     "articulos": [
       1,
       2,
       3,
       4,
       5,
-      54,
-      55,
-      56,
-      88,
-      89,
-      260,
-      261
+      6,
+      7,
+      8,
+      9,
+      10,
+      35,
+      36,
+      37,
+      38
     ]
   },
   "penal": {
@@ -3971,7 +4079,28 @@
       "producto dañado",
       "devolver producto",
       "reclamo de compra",
-      "defensor del consumidor"
+      "defensor del consumidor",
+      "celular",
+      "celular nuevo",
+      "celular dañado",
+      "celular malo",
+      "llegó dañado",
+      "llego dañado",
+      "llego malo",
+      "llegó malo",
+      "entregaron dañado",
+      "me lo entregaron dañado",
+      "aerolínea",
+      "aerolinea",
+      "maleta",
+      "equipaje",
+      "equipaje perdido",
+      "maleta perdida",
+      "perdió mi maleta",
+      "perdio mi maleta",
+      "vuelo",
+      "aeropuerto",
+      "pérdida de equipaje"
     ],
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
@@ -5390,6 +5519,52 @@
     "ley": "Ley de Tránsito Terrestre",
     "articulos": [
       169
+    ]
+  },
+  "registros_notarias": {
+    "keywords": [
+      "validez poder",
+      "cuánto dura un poder",
+      "cuanto dura un poder",
+      "validez de un poder",
+      "poder notariado",
+      "cuánto tiempo tiene validez",
+      "cuanto tiempo tiene validez",
+      "poder caduca",
+      "vencimiento poder",
+      "poder vencido",
+      "poder autenticado",
+      "poder en el extranjero",
+      "documentos para registrar",
+      "registrar venta de casa",
+      "documentos para vender casa",
+      "registrar inmueble",
+      "venta de inmueble",
+      "escritura de compraventa",
+      "registro de venta",
+      "documentos para vender",
+      "qué documentos necesito para registrar",
+      "que documentos para registrar",
+      "cómo registrar una venta",
+      "como registrar una venta",
+      "notaria",
+      "notaría",
+      "notario"
+    ],
+    "ley": "Ley de Registros y Notarías",
+    "articulos": [
+      10,
+      15,
+      40,
+      45,
+      50,
+      55,
+      70,
+      75,
+      80,
+      85,
+      90,
+      100
     ]
   }
 }
