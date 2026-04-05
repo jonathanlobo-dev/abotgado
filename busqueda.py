@@ -357,7 +357,7 @@ Si la consulta involucra delitos con penas iguales o superiores a 8 años (tráf
 <b>⚠️ Delito grave:</b> No te presentes ante ninguna autoridad sin un abogado. Contacta primero a un abogado penalista o solicita un Defensor Público en el Tribunal de Control de tu circuito judicial.
 
 LESA HUMANIDAD Y DROGAS — REGLA DE PRECISIÓN:
-El Art. 163 de la Ley Orgánica de Drogas establece expresamente que los delitos de tráfico de drogas SON calificados como delitos de lesa humanidad. Jurisprudencia vinculante del TSJ (Sala Constitucional) confirma esto. Consecuencias prácticas: no prescriben, no admiten amnistía ni indulto, y generalmente no se conceden medidas cautelares sustitutivas de privación de libertad. NUNCA digas que el tráfico de drogas "no es delito de lesa humanidad" — eso es incorrecto bajo la ley venezolana.
+La Ley Orgánica de Drogas NO usa la frase "lesa humanidad" en su texto. Sin embargo, la Sala Constitucional del TSJ estableció en jurisprudencia vinculante (desde Sentencia N° 1712 del 12/11/2001) que el tráfico de drogas ES tratado como delito de lesa humanidad a efectos del Art. 29 CRBV. Consecuencias prácticas reales en Venezuela: no prescribe, generalmente no se otorgan medidas cautelares sustitutivas (el imputado permanece detenido), no admite amnistía ni indulto. NUNCA digas simplemente que "no es lesa humanidad" sin aclarar esta jurisprudencia y sus consecuencias prácticas. La respuesta correcta es: "La ley escrita no lo dice expresamente, pero la jurisprudencia del TSJ lo trata como tal, con las siguientes consecuencias prácticas..."
 
 REGLAS DE FORMATO Y REDACCIÓN:
 - SIEMPRE termina tu respuesta con EXACTAMENTE esta línea, sin modificarla: ⚠️ <i>Info orientativa. Consulta un abogado.</i>
@@ -546,13 +546,13 @@ INSTITUCIONES Y PASOS CONCRETOS PARA CONFLICTOS VECINALES:
 """,
     "drogas": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS DE DROGAS:
-⚠️ ATENCIÓN — DELITO GRAVE: Los delitos de drogas (tráfico, distribución, microtráfico) tienen penas que van de 8 a 25 años de prisión. Por mandato del Art. 163 de la Ley Orgánica de Drogas y jurisprudencia vinculante del TSJ (Sala Constitucional), el tráfico de drogas ES calificado como delito de lesa humanidad en Venezuela, lo que implica que: no prescribe, no admite amnistía ni indulto, y en la mayoría de los casos no se otorgan medidas cautelares sustitutivas.
-- SI TE ACUSAN O DETIENEN: NO te presentes ante ninguna autoridad (CICPC, Fiscalía, SEBIN) sin un abogado. Puedes quedar detenido de inmediato.
-- Abogado penalista: Es URGENTE. Contacta uno de confianza antes de cualquier actuación.
-- Defensor Público: Si no tienes recursos, solicítalo en el Tribunal de Control del Circuito Judicial Penal de tu jurisdicción. Lleva cédula.
-- Derecho constitucional: El Art. 49 CRBV garantiza tu derecho a la defensa. No hagas ninguna declaración sin tu abogado presente.
-- Consumo personal (Art. 153 LOD): Es una falta, no un delito, y se tramita ante el Juez de Control. El consumidor puede ser enviado a tratamiento en lugar de prisión.
-- Para familiares de detenidos: El abogado debe solicitar el expediente y los cargos ante el Tribunal de Control. Tienen derecho a visitas.
+⚠️ DELITO GRAVE — REGLA ABSOLUTA: Si te acusan, detienen o citan por drogas, NO te presentes ante ninguna autoridad (CICPC, Fiscalía, SEBIN, ONA) sin un abogado. Puedes quedar detenido de inmediato. Esta es la prioridad número uno.
+- Abogado penalista o Defensor Público: Primer paso siempre. Defensor Público: solicitarlo en el Tribunal de Control del Circuito Judicial Penal de tu jurisdicción. Lleva cédula.
+- Art. 49 CRBV: Tienes derecho constitucional a no declarar sin tu abogado presente. Ejércelo.
+- Fiscalía: Solo se acude con abogado presente. Nunca solo. El abogado solicita el expediente y los cargos; tú no debes hablar.
+- Jurisprudencia TSJ: Por Sentencia Sala Constitucional N° 1712/2001, el tráfico de drogas es tratado como lesa humanidad en Venezuela. Esto significa que en la práctica no se otorgan medidas cautelares sustitutivas (la persona queda detenida).
+- Consumo personal (Art. 153 LOD): Procedimiento distinto — se tramita ante el Juez de Control y puede derivar en tratamiento en lugar de prisión.
+- Para familiares de detenidos: El abogado debe solicitar el expediente ante el Tribunal de Control. Los familiares tienen derecho a visitas.
 """,
     "adultos_mayores": """
 INSTITUCIONES Y PASOS CONCRETOS PARA ADULTOS MAYORES:
