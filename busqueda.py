@@ -320,6 +320,7 @@ REGLA DE RELEVANCIA:
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista de contexto que te di, NO LO MENCIONES. NUNCA escribas "No disponible en la lista", "no se encuentra", "no está disponible" ni nada similar. TAMPOCO sugieras artículos alternativos que no estén en la lista. Si no tienes el artículo, simplemente cita otro que sí esté en la lista. Si ninguno aplica, omite la sección 📖 completamente.
+- RAMA CORRECTA DEL DERECHO (REGLA CRÍTICA): Antes de citar un artículo, verifica que pertenezca a la RAMA DEL DERECHO que corresponde a la pregunta. Ejemplo: si la pregunta es LABORAL ("despido", "vacaciones", "salario"), NO cites el Código de Comercio, el Código Civil ni leyes mercantiles aunque contengan la palabra "despedir" o "trabajo" — esos artículos hablan del factor mercantil, NO del trabajador. Si la pregunta es LABORAL, solo cita la LOTTT u otras leyes laborales. Si la pregunta es PENAL, solo cita el Código Penal u otras leyes penales. Si en la lista NO hay ningún artículo de la rama correcta, OMITE completamente la sección 📖 y da la respuesta sin citas — es mejor no citar nada que citar un artículo de la rama incorrecta.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
 - Si el artículo citado menciona montos en bolívares (ej: "25 bolívares", "50 bolívares"), agrega entre paréntesis: "(monto desactualizado por reconversión monetaria — consulta la tasa vigente)".
 
@@ -893,30 +894,38 @@ def buscar_bm25(query: str, top_n: int = 10) -> list[dict]:
     max_score = max(scores[i] for i in top) if top else 0
     umbral = max_score * 0.15 if max_score > 0 else 0
     return [{"texto": docs_bm25[i], "ley": metadatas[i]["ley"],
-             "articulo": metadatas[i]["articulo"], "score_bm25": scores[i]}
+             "articulo": metadatas[i]["articulo"],
+             "rama": rama_de_ley(metadatas[i]["ley"]),
+             "score_bm25": scores[i]}
             for i in top if scores[i] > umbral]
 
 
 def buscar_embedding(query: str, top_n: int = 10, ramas: list[str] = None) -> list[dict]:
     emb = embeddings.generar_embedding(query)
-    query_params = {
-        "query_embeddings": [emb], "n_results": top_n,
-        "include": ["documents", "metadatas", "distances"]
-    }
-    # Filtrar por rama(s) si se especifican
+    # No filtramos en ChromaDB porque el metadata 'rama' indexado puede estar
+    # desactualizado en DBs viejas. Traemos más resultados y filtramos en
+    # Python usando LEY_A_RAMA (fuente única de verdad).
+    fetch_n = top_n * 3 if ramas else top_n
+    r = coleccion.query(
+        query_embeddings=[emb],
+        n_results=fetch_n,
+        include=["documents", "metadatas", "distances"],
+    )
+    candidatos = [
+        {"texto": r["documents"][0][i], "ley": r["metadatas"][0][i]["ley"],
+         "articulo": r["metadatas"][0][i]["articulo"],
+         "rama": rama_de_ley(r["metadatas"][0][i]["ley"]),
+         "distancia": r["distances"][0][i]}
+        for i in range(len(r["documents"][0])) if r["distances"][0][i] < 0.75
+    ]
+    # Filtro por rama en memoria (tolerante: si deja vacío, devuelve todo)
     if ramas:
-        if len(ramas) == 1:
-            query_params["where"] = {"rama": {"$eq": ramas[0]}}
-        else:
-            query_params["where"] = {"rama": {"$in": ramas}}
-        logger.info(f"  Embedding filtrado por ramas: {ramas}")
-
-    r = coleccion.query(**query_params)
-    # Filtro más estricto: solo artículos con distancia < 0.75 (antes 0.95)
-    return [{"texto": r["documents"][0][i], "ley": r["metadatas"][0][i]["ley"],
-             "articulo": r["metadatas"][0][i]["articulo"],
-             "distancia": r["distances"][0][i]}
-            for i in range(len(r["documents"][0])) if r["distances"][0][i] < 0.75]
+        ramas_set = set(ramas)
+        filtrados = [c for c in candidatos if c["rama"] in ramas_set]
+        if filtrados:
+            logger.info(f"  Embedding filtrado por ramas {ramas_set}: {len(candidatos)} → {len(filtrados)}")
+            return filtrados[:top_n]
+    return candidatos[:top_n]
 
 
 def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
@@ -1262,6 +1271,74 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
     },
 }
 
+# ─── MAPEO LEY → RAMA (resuelve rama por nombre de ley, sin depender del metadata) ─
+# Debe coincidir con CLASIFICACION_LEYES en 1_procesar_leyes.py. Se usa como fuente
+# de verdad para el filtro de rama ya que el metadata indexado puede estar
+# desactualizado o ausente en DBs viejas.
+LEY_A_RAMA: dict[str, str] = {
+    # Laboral
+    "Ley Orgánica del Trabajo (LOTTT)": "laboral",
+    "Ley del Seguro Social": "laboral",
+    # Penal
+    "Código Penal": "penal",
+    "Código Orgánico Procesal Penal (COPP)": "penal",
+    "Ley Especial contra los Delitos Informáticos": "penal",
+    "Ley contra la Corrupción": "penal",
+    "Ley Orgánica de Drogas": "penal",
+    "Código Orgánico de Justicia Militar": "penal",
+    "Ley de Registro de Antecedentes Penales": "penal",
+    "Ley Constitucional contra el Odio": "penal",
+    "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)": "penal",
+    # Civil / Mercantil (tratadas como civil para filtros)
+    "Código Civil venezolano": "civil",
+    "Código de Procedimiento Civil": "civil",
+    "Ley de Registros y Notarías": "civil",
+    "Código de Comercio": "civil",
+    "Ley de Arrendamientos Inmobiliarios": "civil",
+    # Familia
+    "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)": "familia",
+    "Ley para la Protección de las Familias, la Maternidad y la Paternidad": "familia",
+    "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia": "familia",
+    # Tránsito
+    "Ley de Tránsito Terrestre": "transito",
+    # Tributario
+    "Código Orgánico Tributario": "tributario",
+    "Ley de Impuesto Sobre la Renta (ISLR)": "tributario",
+    # Vivienda
+    "Ley de Propiedad Horizontal": "vivienda",
+    "Ley para la Regularización y Control de los Arrendamientos de Vivienda": "vivienda",
+    # Constitucional
+    "Constitución de la República Bolivariana de Venezuela": "constitucional",
+    # Administrativo
+    "Ley Orgánica de la Contraloría General de la República": "administrativo",
+    "Ley Orgánica de Contraloría Social": "administrativo",
+    "Ley Orgánica del Poder Popular": "administrativo",
+    "Ley Orgánica de las Comunas": "administrativo",
+    "Ley Orgánica de los Consejos Comunales": "administrativo",
+    "Ley Orgánica de Gestión Comunitaria": "administrativo",
+    "Ley Orgánica del Sistema Económico Comunal": "administrativo",
+    "Ley Orgánica de Planificación Pública y Popular": "administrativo",
+    "Ley Orgánica de Simplificación de Trámites Administrativos": "administrativo",
+    "Ley para la Promoción y Uso del Lenguaje de Género": "administrativo",
+    "Ley Orgánica de Justicia de Paz Comunal": "administrativo",
+    "Ley de Atención Integral de las Personas Adultas Mayores": "administrativo",
+    "Ley para la Inclusión de Personas con Discapacidad": "administrativo",
+    "Ley Orgánica de las Zonas Económicas Especiales": "administrativo",
+    # Consumidor
+    "Ley Orgánica de Precios Justos": "consumidor",
+    # Animales / Ambiente
+    "Ley de Protección de la Fauna Doméstica": "animales",
+    "Ley de Residuos y Desechos Sólidos": "ambiente",
+    # General
+    "Código de Ética Profesional del Abogado Venezolano": "general",
+}
+
+
+def rama_de_ley(nombre_ley: str) -> str:
+    """Retorna la rama del derecho de una ley. 'general' si no se conoce."""
+    return LEY_A_RAMA.get(nombre_ley, "general")
+
+
 # ─── MAPEO TEMA → RAMA (debe coincidir con CLASIFICACION_LEYES del indexador) ─
 RAMA_POR_TEMA = {
     "laboral_despido": "laboral", "laboral_vacaciones": "laboral",
@@ -1390,7 +1467,24 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     for tema in temas_detectados:
         leyes_excluidas |= LEYES_EXCLUIR_POR_TEMA.get(tema, set())
 
-    for art in relevantes:
+    # Filtrado por rama: si el clasificador detectó una rama específica (no "general"),
+    # descartar artículos de otras ramas traídos por BM25 / lookup directo.
+    # Esto evita citar, por ej., Art. 104 Código de Comercio para una pregunta laboral.
+    # Resolvemos la rama con LEY_A_RAMA (fuente única de verdad), ignorando el metadata
+    # del artículo que puede estar ausente o desactualizado.
+    if ramas_detectadas:
+        ramas_set = set(ramas_detectadas)
+        candidatos_rama = [a for a in relevantes if rama_de_ley(a["ley"]) in ramas_set]
+        # Solo aplicar el filtro si deja al menos 1 candidato; si no, usar todos (fallback)
+        if candidatos_rama:
+            logger.info(f"  Filtro por rama {ramas_set}: {len(relevantes)} → {len(candidatos_rama)} candidatos")
+            relevantes_iter = candidatos_rama
+        else:
+            relevantes_iter = relevantes
+    else:
+        relevantes_iter = relevantes
+
+    for art in relevantes_iter:
         ley = art["ley"]
 
         # Omitir leyes que el tema principal hace irrelevantes
