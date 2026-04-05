@@ -548,7 +548,10 @@
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
     }
+    .sb-profile:hover { background: var(--hover); }
 
     .sb-avatar {
       width: 38px; height: 38px;
@@ -1316,7 +1319,6 @@ function abrirSidebar() {
   sbOverlay.classList.add('open');
   cargarConversaciones();
   cargarPerfil();
-  cargarStats();
 }
 function cerrarSidebar() {
   sidebar.classList.remove('open');
@@ -1326,6 +1328,17 @@ function cerrarSidebar() {
 document.getElementById('btn-sidebar').addEventListener('click', abrirSidebar);
 document.getElementById('sb-close').addEventListener('click', cerrarSidebar);
 sbOverlay.addEventListener('click', cerrarSidebar);
+
+// Click en perfil → toggle estadísticas
+document.getElementById('sb-profile').addEventListener('click', () => {
+  const statsSection = document.getElementById('sb-stats');
+  const visible = statsSection.style.display !== 'none';
+  if (visible) {
+    statsSection.style.display = 'none';
+  } else {
+    cargarStats();
+  }
+});
 document.getElementById('sb-new').addEventListener('click', () => {
   cerrarSidebar();
   nuevaConversacion();
