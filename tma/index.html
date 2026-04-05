@@ -1114,14 +1114,14 @@ function addMessage(rol, texto, temas = [], msgId = null, preguntaOrigen = null)
       if (btnUp.classList.contains('up')) return;
       btnUp.classList.add('up');
       btnDown.classList.remove('down');
-      enviarFeedback(id, 1);
+      enviarFeedback(id, 1, preguntaOrigen || '');
     });
 
     btnDown.addEventListener('click', () => {
       if (btnDown.classList.contains('down')) return;
       btnDown.classList.add('down');
       btnUp.classList.remove('up');
-      enviarFeedback(id, -1);
+      enviarFeedback(id, -1, preguntaOrigen || '');
     });
 
     acts.appendChild(btnCopy);
@@ -1199,12 +1199,17 @@ async function enviar(texto) {
 // ═══════════════════════════════════════════════════════════════════
 // FEEDBACK
 // ═══════════════════════════════════════════════════════════════════
-async function enviarFeedback(msgId, valor) {
+async function enviarFeedback(msgId, valor, pregunta = '') {
   try {
     await fetch(`${API}/feedback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg_id: msgId, valor }),
+      body: JSON.stringify({
+        msg_id: msgId,
+        valor,
+        user_id: window._tgUserId || 'tma_anonimo',
+        pregunta,
+      }),
     });
   } catch (_) { /* silencioso */ }
 }
