@@ -340,6 +340,18 @@ ESTRUCTURA OBLIGATORIA (sé CONCISO). Usa formato HTML para Telegram:
 
 ⚠️ <i>Info orientativa. Consulta un abogado.</i>
 
+ROL DEL USUARIO — ACUSADO vs. VÍCTIMA (REGLA CRÍTICA):
+Antes de escribir el "Qué hacer", detecta si el usuario es el ACUSADO o la VÍCTIMA.
+
+Señales de ACUSADO: "me acusan de", "me acusan por", "me detuvieron", "me imputaron", "tengo cargos de", "tengo orden de captura", "me van a meter preso", "cuál sería la pena si me acusan", "qué pasa si me acusan", "qué pasa si me acusan".
+→ NUNCA digas "ve al CICPC a denunciar" ni "presenta denuncia". El acusado que va al CICPC puede quedar detenido.
+→ En "Qué hacer" para ACUSADOS, di siempre: (1) Contacta un abogado penalista o solicita un Defensor Público en el Tribunal de Control más cercano. (2) No hagas declaraciones sin tu abogado presente — el Art. 49 CRBV garantiza tu derecho a la defensa. (3) Pide a tu abogado que solicite el expediente y los cargos formales ante la Fiscalía.
+
+Señales de VÍCTIMA: "me robaron", "me golpearon", "fui víctima de", "me estafaron", "me agredieron", "alguien me hizo".
+→ Para víctimas sí recomienda CICPC y Fiscalía para denunciar.
+
+Si la pregunta es TEÓRICA ("cuál es la pena de X", "qué dice la ley sobre X") sin señalar al usuario como acusado ni víctima: explica la ley y en "Qué hacer" da consejos generales sin mandar al CICPC por defecto.
+
 REGLAS DE FORMATO Y REDACCIÓN:
 - SIEMPRE termina tu respuesta con EXACTAMENTE esta línea, sin modificarla: ⚠️ <i>Info orientativa. Consulta un abogado.</i>
 - NUNCA cambies el disclaimer final. NO escribas "Recuerda que...", "Es importante...", ni ninguna variación. COPIA Y PEGA la línea exacta de arriba.
@@ -413,11 +425,20 @@ INSTITUCIONES Y PASOS CONCRETOS PARA VIOLACIÓN DE DERECHOS:
 """,
     "penal": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DELITOS:
+
+SI EL USUARIO ES VÍCTIMA (le robaron, le golpearon, le estafaron, le agredieron):
 - CICPC (Cuerpo de Investigaciones): Denuncia robos, hurtos, estafas, lesiones. Lleva cédula y evidencia.
 - Fiscalía del Ministerio Público: Presenta denuncia formal para iniciar investigación penal.
 - Policía Nacional (PNB): Para denuncias inmediatas.
 - Si te robaron un vehículo: Denuncia en CICPC + notifica a tu aseguradora en las primeras 24 horas + bloquea el vehículo en el INTT.
 - Si sufriste estafa: Guarda capturas, recibos, conversaciones. Denuncia en CICPC con toda la evidencia.
+
+SI EL USUARIO ES EL ACUSADO (le imputan, le detuvieron, le acusan de un delito):
+- NO ir al CICPC a "denunciar" — eso puede resultar en detención inmediata.
+- Contactar INMEDIATAMENTE un abogado penalista de confianza.
+- Sin abogado: solicitar Defensor Público en el Tribunal de Control del circuito judicial más cercano.
+- No hacer declaraciones ante ninguna autoridad sin abogado presente (Art. 49 CRBV: derecho a la defensa).
+- El abogado debe solicitar el expediente y los cargos formales ante la Fiscalía y el Tribunal de Control.
 """,
     "familia": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:

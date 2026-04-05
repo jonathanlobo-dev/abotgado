@@ -114,9 +114,11 @@ NOMBRES_CORRECTOS = {
     "LEY PARA LA PROMOCIÓN Y USO DEL LENGUAJE DE GÉNERO.pdf":
         "Ley para la Promoción y Uso del Lenguaje de Género",
 
-    # ── Código Penal ──────────────────────────────────────────────────────────
+    # ── Código Penal y Delincuencia Organizada ───────────────────────────────
     "codigo_penal.pdf":                             "Código Penal",
     "reforma-del-codigo-penal.pdf":                 "Código Penal",
+    "ley contra la delincuencia organizada y financiacion del terrorismo.pdf":
+        "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)",
 
     # ── Justicia de Paz Comunal ──────────────────────────────────────────────
     "Ley Orgánica de Justicia de Paz Comunal.pdf":
@@ -213,6 +215,7 @@ CLASIFICACION_LEYES = {
     "Código Orgánico de Justicia Militar":                              "penal",
     "Ley de Registro de Antecedentes Penales":                          "penal",
     "Ley Constitucional contra el Odio":                                "penal",
+    "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)": "penal",
 
     # ── Civil ────────────────────────────────────────────────────────────────
     "Código Civil venezolano":                                          "civil",
