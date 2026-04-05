@@ -714,14 +714,15 @@ def eliminar_conversacion(conv_id: int, user_id: str):
 def feedback(req: FeedbackRequest):
     """Registra la calificación del usuario (👍 = 1, 👎 = -1)."""
     try:
+        import db as database
         tipo = "positivo" if req.valor == 1 else "negativo"
         try:
             uid = int(req.user_id)
         except (ValueError, TypeError):
             uid = 0
-        db.guardar_feedback(uid, tipo, req.pregunta[:500] if req.pregunta else "")
+        database.guardar_feedback(uid, tipo, req.pregunta[:500] if req.pregunta else "")
         logger.info(f"Feedback guardado: user={req.user_id} tipo={tipo} msg={req.msg_id}")
         return {"ok": True}
     except Exception as e:
-        logger.error(f"Error en /feedback: {e}")
+        logger.error(f"Error en /feedback: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error registrando feedback")
