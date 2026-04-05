@@ -199,6 +199,10 @@ NOMBRES_CORRECTOS = {
     "Resolucion-SG-403-96.Permisos-Sanitarios-1.pdf":
         "Resolución SG-403-96 Permisos Sanitarios",
 
+    # ── Sector Bancario ──────────────────────────────────────────────────────
+    "Ley-de-las-Instituciones-del-Sector-Bancario.pdf":
+        "Ley de las Instituciones del Sector Bancario",
+
     # ── Telecomunicaciones ───────────────────────────────────────────────────
     "ley-organica-de-telecomunicaciones.pdf":
         "Ley Orgánica de Telecomunicaciones",
@@ -303,6 +307,9 @@ CLASIFICACION_LEYES = {
     "Ley de Infogobierno":                                              "tecnologia",
     "Ley de Interoperabilidad":                                         "tecnologia",
     "Código de Ética de Inteligencia Artificial":                       "tecnologia",
+
+    # ── Bancario ─────────────────────────────────────────────────────────────
+    "Ley de las Instituciones del Sector Bancario":                     "bancario",
 
     # ── Seguros ──────────────────────────────────────────────────────────────
     "Ley de la Actividad Aseguradora":                                  "seguros",
