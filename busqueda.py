@@ -1169,6 +1169,10 @@ def es_fuera_de_dominio(pregunta: str) -> bool:
     return any(re.search(p, pregunta_lower) for p in patrones_fuera)
 
 
+# Umbral de distancia coseno para considerar un artículo semánticamente relevante.
+# < UMBRAL_RECHAZO → relevante; >= UMBRAL_RECHAZO → rechazar (query fuera de dominio legal).
+UMBRAL_RECHAZO: float = 0.75
+
 # ─── LEYES A EXCLUIR DEL RETRIEVAL SECUNDARIO CUANDO UN TEMA ES PRINCIPAL ───
 # Cuando el tema principal ya cubre el caso, estas leyes producen artículos
 # semánticamente cercanos pero contextualmente incorrectos.
@@ -1366,6 +1370,35 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
             break
 
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
+
+    # ── FALLBACK: si el filtro de rama bloqueó artículos válidos, reintentar sin él ──
+    # Ocurre cuando el clasificador detecta un tema incorrecto (ej: "laboral" para
+    # "asociación para delinquir") → embeddings filtrados a rama equivocada → vacío.
+    if not relevantes_finales and ramas_detectadas is not None:
+        logger.info(f"  ↻ Retry embeddings global (ramas={ramas_detectadas} no produjo resultados)")
+        resultados_global = buscar_embedding(pregunta_juridica, top_n=10, ramas=None)
+        dist_global = min((r["distancia"] for r in resultados_global), default=1.0)
+
+        if dist_global < UMBRAL_RECHAZO:
+            logger.info(f"  ✓ Retry global encontró artículos relevantes (dist={dist_global:.3f})")
+            mejor_distancia = dist_global
+            for art in resultados_global:
+                clave = f"{art['ley']}_{art['articulo']}"
+                if clave not in ids_vistos:
+                    relevantes.append(art)
+                    ids_vistos.add(clave)
+
+            por_ley_r: dict = {}
+            for art in relevantes:
+                ley = art["ley"]
+                if ley not in por_ley_r:
+                    por_ley_r[ley] = 0
+                if por_ley_r[ley] < MAX_POR_LEY:
+                    relevantes_finales.append(art)
+                    por_ley_r[ley] += 1
+                if len(relevantes_finales) >= MAX_TOTAL:
+                    break
+            logger.info(f"  Total al LLM (retry): {len(relevantes_finales)}")
 
     if not relevantes_finales:
         return [], "", temas_detectados, mejor_distancia
