@@ -755,6 +755,202 @@
       padding: 4px 2px 2px;
     }
 
+    /* ─── MODAL GENÉRICO (motivo, tickets) ──────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 60;
+      align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 18px 14px;
+      width: 100%; max-width: 460px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px var(--shadow);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .modal-panel h3 {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      margin: 0;
+    }
+    .modal-hint {
+      font-size: 11px; color: var(--text2); margin: 0;
+    }
+    .modal-panel textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 13px; color: var(--text);
+      font-family: inherit; resize: vertical;
+      outline: none; transition: border-color .2s;
+    }
+    .modal-panel textarea:focus { border-color: var(--accent); }
+    .modal-btns {
+      display: flex; gap: 8px; justify-content: flex-end;
+      margin-top: 4px;
+    }
+    .btn-primary, .btn-ghost {
+      border: none; border-radius: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .2s, opacity .2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-ghost {
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--border); }
+
+    /* Ticket modal — bloques de texto + botones copiar */
+    .tk-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 12px; color: var(--text);
+      white-space: pre-wrap; word-break: break-word;
+      max-height: 200px; overflow-y: auto;
+    }
+    .tk-label {
+      font-size: 11px; font-weight: 700; color: var(--text2);
+      text-transform: uppercase; letter-spacing: .4px;
+      margin-bottom: 2px;
+    }
+    .tk-row { display: flex; flex-direction: column; gap: 4px; }
+    .tk-copy {
+      align-self: flex-end;
+      background: none; border: 1px solid var(--border);
+      color: var(--text2); font-size: 11px;
+      border-radius: 6px; padding: 3px 8px; cursor: pointer;
+      transition: all .2s;
+    }
+    .tk-copy:hover { background: var(--surface2); color: var(--text); }
+    .tk-meta {
+      font-size: 11px; color: var(--text2);
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .tk-notify {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--text);
+      padding: 6px 0;
+    }
+    .tk-notify input { width: 14px; height: 14px; }
+    .tk-resuelto-info {
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.3);
+      color: #22c55e;
+      border-radius: 8px; padding: 8px 10px;
+      font-size: 12px; text-align: center;
+    }
+
+    /* ─── PANEL DE TICKETS ADMIN ─────────────────────────────────── */
+    .tk-tabs {
+      display: flex; gap: 4px;
+      padding: 8px 12px 4px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tk-tab {
+      flex: 1;
+      background: none; border: none;
+      color: var(--text2); font-size: 12px; font-weight: 600;
+      padding: 8px 6px;
+      cursor: pointer; border-radius: 6px 6px 0 0;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+    }
+    .tk-tab:hover { color: var(--text); }
+    .tk-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tk-filters {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tk-filter {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text2); font-size: 11px;
+      padding: 4px 10px; border-radius: 12px;
+      cursor: pointer; transition: all .2s;
+    }
+    .tk-filter.active {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+    .tk-list {
+      flex: 1; overflow-y: auto;
+      padding: 8px 10px 16px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .tk-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color .2s, transform .1s;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .tk-card:hover { border-color: var(--accent); }
+    .tk-card:active { transform: scale(.98); }
+    .tk-card-head {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--text2);
+    }
+    .tk-card-icon { font-size: 16px; }
+    .tk-card-id { font-weight: 700; color: var(--text); }
+    .tk-card-date { margin-left: auto; font-size: 10px; }
+    .tk-card-preview {
+      font-size: 12px; color: var(--text);
+      line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .tk-card-badge {
+      display: inline-block;
+      font-size: 9px; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px;
+      margin-left: auto;
+    }
+    .tk-card-badge.nuevo { background: rgba(239,68,68,.15); color: #ef4444; }
+    .tk-card-badge.resuelto { background: rgba(34,197,94,.15); color: #22c55e; }
+
+    /* ─── TOAST ──────────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 80px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column; gap: 6px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--text);
+      color: var(--surface);
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      box-shadow: 0 4px 20px var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .25s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok { background: #22c55e; color: #fff; }
+    .toast.err { background: #ef4444; color: #fff; }
+
     /* ─── SCROLLBAR ──────────────────────────────────────────────── */
     ::-webkit-scrollbar       { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -768,6 +964,53 @@
   </style>
 </head>
 <body>
+
+<!-- ═══ MODAL: MOTIVO DE FEEDBACK NEGATIVO ══════════════════════════ -->
+<div class="modal-overlay" id="motivo-overlay">
+  <div class="modal-panel">
+    <h3>¿Qué estuvo mal con esta respuesta?</h3>
+    <p class="modal-hint">Opcional. Nos ayuda a mejorar el bot.</p>
+    <textarea id="motivo-texto" maxlength="500" rows="4"
+              placeholder="Ej: el artículo citado no aplica, la respuesta es confusa, faltan pasos…"></textarea>
+    <div class="modal-btns">
+      <button id="motivo-omitir" class="btn-ghost">Omitir</button>
+      <button id="motivo-enviar" class="btn-primary">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PANEL DE TICKETS (ADMIN) ════════════════════════════════════ -->
+<div class="dir-overlay" id="tk-overlay"></div>
+<div class="dir-panel" id="tk-panel">
+  <div class="dir-header">
+    <span class="dir-logo">🎫</span>
+    <span class="dir-title">Tickets de feedback</span>
+    <button class="dir-close" id="tk-close" title="Cerrar">✕</button>
+  </div>
+  <div class="tk-tabs">
+    <button class="tk-tab active" data-estado="nuevo">📬 Nuevos</button>
+    <button class="tk-tab" data-estado="resuelto">✅ Resueltos</button>
+  </div>
+  <div class="tk-filters">
+    <button class="tk-filter active" data-tipo="">Todos</button>
+    <button class="tk-filter" data-tipo="positivo">👍</button>
+    <button class="tk-filter" data-tipo="negativo">👎</button>
+    <button class="tk-filter" data-tipo="comentario">💬</button>
+  </div>
+  <div class="tk-list" id="tk-list">
+    <div class="sb-loading">Cargando…</div>
+  </div>
+</div>
+
+<!-- ═══ MODAL DE TICKET (detalle) ═══════════════════════════════════ -->
+<div class="modal-overlay" id="ticket-overlay">
+  <div class="modal-panel" id="ticket-panel">
+    <!-- se rellena dinámicamente -->
+  </div>
+</div>
+
+<!-- ═══ TOAST CONTAINER ═════════════════════════════════════════════ -->
+<div id="toast-container"></div>
 
 <!-- ═══ DIRECTORIO DE ABOGADOS ══════════════════════════════════════ -->
 <div class="dir-overlay" id="dir-overlay"></div>
@@ -837,6 +1080,7 @@
   </div>
   <div class="h-actions">
     <button class="btn-icon" id="btn-dir"    title="Directorio de abogados">👨‍⚖️</button>
+    <button class="btn-icon" id="btn-tickets" title="Tickets de feedback" style="display:none">🎫</button>
     <button class="btn-icon" id="btn-export" title="Exportar conversación">📥</button>
     <button class="btn-icon" id="btn-nuevo"  title="Nueva consulta">✏️ Nuevo</button>
     <button class="btn-icon" id="btn-theme"  title="Cambiar tema">🌙</button>
@@ -902,6 +1146,8 @@ if (tg) {
   tg.expand();               // Expande a pantalla completa
   // Si Telegram pasa datos del usuario, los usamos como user_id
   window._tgUserId = tg.initDataUnsafe?.user?.id?.toString() || 'tma_anonimo';
+  // initData firmado — lo usa el backend para validar admin (HMAC-SHA256)
+  window._tgInitData = tg.initData || '';
   // Sincronizar tema con el de Telegram si está disponible
   if (tg.colorScheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -910,6 +1156,7 @@ if (tg) {
   }
 } else {
   window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
+  window._tgInitData = '';
 }
 
 // NO auto-crear conversación al cargar — se crea lazily al primer mensaje
@@ -1124,12 +1371,16 @@ function addMessage(rol, texto, temas = [], msgId = null, preguntaOrigen = null)
       enviarFeedback(id, 1, preguntaOrigen || '', respuestaPlano);
       btnUp.remove();
       btnDown.remove();
+      toast('Gracias por tu feedback', 'ok');
     });
 
     btnDown.addEventListener('click', () => {
-      enviarFeedback(id, -1, preguntaOrigen || '', respuestaPlano);
-      btnUp.remove();
-      btnDown.remove();
+      abrirModalMotivo((motivo) => {
+        enviarFeedback(id, -1, preguntaOrigen || '', respuestaPlano, motivo);
+        btnUp.remove();
+        btnDown.remove();
+        toast('Gracias, revisaremos tu reporte', 'ok');
+      });
     });
 
     acts.appendChild(btnCopy);
@@ -1207,7 +1458,7 @@ async function enviar(texto) {
 // ═══════════════════════════════════════════════════════════════════
 // FEEDBACK
 // ═══════════════════════════════════════════════════════════════════
-async function enviarFeedback(msgId, valor, pregunta = '', respuesta = '') {
+async function enviarFeedback(msgId, valor, pregunta = '', respuesta = '', motivo = '') {
   try {
     await fetch(`${API}/feedback`, {
       method: 'POST',
@@ -1218,6 +1469,8 @@ async function enviarFeedback(msgId, valor, pregunta = '', respuesta = '') {
         user_id: window._tgUserId || 'tma_anonimo',
         pregunta,
         respuesta,
+        motivo,
+        init_data: window._tgInitData || '',
       }),
     });
   } catch (_) { /* silencioso */ }
@@ -1268,7 +1521,7 @@ document.getElementById('btn-nuevo').addEventListener('click', () => nuevaConver
 // ═══════════════════════════════════════════════════════════════════
 document.getElementById('btn-export').addEventListener('click', () => {
   if (!historial.length) {
-    alert('No hay conversación activa para exportar.');
+    toast('No hay conversación para exportar');
     return;
   }
 
@@ -1787,10 +2040,16 @@ async function cargarStats() {
 
   // ── Estadísticas globales (solo admins) ─────────────────────────
   try {
-    const res = await fetch(`${API}/stats/admin?user_id=${window._tgUserId}`);
+    const qs = window._tgInitData
+      ? `init_data=${encodeURIComponent(window._tgInitData)}`
+      : `user_id=${window._tgUserId}`;
+    const res = await fetch(`${API}/stats/admin?${qs}`);
     if (res.ok) {
       const s = await res.json();
       statsAdmin.style.display = 'block';
+      // Mostrar botón 🎫 de tickets en el header
+      const btnTk = document.getElementById('btn-tickets');
+      if (btnTk) btnTk.style.display = '';
       let planesHtml = '';
       for (const [nombre, count] of Object.entries(s.por_plan)) {
         planesHtml += `
@@ -1824,6 +2083,222 @@ async function cargarStats() {
         </div>` : ''}`;
     }
   } catch { /* silencioso — no es admin o no hay conexión */ }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════
+function toast(mensaje, tipo = 'info') {
+  const cont = document.getElementById('toast-container');
+  if (!cont) return;
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.textContent = mensaje;
+  cont.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  }, 2500);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL: MOTIVO DE FEEDBACK 👎
+// ═══════════════════════════════════════════════════════════════════
+function abrirModalMotivo(onSubmit) {
+  const overlay = document.getElementById('motivo-overlay');
+  const texto   = document.getElementById('motivo-texto');
+  const btnSend = document.getElementById('motivo-enviar');
+  const btnSkip = document.getElementById('motivo-omitir');
+  texto.value = '';
+  overlay.classList.add('open');
+  setTimeout(() => texto.focus(), 50);
+
+  const cerrar = () => overlay.classList.remove('open');
+  const enviar = () => { const v = texto.value.trim(); cerrar(); onSubmit(v); };
+  const omitir = () => { cerrar(); onSubmit(''); };
+
+  // reemplazar listeners clonando
+  const ns = btnSend.cloneNode(true); btnSend.replaceWith(ns); ns.addEventListener('click', enviar);
+  const no = btnSkip.cloneNode(true); btnSkip.replaceWith(no); no.addEventListener('click', omitir);
+  overlay.onclick = (e) => { if (e.target === overlay) omitir(); };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PANEL ADMIN DE TICKETS DE FEEDBACK
+// ═══════════════════════════════════════════════════════════════════
+const tkPanel   = document.getElementById('tk-panel');
+const tkOverlay = document.getElementById('tk-overlay');
+const tkListEl  = document.getElementById('tk-list');
+let _tkEstado = 'nuevo';
+let _tkTipo   = '';
+
+function abrirTickets() {
+  tkPanel.classList.add('open');
+  tkOverlay.classList.add('open');
+  cargarTickets();
+}
+function cerrarTickets() {
+  tkPanel.classList.remove('open');
+  tkOverlay.classList.remove('open');
+}
+
+document.getElementById('btn-tickets').addEventListener('click', abrirTickets);
+document.getElementById('tk-close').addEventListener('click', cerrarTickets);
+tkOverlay.addEventListener('click', cerrarTickets);
+
+document.querySelectorAll('.tk-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tk-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    _tkEstado = t.dataset.estado;
+    cargarTickets();
+  });
+});
+document.querySelectorAll('.tk-filter').forEach(f => {
+  f.addEventListener('click', () => {
+    document.querySelectorAll('.tk-filter').forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    _tkTipo = f.dataset.tipo;
+    cargarTickets();
+  });
+});
+
+async function cargarTickets() {
+  tkListEl.innerHTML = '<div class="sb-loading">Cargando…</div>';
+  try {
+    const params = new URLSearchParams({
+      init_data: window._tgInitData || '',
+      estado:    _tkEstado,
+      limit:     '50',
+    });
+    if (_tkTipo) params.set('tipo', _tkTipo);
+    const res = await fetch(`${API}/admin/feedback?${params}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderTickets(data.items || []);
+  } catch (e) {
+    tkListEl.innerHTML = '<div class="dir-empty">⚠️ Error cargando tickets.<br><small>Verifica que eres admin.</small></div>';
+  }
+}
+
+function renderTickets(items) {
+  if (!items.length) {
+    tkListEl.innerHTML = `<div class="dir-empty">${_tkEstado === 'nuevo' ? '✨' : '📭'}<br><br>Sin tickets ${_tkEstado === 'nuevo' ? 'pendientes' : 'resueltos'}.</div>`;
+    return;
+  }
+  tkListEl.innerHTML = `<div class="dir-count">${items.length} ticket${items.length !== 1 ? 's' : ''}</div>`;
+  items.forEach(tk => {
+    const card = document.createElement('div');
+    card.className = 'tk-card';
+    const icon = tk.tipo === 'positivo' ? '👍' : tk.tipo === 'negativo' ? '👎' : '💬';
+    const fecha = (tk.timestamp || '').slice(0, 16).replace('T', ' ');
+    const preview = (tk.pregunta || tk.comentario || '').slice(0, 120);
+    const badge = tk.estado === 'resuelto'
+      ? '<span class="tk-card-badge resuelto">resuelto</span>'
+      : '<span class="tk-card-badge nuevo">nuevo</span>';
+    card.innerHTML = `
+      <div class="tk-card-head">
+        <span class="tk-card-icon">${icon}</span>
+        <span class="tk-card-id">#${tk.id}</span>
+        ${badge}
+        <span class="tk-card-date">${_esc(fecha)}</span>
+      </div>
+      <div class="tk-card-preview">${_esc(preview) || '<em>(sin texto)</em>'}</div>`;
+    card.addEventListener('click', () => abrirModalTicket(tk));
+    tkListEl.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL DE DETALLE DE TICKET
+// ═══════════════════════════════════════════════════════════════════
+function abrirModalTicket(tk) {
+  const overlay = document.getElementById('ticket-overlay');
+  const panel   = document.getElementById('ticket-panel');
+  const icon    = tk.tipo === 'positivo' ? '👍' : tk.tipo === 'negativo' ? '👎' : '💬';
+  const fecha   = (tk.timestamp || '').slice(0, 16).replace('T', ' ');
+  const pregunta  = tk.pregunta || '';
+  const respuesta = tk.respuesta || '';
+  const motivo    = tk.motivo || '';
+
+  const esResuelto = tk.estado === 'resuelto';
+  const resueltoHtml = esResuelto
+    ? `<div class="tk-resuelto-info">✅ Resuelto${tk.resuelto_en ? ' el ' + tk.resuelto_en.slice(0,16).replace('T',' ') : ''}${tk.resuelto_por ? ' · admin ' + tk.resuelto_por : ''}</div>`
+    : `
+      <label class="tk-notify">
+        <input type="checkbox" id="tk-notif" checked>
+        Notificar al usuario que fue resuelto
+      </label>
+      <div class="modal-btns">
+        <button class="btn-ghost" id="tk-cerrar">Cerrar</button>
+        <button class="btn-primary" id="tk-resolver">Marcar resuelto</button>
+      </div>`;
+
+  panel.innerHTML = `
+    <h3>${icon} Ticket #${tk.id}</h3>
+    <div class="tk-meta">
+      <span>📅 ${_esc(fecha)}</span>
+      <span>👤 user ${tk.user_id || '—'}</span>
+    </div>
+    ${pregunta ? `
+      <div class="tk-row">
+        <div class="tk-label">Pregunta</div>
+        <div class="tk-block">${_esc(pregunta)}</div>
+        <button class="tk-copy" data-copy="pregunta">📋 Copiar pregunta</button>
+      </div>` : ''}
+    ${respuesta ? `
+      <div class="tk-row">
+        <div class="tk-label">Respuesta del bot</div>
+        <div class="tk-block">${_esc(respuesta)}</div>
+        <button class="tk-copy" data-copy="respuesta">📋 Copiar respuesta</button>
+      </div>` : ''}
+    ${motivo ? `
+      <div class="tk-row">
+        <div class="tk-label">Motivo del usuario</div>
+        <div class="tk-block">${_esc(motivo)}</div>
+      </div>` : ''}
+    ${resueltoHtml}
+  `;
+
+  // Botones copiar
+  panel.querySelectorAll('.tk-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.copy;
+      const txt = key === 'pregunta' ? pregunta : respuesta;
+      navigator.clipboard.writeText(txt).then(() => toast('Copiado', 'ok'));
+    });
+  });
+
+  const cerrar = () => overlay.classList.remove('open');
+
+  if (!esResuelto) {
+    panel.querySelector('#tk-cerrar').addEventListener('click', cerrar);
+    panel.querySelector('#tk-resolver').addEventListener('click', async () => {
+      const notif = panel.querySelector('#tk-notif').checked;
+      const btn = panel.querySelector('#tk-resolver');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/admin/feedback/${tk.id}/resolver`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ init_data: window._tgInitData || '', notificar: notif }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        cerrar();
+        toast('Ticket resuelto', 'ok');
+        cargarTickets();
+      } catch (e) {
+        btn.disabled = false;
+        toast('Error al resolver', 'err');
+      }
+    });
+  } else {
+    // click fuera o Escape cierra
+  }
+
+  overlay.classList.add('open');
+  overlay.onclick = (e) => { if (e.target === overlay) cerrar(); };
 }
 
 // Inicializar nombre/avatar en cuanto cargue la página (datos del SDK, sin API)

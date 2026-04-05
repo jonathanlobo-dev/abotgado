@@ -11,10 +11,17 @@ Endpoints:
 """
 
 import os
+import time
+import json
+import hmac
+import hashlib
 import logging
+from urllib.parse import parse_qsl
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
+
+import config
 
 # ─── Logging ────────────────────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [API] %(message)s")
@@ -67,6 +74,13 @@ class FeedbackRequest(BaseModel):
     user_id: str = "tma_anonimo"
     pregunta: str = ""
     respuesta: str = ""
+    motivo: str = ""       # opcional — por qué fue mala (solo 👎)
+    init_data: str = ""    # firmado por Telegram — valida user_id real
+
+
+class ResolverRequest(BaseModel):
+    init_data: str = ""
+    notificar: bool = True
 
 class ConversacionRequest(BaseModel):
     user_id: str
@@ -339,9 +353,85 @@ def _cmd_referir(user_id_raw: str) -> ConsultaResponse:
 
 def _es_admin(user_id_raw: str) -> bool:
     try:
-        import config
         return int(user_id_raw) in config.ADMIN_IDS
     except Exception:
+        return False
+
+
+def _validar_init_data(init_data: str, max_age_seconds: int = 86400) -> dict | None:
+    """Valida el initData firmado de Telegram WebApp.
+
+    Spec: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
+    Retorna el dict del user si la firma es válida y no está vencida; None si no.
+    """
+    if not init_data:
+        return None
+    token = getattr(config, "TELEGRAM_TOKEN", "") or ""
+    if not token:
+        return None
+    try:
+        parsed = dict(parse_qsl(init_data, strict_parsing=True, keep_blank_values=True))
+        recv_hash = parsed.pop("hash", None)
+        if not recv_hash:
+            return None
+        data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
+        secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
+        calc_hash = hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(calc_hash, recv_hash):
+            return None
+        # Rechazar si auth_date tiene más de 24h
+        try:
+            auth_date = int(parsed.get("auth_date", 0))
+        except ValueError:
+            return None
+        if auth_date <= 0 or auth_date < time.time() - max_age_seconds:
+            return None
+        user_json = parsed.get("user", "")
+        if not user_json:
+            return None
+        return json.loads(user_json)
+    except Exception as e:
+        logger.debug(f"initData inválido: {e}")
+        return None
+
+
+def _user_id_from_init_data(init_data: str) -> int | None:
+    """Extrae el user_id del initData validado. None si la firma falla."""
+    user = _validar_init_data(init_data)
+    if user and isinstance(user.get("id"), int):
+        return user["id"]
+    return None
+
+
+def _admin_from_init_data(init_data: str) -> int | None:
+    """Devuelve el user_id si es admin válido (initData firmado), None si no.
+
+    En DEV_MODE permite saltear la validación HMAC (útil para browser desktop).
+    """
+    uid = _user_id_from_init_data(init_data)
+    if uid is not None and uid in config.ADMIN_IDS:
+        return uid
+    # Escape de desarrollo local: DEV_MODE=1 usa el primer ADMIN_ID
+    if os.getenv("DEV_MODE", "").lower() in ("1", "true", "si"):
+        return config.ADMIN_IDS[0] if config.ADMIN_IDS else None
+    return None
+
+
+def _enviar_mensaje_telegram(chat_id: int, texto: str) -> bool:
+    """Envía un mensaje por la HTTP API de Telegram (no depende del Application del bot)."""
+    token = getattr(config, "TELEGRAM_TOKEN", "") or ""
+    if not token or not chat_id:
+        return False
+    try:
+        import httpx
+        r = httpx.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": texto},
+            timeout=10,
+        )
+        return r.status_code == 200
+    except Exception as e:
+        logger.warning(f"No se pudo notificar al usuario {chat_id}: {e}")
         return False
 
 
@@ -537,10 +627,18 @@ def stats_usuario_endpoint(user_id: str):
 
 
 @app.get("/stats/admin")
-def stats_admin_endpoint(user_id: str):
-    """Estadísticas globales — solo para administradores."""
-    if not _es_admin(user_id):
-        raise HTTPException(status_code=403, detail="No autorizado")
+def stats_admin_endpoint(user_id: str = "", init_data: str = ""):
+    """Estadísticas globales — solo para administradores.
+
+    Prefiere validación por initData firmado. Acepta user_id legacy solo si
+    coincide con ADMIN_IDS Y DEV_MODE=1 (para desarrollo local).
+    """
+    admin_id = _admin_from_init_data(init_data)
+    if not admin_id:
+        # Fallback legacy: solo en DEV_MODE
+        if not (os.getenv("DEV_MODE", "").lower() in ("1", "true", "si")
+                and _es_admin(user_id)):
+            raise HTTPException(status_code=403, detail="No autorizado")
     try:
         import db as database
         import config as cfg
@@ -717,20 +815,71 @@ def feedback(req: FeedbackRequest):
     try:
         import db as database
         tipo = "positivo" if req.valor == 1 else "negativo"
-        try:
-            uid = int(req.user_id)
-        except (ValueError, TypeError):
-            uid = 0
-        # Formato compatible con el admin viewer del bot: pregunta\n---\nrespuesta
-        pregunta_lim = (req.pregunta or "").strip()[:400]
-        respuesta_lim = (req.respuesta or "").strip()[:800]
-        if pregunta_lim and respuesta_lim:
-            comentario = f"{pregunta_lim}\n---\n{respuesta_lim}"
+        # Si hay initData válido, usar ese user_id (anti-suplantación).
+        # Si no, caer al user_id del body (compat con TMA sin initData todavía).
+        uid_auth = _user_id_from_init_data(req.init_data)
+        if uid_auth is not None:
+            uid = uid_auth
         else:
-            comentario = pregunta_lim or respuesta_lim
-        database.guardar_feedback(uid, tipo, comentario)
-        logger.info(f"Feedback guardado: user={req.user_id} tipo={tipo} msg={req.msg_id}")
-        return {"ok": True}
+            try:
+                uid = int(req.user_id)
+            except (ValueError, TypeError):
+                uid = 0
+        fb_id = database.guardar_feedback_v2(
+            uid, tipo, req.pregunta, req.respuesta, req.motivo
+        )
+        logger.info(
+            f"Feedback guardado id={fb_id} user={uid} tipo={tipo} "
+            f"motivo_len={len(req.motivo or '')}"
+        )
+        return {"ok": True, "id": fb_id}
     except Exception as e:
         logger.error(f"Error en /feedback: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error registrando feedback")
+
+
+@app.get("/admin/feedback")
+def admin_listar_feedback(init_data: str = "", estado: str = "nuevo",
+                          tipo: str | None = None, limit: int = 50, offset: int = 0):
+    """Lista tickets de feedback — solo admins con initData firmado."""
+    admin_id = _admin_from_init_data(init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        estado_filtro = None if estado in ("", "todos") else estado
+        tipo_filtro = None if tipo in ("", "todos", None) else tipo
+        items = database.listar_feedback_tickets(
+            estado=estado_filtro, tipo=tipo_filtro, limit=limit, offset=offset
+        )
+        return {"items": items, "count": len(items)}
+    except Exception as e:
+        logger.error(f"Error en /admin/feedback: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error listando feedback")
+
+
+@app.post("/admin/feedback/{feedback_id}/resolver")
+def admin_resolver_feedback(feedback_id: int, req: ResolverRequest):
+    """Marca un feedback como resuelto y opcionalmente notifica al usuario."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        fb = database.marcar_feedback_resuelto(feedback_id, admin_id)
+        if not fb:
+            raise HTTPException(status_code=404, detail="Feedback no existe")
+        notificado = False
+        if req.notificar and fb.get("user_id") and fb["user_id"] > 0:
+            notificado = _enviar_mensaje_telegram(
+                fb["user_id"],
+                "✅ ¡Gracias por tu reporte! Revisamos tu feedback y ya fue corregido. "
+                "Puedes intentar tu pregunta de nuevo y verificar que la respuesta mejoró."
+            )
+        logger.info(f"Feedback {feedback_id} resuelto por admin {admin_id}, notificado={notificado}")
+        return {"ok": True, "notificado": notificado, "feedback": fb}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en /admin/feedback/{feedback_id}/resolver: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error resolviendo feedback")

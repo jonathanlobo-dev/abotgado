@@ -113,6 +113,17 @@ def inicializar_db():
             )
         """)
 
+        # ── Migración feedback: columnas de tickets ──────────────────────
+        cols_fb = {r[1] for r in con.execute("PRAGMA table_info(feedback)").fetchall()}
+        if "motivo" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN motivo TEXT DEFAULT ''")
+        if "estado" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN estado TEXT DEFAULT 'nuevo'")
+        if "resuelto_en" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN resuelto_en TEXT")
+        if "resuelto_por" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN resuelto_por INTEGER")
+
         con.execute("""
             CREATE TABLE IF NOT EXISTS favoritos (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -769,6 +780,97 @@ def guardar_feedback(user_id: int, tipo: str, comentario: str = ""):
             "INSERT INTO feedback (user_id, tipo, comentario) VALUES (?, ?, ?)",
             (user_id, tipo, comentario)
         )
+
+
+def guardar_feedback_v2(user_id: int, tipo: str, pregunta: str = "",
+                        respuesta: str = "", motivo: str = "") -> int:
+    """Guarda feedback con pregunta, respuesta y motivo separados.
+
+    El comentario se mantiene en formato 'pregunta\\n---\\nrespuesta' para que
+    el admin viewer del bot puro siga funcionando sin cambios. El motivo va
+    en su propia columna. Retorna el id del feedback insertado.
+    """
+    pregunta = (pregunta or "").strip()[:400]
+    respuesta = (respuesta or "").strip()[:800]
+    motivo = (motivo or "").strip()[:500]
+    if pregunta and respuesta:
+        comentario = f"{pregunta}\n---\n{respuesta}"
+    else:
+        comentario = pregunta or respuesta
+    with get_db() as con:
+        cur = con.execute(
+            "INSERT INTO feedback (user_id, tipo, comentario, motivo, estado) "
+            "VALUES (?, ?, ?, ?, 'nuevo')",
+            (user_id, tipo, comentario, motivo)
+        )
+        return cur.lastrowid
+
+
+def listar_feedback_tickets(estado: str = None, tipo: str = None,
+                            limit: int = 50, offset: int = 0) -> list[dict]:
+    """Lista feedbacks como tickets. Descompone comentario en pregunta/respuesta."""
+    condiciones = []
+    params: list = []
+    if estado:
+        condiciones.append("estado = ?")
+        params.append(estado)
+    if tipo:
+        condiciones.append("tipo = ?")
+        params.append(tipo)
+    where = f"WHERE {' AND '.join(condiciones)}" if condiciones else ""
+    params.extend([limit, offset])
+    with get_db() as con:
+        cur = con.execute(
+            f"SELECT id, user_id, tipo, comentario, motivo, estado, timestamp, "
+            f"       resuelto_en, resuelto_por "
+            f"FROM feedback {where} ORDER BY id DESC LIMIT ? OFFSET ?",
+            params
+        )
+        items = []
+        for r in cur.fetchall():
+            comentario = r[3] or ""
+            if "\n---\n" in comentario:
+                pregunta, respuesta = comentario.split("\n---\n", 1)
+            else:
+                pregunta, respuesta = comentario, ""
+            items.append({
+                "id": r[0],
+                "user_id": r[1],
+                "tipo": r[2],
+                "pregunta": pregunta,
+                "respuesta": respuesta,
+                "motivo": r[4] or "",
+                "estado": r[5] or "nuevo",
+                "timestamp": r[6],
+                "resuelto_en": r[7],
+                "resuelto_por": r[8],
+            })
+        return items
+
+
+def marcar_feedback_resuelto(feedback_id: int, admin_id: int) -> dict | None:
+    """Marca un feedback como resuelto. Retorna el ticket actualizado o None."""
+    with get_db() as con:
+        cur = con.execute(
+            "UPDATE feedback SET estado = 'resuelto', "
+            "resuelto_en = CURRENT_TIMESTAMP, resuelto_por = ? "
+            "WHERE id = ?",
+            (admin_id, feedback_id)
+        )
+        if cur.rowcount == 0:
+            return None
+        row = con.execute(
+            "SELECT id, user_id, tipo, comentario, motivo, estado, timestamp, "
+            "       resuelto_en, resuelto_por FROM feedback WHERE id = ?",
+            (feedback_id,)
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            "id": row[0], "user_id": row[1], "tipo": row[2],
+            "comentario": row[3], "motivo": row[4], "estado": row[5],
+            "timestamp": row[6], "resuelto_en": row[7], "resuelto_por": row[8],
+        }
 
 
 def listar_feedback(limit: int = 10, offset: int = 0, tipo: str = None) -> list[dict]:
