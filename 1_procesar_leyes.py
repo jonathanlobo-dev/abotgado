@@ -10,6 +10,7 @@ aBOTgado - Indexador de leyes venezolanas (incremental)
 
 import os
 import sys
+sys.stdout.reconfigure(encoding="utf-8")
 import re
 import json
 import hashlib
@@ -191,10 +192,38 @@ NOMBRES_CORRECTOS = {
     # ── Salud y Permisos Sanitarios ─────────────────────────────────────────
     "ley-organica-de-salud.pdf":
         "Ley Orgánica de Salud",
+    "ley organica de salud.pdf":
+        "Ley Orgánica de Salud",
     "reglamento-general-de-alimentos.pdf":
         "Reglamento General de Alimentos",
     "Resolucion-SG-403-96.Permisos-Sanitarios-1.pdf":
         "Resolución SG-403-96 Permisos Sanitarios",
+
+    # ── Telecomunicaciones ───────────────────────────────────────────────────
+    "ley-organica-de-telecomunicaciones.pdf":
+        "Ley Orgánica de Telecomunicaciones",
+
+    # ── Actividad Aseguradora ────────────────────────────────────────────────
+    "LEY-ACTIVIDAD-ASEGURADORA.pdf":
+        "Ley de la Actividad Aseguradora",
+
+    # ── Ciencia, Tecnología e Innovación ─────────────────────────────────────
+    "ley_organica_de_ciencia_tecnologia_e_innovacion.pdf":
+        "Ley Orgánica de Ciencia, Tecnología e Innovación (LOCTI)",
+
+    # ── Infogobierno e Interoperabilidad ─────────────────────────────────────
+    "ley de infogobierno.pdf":
+        "Ley de Infogobierno",
+    "Ley_de_Interoperabilidad.pdf":
+        "Ley de Interoperabilidad",
+
+    # ── Función Pública Estadística ──────────────────────────────────────────
+    "ley de la funcion publica estadistica.pdf":
+        "Ley de la Función Pública Estadística",
+
+    # ── Ética de Inteligencia Artificial ─────────────────────────────────────
+    "Codigo_de_Etica_de_Inteligencia_Artificial.pdf":
+        "Código de Ética de Inteligencia Artificial",
 }
 
 
@@ -268,8 +297,24 @@ CLASIFICACION_LEYES = {
     # ── Ambiente ─────────────────────────────────────────────────────────────
     "Ley de Residuos y Desechos Sólidos":                               "ambiente",
 
+    # ── Telecomunicaciones / Tecnología ─────────────────────────────────────
+    "Ley Orgánica de Telecomunicaciones":                               "tecnologia",
+    "Ley Orgánica de Ciencia, Tecnología e Innovación (LOCTI)":        "tecnologia",
+    "Ley de Infogobierno":                                              "tecnologia",
+    "Ley de Interoperabilidad":                                         "tecnologia",
+    "Código de Ética de Inteligencia Artificial":                       "tecnologia",
+
+    # ── Seguros ──────────────────────────────────────────────────────────────
+    "Ley de la Actividad Aseguradora":                                  "seguros",
+
+    # ── Salud ────────────────────────────────────────────────────────────────
+    "Ley Orgánica de Salud":                                            "salud",
+    "Reglamento General de Alimentos":                                  "salud",
+    "Resolución SG-403-96 Permisos Sanitarios":                         "salud",
+
     # ── General ──────────────────────────────────────────────────────────────
     "Código de Ética Profesional del Abogado Venezolano":               "general",
+    "Ley de la Función Pública Estadística":                            "general",
 }
 
 
