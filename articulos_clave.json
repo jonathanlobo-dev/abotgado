@@ -30,7 +30,20 @@
       "alcoholímetro",
       "alcoholimetro",
       "bebidas alcohólicas",
-      "bebidas alcoholicas"
+      "bebidas alcoholicas",
+      "cinturón",
+      "cinturon",
+      "cinturón de seguridad",
+      "cinturon de seguridad",
+      "multa tránsito",
+      "multa transito",
+      "multa por conducir",
+      "cuánto es la multa",
+      "cuanto es la multa",
+      "infracción de tránsito",
+      "infraccion de transito",
+      "sanción de tránsito",
+      "sancion de transito"
     ],
     "ley": "Ley de Tránsito Terrestre",
     "articulos": [
@@ -38,7 +51,8 @@
       170,
       171,
       173,
-      177
+      177,
+      73
     ]
   },
   "transito_licencia": {
@@ -142,7 +156,10 @@
       "conductor",
       "circulación",
       "circulacion",
-      "autopista"
+      "autopista",
+      "cinturón",
+      "cinturon",
+      "multa"
     ],
     "excluir": [
       "perros calientes",
