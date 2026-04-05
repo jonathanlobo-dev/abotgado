@@ -374,7 +374,16 @@
       "tiempo de prueba",
       "contrato de prueba",
       "cuánto es el período",
-      "cuanto es el periodo"
+      "cuanto es el periodo",
+      "traslado laboral",
+      "me trasladaron",
+      "me cambiaron de sede",
+      "cambio de sede",
+      "cambio de ciudad de trabajo",
+      "trasladar trabajador",
+      "me cambiaron de trabajo",
+      "traslado sin avisar",
+      "nuevo lugar de trabajo"
     ],
     "ley": "Ley Orgánica del Trabajo (LOTTT)",
     "articulos": [
@@ -533,7 +542,36 @@
       "calabozo",
       "encerrar",
       "encerrado",
-      "libertad"
+      "libertad",
+      "manifestación",
+      "manifestacion",
+      "manifestar",
+      "marcha",
+      "protesta pacífica",
+      "protesta pacifica",
+      "derecho a manifestar",
+      "me prohibieron protestar",
+      "doble nacionalidad",
+      "doble nacionalidades",
+      "dos nacionalidades",
+      "otra nacionalidad",
+      "perder la nacionalidad",
+      "venezolano en otro pais",
+      "censura",
+      "censurar",
+      "censuraron",
+      "me censuraron",
+      "libertad de expresión",
+      "libertad de expresion",
+      "libertad de prensa",
+      "deportaron",
+      "deportado",
+      "me deportaron",
+      "expulsado del país",
+      "expulsado del pais",
+      "derecho de asilo",
+      "refugio",
+      "refugiado"
     ],
     "ley": "Constitución de la República Bolivariana de Venezuela",
     "articulos": [
@@ -545,7 +583,13 @@
       50,
       55,
       60,
-      139
+      139,
+      34,
+      57,
+      58,
+      60,
+      68,
+      69
     ]
   },
   "vivienda_cc": {
@@ -1627,7 +1671,17 @@
       "sunavi",
       "prorroga",
       "prórroga",
-      "causales de desalojo"
+      "causales de desalojo",
+      "opción a compra",
+      "opcion a compra",
+      "arrendamiento con opción",
+      "arrendamiento con opcion",
+      "alquilo con opción",
+      "alquilo con opcion",
+      "alquiler con opción de compra",
+      "alquiler con opcion de compra",
+      "contrato con opción",
+      "opcion de compra"
     ],
     "ley": "Ley de Arrendamientos Inmobiliarios",
     "articulos": [
@@ -2758,7 +2812,16 @@
       "anos de posesion",
       "poseer sin titulo",
       "titulo de propiedad",
-      "título de propiedad"
+      "título de propiedad",
+      "bienhechurías",
+      "bienhechurias",
+      "bienhechuría",
+      "bienhechuría",
+      "mejoras en mi terreno",
+      "construcción en mi terreno sin permiso",
+      "construyeron en mi terreno",
+      "metieron mejoras",
+      "mejoras sin permiso"
     ],
     "excluir": [
       "vender comida",
@@ -4035,7 +4098,21 @@
       "clonación",
       "me clonaron",
       "estafa por internet",
-      "estafa online"
+      "estafa online",
+      "fotos íntimas sin permiso",
+      "fotos intimas sin permiso",
+      "publicaron mis fotos",
+      "difundieron mis fotos",
+      "imágenes íntimas sin consentimiento",
+      "imagenes intimas",
+      "revenge porn",
+      "fotos sin permiso",
+      "videos sin permiso",
+      "publicaron fotos mías",
+      "publicaron fotos mias",
+      "imágenes privadas",
+      "imagenes privadas",
+      "foto privada"
     ],
     "ley": "Ley Especial contra los Delitos Informáticos",
     "articulos": [
@@ -4100,7 +4177,24 @@
       "perdio mi maleta",
       "vuelo",
       "aeropuerto",
-      "pérdida de equipaje"
+      "pérdida de equipaje",
+      "explota",
+      "explotó",
+      "exploto",
+      "me quemó",
+      "me quemo",
+      "causó daño",
+      "causo daño",
+      "producto peligroso",
+      "producto que explota",
+      "producto explota",
+      "me lastimó",
+      "me lastimo",
+      "me lesionó",
+      "me lesiono",
+      "producto causó lesión",
+      "daño físico",
+      "daño fisico"
     ],
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
@@ -5565,6 +5659,40 @@
       85,
       90,
       100
+    ]
+  },
+  "procesal_civil": {
+    "keywords": [
+      "me demandaron",
+      "me pusieron una demanda",
+      "demanda civil",
+      "demanda en mi contra",
+      "me llaman a juicio",
+      "recibí una demanda",
+      "recibí boleta",
+      "boleta de citación",
+      "citación civil",
+      "competencia del tribunal",
+      "juzgado competente",
+      "qué juzgado",
+      "cual tribunal",
+      "competencia territorial",
+      "tribunal de donde",
+      "jurisdicción civil",
+      "juez competente",
+      "donde me demandan"
+    ],
+    "ley": "Código de Procedimiento Civil",
+    "articulos": [
+      1,
+      3,
+      5,
+      28,
+      29,
+      30,
+      40,
+      41,
+      47
     ]
   }
 }
