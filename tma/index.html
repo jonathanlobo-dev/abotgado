@@ -2759,12 +2759,10 @@ window._solicitudId     = null;  // id de la solicitud activa
 async function _initRolAbogado() {
   if (window._tgUserId === 'tma_anonimo') return;
   try {
-    // Construir URL: prefiere initData firmado, fallback a user_id
-    let estadoUrl = `${API}/abogado/estado-solicitud`;
+    // Siempre enviar user_id; si hay initData firmado, enviarlo también
+    let estadoUrl = `${API}/abogado/estado-solicitud?user_id=${encodeURIComponent(window._tgUserId)}`;
     if (window._tgInitData) {
-      estadoUrl += `?init_data=${encodeURIComponent(window._tgInitData)}`;
-    } else {
-      estadoUrl += `?user_id=${encodeURIComponent(window._tgUserId)}`;
+      estadoUrl += `&init_data=${encodeURIComponent(window._tgInitData)}`;
     }
     const res = await fetch(estadoUrl);
     if (!res.ok) return;
@@ -3143,7 +3141,7 @@ document.getElementById('esc-baja').addEventListener('click', async () => {
     const res = await fetch(`${API}/abogado/baja`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ init_data: window._tgInitData || '' }),
+      body: JSON.stringify({ init_data: window._tgInitData || '', user_id: window._tgUserId || '' }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     toast('Te has dado de baja del directorio', 'ok');
@@ -3158,10 +3156,9 @@ document.getElementById('esc-baja').addEventListener('click', async () => {
 document.getElementById('sol-cancelar-solicitud').addEventListener('click', async () => {
   if (!confirm('¿Retirar tu solicitud? Podrás enviar una nueva después.')) return;
   try {
-    const authParam = window._tgInitData
-      ? `init_data=${encodeURIComponent(window._tgInitData)}`
-      : `user_id=${encodeURIComponent(window._tgUserId)}`;
-    const res = await fetch(`${API}/abogados/solicitud?${authParam}`, { method: 'DELETE' });
+    let cancelUrl = `${API}/abogados/solicitud?user_id=${encodeURIComponent(window._tgUserId)}`;
+    if (window._tgInitData) cancelUrl += `&init_data=${encodeURIComponent(window._tgInitData)}`;
+    const res = await fetch(cancelUrl, { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     toast('Solicitud retirada', 'ok');
     window._solicitudEstado = null;

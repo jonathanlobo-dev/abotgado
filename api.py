@@ -1062,6 +1062,11 @@ def baja_abogado_endpoint(req: dict):
     init_data = req.get("init_data", "")
     uid = _user_id_from_init_data(init_data)
     if uid is None:
+        try:
+            uid = int(req.get("user_id", 0))
+        except (ValueError, TypeError):
+            uid = None
+    if uid is None or uid == 0:
         raise HTTPException(status_code=403, detail="No autorizado")
     try:
         import db as database
