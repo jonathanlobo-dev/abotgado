@@ -1151,6 +1151,14 @@
       transition:background .2s">
       ⚖️ Pre-registrarme como abogado
     </button>
+    <button id="dir-btn-admin-abog" style="
+      display:none;width:100%;padding:11px;
+      background:rgba(234,179,8,.12);color:#ca8a04;
+      border:1px solid rgba(234,179,8,.3);border-radius:10px;
+      font-size:13px;font-weight:600;cursor:pointer;
+      transition:background .2s">
+      🔧 Gestionar Abogados
+    </button>
   </div>
 </div>
 
@@ -2783,13 +2791,18 @@ async function _initRolAbogado() {
       if (wrap) wrap.style.display = '';
     }
 
-    const isAdmin = window._tgInitData && (await (async () => {
-      try {
-        const r = await fetch(`${API}/stats/admin?init_data=${encodeURIComponent(window._tgInitData)}`);
-        return r.ok;
-      } catch { return false; }
-    })());
-    if (isAdmin && btnAdm) btnAdm.style.display = '';
+    const isAdmin = data.is_admin === true;
+    if (isAdmin) {
+      if (btnAdm) btnAdm.style.display = '';
+      // En el directorio: mostrar botón de gestión en lugar del de pre-registro
+      const dirAdmBtn = document.getElementById('dir-btn-admin-abog');
+      if (dirAdmBtn) {
+        if (dirBtn) dirBtn.style.display = 'none';
+        dirAdmBtn.style.display = '';
+        if (wrap) wrap.style.display = '';
+        dirAdmBtn.onclick = () => abrirAdminAbogados();
+      }
+    }
   } catch (e) { /* silencioso */ }
 }
 

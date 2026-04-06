@@ -997,13 +997,17 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
 
 @app.get("/abogado/estado-solicitud")
 def estado_solicitud(init_data: str = ""):
-    """Devuelve el estado de solicitud/membresía del usuario para decidir qué mostrar en la TMA."""
+    """Devuelve el estado de solicitud/membresía del usuario para decidir qué mostrar en la TMA.
+    Incluye is_admin para que el frontend no necesite una segunda llamada.
+    """
     uid = _user_id_from_init_data(init_data)
     if uid is None:
-        return {"es_abogado": False, "tiene_solicitud": False, "estado": None}
+        return {"es_abogado": False, "tiene_solicitud": False, "estado": None, "is_admin": False}
     try:
         import db as database
-        return database.estado_solicitud_usuario(uid)
+        result = database.estado_solicitud_usuario(uid)
+        result["is_admin"] = uid in config.ADMIN_IDS
+        return result
     except Exception as e:
         logger.error(f"Error en /abogado/estado-solicitud: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error")
