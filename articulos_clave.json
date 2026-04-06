@@ -3878,7 +3878,12 @@
       "presentacion",
       "48 horas",
       "procedimiento abreviado",
-      "flagrante"
+      "flagrante",
+      "orden de captura",
+      "captura nacional",
+      "mandato de conduccion",
+      "no comparecer",
+      "contumaz"
     ],
     "ley": "Código Orgánico Procesal Penal (COPP)",
     "articulos": [
@@ -5734,6 +5739,21 @@
       40,
       41,
       47
+    ],
+    "excluir": [
+      "orden de captura",
+      "orden de aprehensión",
+      "orden de aprehension",
+      "captura",
+      "preso",
+      "penal",
+      "cárcel",
+      "carcel",
+      "arrestar",
+      "detener",
+      "fiscal",
+      "ministerio publico",
+      "ministerio público"
     ]
   },
   "telecomunicaciones": {
@@ -5930,6 +5950,80 @@
       457,
       458,
       460
+    ]
+  },
+  "copp_citacion": {
+    "keywords": [
+      "orden de captura",
+      "orden de aprehensión",
+      "orden de aprehension",
+      "me van a capturar",
+      "van a capturar",
+      "puede capturar",
+      "no me presento",
+      "no presentarme",
+      "no presentarse a la citación",
+      "no presentarse a la citacion",
+      "citación penal",
+      "citacion penal",
+      "citación del tribunal",
+      "citacion del tribunal",
+      "me citan para declarar",
+      "citado por el tribunal",
+      "citado por la fiscalia",
+      "captura nacional",
+      "mandato de conducción",
+      "mandato de conduccion",
+      "incomparecencia",
+      "incomparecencia penal",
+      "no ir a la citacion",
+      "no ir a la audiencia",
+      "que pasa si no voy",
+      "qué pasa si no voy"
+    ],
+    "ley": "Código Orgánico Procesal Penal (COPP)",
+    "articulos": [
+      243,
+      250,
+      262,
+      310,
+      410
+    ]
+  },
+  "material_estrategico": {
+    "keywords": [
+      "cableado",
+      "cables eléctricos",
+      "cables electricos",
+      "robar cables",
+      "cable de cobre",
+      "cables de cobre",
+      "cobre",
+      "fibra óptica",
+      "fibra optica",
+      "material estratégico",
+      "material estrategico",
+      "materiales estratégicos",
+      "materiales estrategicos",
+      "postes eléctricos",
+      "postes electricos",
+      "instalaciones eléctricas",
+      "instalaciones electricas",
+      "corpoelec",
+      "cantv",
+      "robo de cables",
+      "hurto de cables",
+      "tráfico de material",
+      "trafico de material",
+      "bienes del estado robados",
+      "robo a empresa del estado"
+    ],
+    "ley": "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)",
+    "articulos": [
+      27,
+      29,
+      34,
+      37
     ]
   }
 }

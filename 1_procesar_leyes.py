@@ -120,6 +120,8 @@ NOMBRES_CORRECTOS = {
     "reforma-del-codigo-penal.pdf":                 "Código Penal",
     "ley contra la delincuencia organizada y financiacion del terrorismo.pdf":
         "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)",
+    "ley-sobre-el-delito-de-contrabando.pdf":
+        "Ley sobre el Delito de Contrabando",
 
     # ── Justicia de Paz Comunal ──────────────────────────────────────────────
     "Ley Orgánica de Justicia de Paz Comunal.pdf":
@@ -249,6 +251,7 @@ CLASIFICACION_LEYES = {
     "Ley de Registro de Antecedentes Penales":                          "penal",
     "Ley Constitucional contra el Odio":                                "penal",
     "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)": "penal",
+    "Ley sobre el Delito de Contrabando":                                 "penal",
 
     # ── Civil ────────────────────────────────────────────────────────────────
     "Código Civil venezolano":                                          "civil",
