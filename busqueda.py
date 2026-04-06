@@ -879,6 +879,57 @@ def normalizar(texto: str) -> str:
     return texto
 
 
+# ─── STEMMER ESPAÑOL LIGERO ──────────────────────────────────────────────────
+# Sin dependencias externas. Sufijos ordenados de mayor longitud a menor
+# para eliminar el más largo posible primero.
+_SUFIJOS_ES: list[str] = [
+    # Sufijos largos y seguros primero
+    "amente", "imiento", "aciones", "izacion",
+    "ando",   "iendo",
+    "aron",   "eron",   "ieron",
+    "arme",   "arle",   "arse",   "erme",   "erle",   "erse",
+    "irme",   "irle",   "irse",
+    # Participios plurales
+    "ados",   "adas",   "idos",   "idas",
+    # Personas y número
+    "amos",   "emos",   "imos",
+    "aban",   "aran",   "eran",
+    "aste",   "iste",
+    "ara",    "era",    "iera",
+    "an",     "en",     "as",     "es",     "os",
+    "ar",     "er",     "ir",
+    # "o/a/e" ANTES que "ado/ido/ada/ida": así "despido" → "despid" (quita "o")
+    # en vez de "desp" (quita "ido")
+    "o",      "a",      "e",
+    # Participios singulares — solo llegan aquí si no hubo match con "o/a/e"
+    "ado",    "ada",    "ido",    "ida",
+]
+_MIN_RAIZ = 4  # mínimo de chars en la raíz tras eliminar sufijo
+
+
+def _stem_es(token: str) -> str:
+    """Raíz aproximada de un token español (Snowball simplificado, sin deps)."""
+    if len(token) <= _MIN_RAIZ:
+        return token
+    for sfx in _SUFIJOS_ES:
+        if token.endswith(sfx) and len(token) - len(sfx) >= _MIN_RAIZ:
+            return token[: -len(sfx)]
+    return token
+
+
+def _stems(texto_norm: str) -> frozenset[str]:
+    """Conjunto de raíces de todos los tokens de un texto ya normalizado."""
+    return frozenset(_stem_es(w) for w in texto_norm.split() if len(w) >= 2)
+
+
+def _kw_en_texto(kw_norm: str, texto_norm: str, texto_stems: frozenset[str]) -> bool:
+    """True si el keyword está en el texto: primero exacto, luego por raíces."""
+    if kw_norm in texto_norm:           # 1. substring exacto (rápido, sin falsos positivos)
+        return True
+    kw_stems = frozenset(_stem_es(w) for w in kw_norm.split() if len(w) >= 2)
+    return bool(kw_stems) and kw_stems.issubset(texto_stems)  # 2. stem fallback
+
+
 def reformular_y_clasificar(pregunta: str) -> tuple[str, str]:
     """
     Reformula la pregunta en términos jurídicos Y clasifica el tema.
@@ -965,7 +1016,8 @@ def buscar_embedding(query: str, top_n: int = 10, ramas: list[str] = None) -> li
 def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
     """Retorna (artículos, temas_detectados).
     Si un tema tiene muchos artículos (>10), usa embedding para ordenar por relevancia."""
-    pregunta_norm = normalizar(pregunta)
+    pregunta_norm  = normalizar(pregunta)
+    pregunta_stems = _stems(pregunta_norm)
     articulos      = []
     ids_vistos     = set()
     temas          = []
@@ -974,7 +1026,10 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
         excluir = cfg.get("excluir", [])
         if any(normalizar(e) in pregunta_norm for e in excluir):
             continue
-        keyword_match = next((k for k in cfg["keywords"] if normalizar(k) in pregunta_norm), None)
+        keyword_match = next(
+            (k for k in cfg["keywords"] if _kw_en_texto(normalizar(k), pregunta_norm, pregunta_stems)),
+            None,
+        )
         if keyword_match:
             logger.info(f"  Tema detectado: {tema} (keyword: '{keyword_match}' en '{pregunta[:80]}')")
             temas.append(tema)
@@ -1193,13 +1248,14 @@ def _tiene_tema_legal(texto: str) -> bool:
         return True
 
     # Capa 2: verificar contra ARTICULOS_CLAVE (cubre potro, tequeños, revisen, etc.)
-    texto_norm = normalizar(texto)
+    texto_norm  = normalizar(texto)
+    texto_stems = _stems(texto_norm)
     for cfg in ARTICULOS_CLAVE.values():
         # Respetar exclusiones del tema
         excluir = cfg.get("excluir", [])
         if any(normalizar(e) in texto_norm for e in excluir):
             continue
-        if any(normalizar(k) in texto_norm for k in cfg["keywords"]):
+        if any(_kw_en_texto(normalizar(k), texto_norm, texto_stems) for k in cfg["keywords"]):
             return True
 
     return False
