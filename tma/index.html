@@ -1141,6 +1141,17 @@
   <div class="dir-list" id="dir-list">
     <div class="sb-loading">Cargando…</div>
   </div>
+  <!-- Botón pre-registro — se muestra/oculta en JS según el rol -->
+  <div id="dir-registro-wrap" style="padding:10px 12px 14px;display:none">
+    <button id="dir-btn-registro" style="
+      width:100%;padding:11px;
+      background:var(--accent-soft);color:var(--accent);
+      border:1px solid rgba(37,99,235,.25);border-radius:10px;
+      font-size:13px;font-weight:600;cursor:pointer;
+      transition:background .2s">
+      ⚖️ Pre-registrarme como abogado
+    </button>
+  </div>
 </div>
 
 <!-- ═══ SOLICITUD DE ABOGADO (formulario) ═══════════════════════════ -->
@@ -2721,16 +2732,30 @@ async function _initRolAbogado() {
     const btnEsc = document.getElementById('sb-abog-esc-btn');
     const btnAdm = document.getElementById('sb-abog-adm-btn');
 
+    const wrap = document.getElementById('dir-registro-wrap');
+
     if (window._esAbogado) {
       btnEsc.style.display = '';
+      // Ya es abogado → no mostrar botón de registro en el directorio
     } else if (data.tiene_solicitud) {
       btnSol.style.display = '';
       btnSol.textContent   = '📋 Solicitud en revisión';
       btnSol.disabled      = true;
       btnSol.style.opacity = '0.7';
       btnSol.style.cursor  = 'default';
+      // Solicitud pendiente → mostrar botón deshabilitado en directorio
+      if (wrap) {
+        wrap.style.display = '';
+        const b = wrap.querySelector('button');
+        b.textContent = '📋 Solicitud en revisión';
+        b.disabled = true;
+        b.style.opacity = '0.6';
+        b.style.cursor  = 'default';
+      }
     } else {
       btnSol.style.display = '';
+      // Sin solicitud → mostrar botón de registro en directorio
+      if (wrap) wrap.style.display = '';
     }
 
     // Admin siempre ve el botón de gestión si ya es admin (cargarStats lo muestra)
@@ -2765,6 +2790,10 @@ function cerrarSolicitud() {
   solOverlay.classList.remove('open');
 }
 
+document.getElementById('dir-btn-registro').addEventListener('click', () => {
+  cerrarDirectorio();
+  abrirSolicitud();
+});
 document.getElementById('sol-close').addEventListener('click', cerrarSolicitud);
 document.getElementById('sol-cancelar').addEventListener('click', cerrarSolicitud);
 solOverlay.addEventListener('click', cerrarSolicitud);
