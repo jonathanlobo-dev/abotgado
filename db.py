@@ -1488,6 +1488,27 @@ def rechazar_solicitud(solicitud_id: int, admin_id: int,
         return {"user_id": sol[0]}
 
 
+def cancelar_solicitud(user_id: int) -> bool:
+    """El usuario cancela su solicitud pendiente o en revisión."""
+    with get_db() as con:
+        cur = con.execute(
+            "UPDATE solicitudes_abogado SET estado_solicitud = 'cancelada' "
+            "WHERE user_id = ? AND estado_solicitud IN ('pendiente','en_revision','correccion_solicitada')",
+            (user_id,)
+        )
+        return cur.rowcount > 0
+
+
+def baja_abogado(user_id: int) -> bool:
+    """El abogado se da de baja (activo=0)."""
+    with get_db() as con:
+        cur = con.execute(
+            "UPDATE abogados SET activo = 0 WHERE user_id = ? AND activo = 1",
+            (user_id,)
+        )
+        return cur.rowcount > 0
+
+
 # ─── MÉTRICAS DE CONSULTAS ──────────────────────────────────────────────────
 
 def registrar_consulta_metrica(user_id: int, temas: list[str]):

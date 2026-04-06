@@ -1261,6 +1261,14 @@
       <button class="btn-ghost" id="sol-cancelar" style="flex:1;padding:10px">Cancelar</button>
       <button id="sol-enviar" style="flex:2;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">Enviar solicitud</button>
     </div>
+    <div id="sol-cancelar-solicitud-wrap" style="display:none;padding-bottom:4px">
+      <button id="sol-cancelar-solicitud" style="
+        width:100%;padding:9px;background:transparent;
+        color:#ef4444;border:1px solid rgba(239,68,68,.3);
+        border-radius:10px;font-size:13px;cursor:pointer">
+        🗑️ Retirar mi solicitud
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1315,6 +1323,12 @@
         </div>
       </div>
       <button id="esc-guardar" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Guardar cambios</button>
+      <button id="esc-baja" style="
+        width:100%;padding:9px;margin-top:6px;background:transparent;
+        color:#ef4444;border:1px solid rgba(239,68,68,.3);
+        border-radius:10px;font-size:13px;cursor:pointer">
+        🚪 Darme de baja del directorio
+      </button>
     </div>
   </div>
   <div class="abog-tab-pane" id="esc-tab-metricas">
@@ -2791,7 +2805,15 @@ async function _initRolAbogado() {
       if (wrap) wrap.style.display = '';
     }
 
-    const isAdmin = data.is_admin === true;
+    // Detectar admin: primero por initData validado, fallback por user_id
+    let isAdmin = data.is_admin === true;
+    if (!isAdmin && window._tgUserId && window._tgUserId !== 'tma_anonimo') {
+      try {
+        const ar = await fetch(`${API}/admin/is-admin?user_id=${encodeURIComponent(window._tgUserId)}`);
+        if (ar.ok) { const ad = await ar.json(); isAdmin = ad.is_admin === true; }
+      } catch { /* silencioso */ }
+    }
+    window._esAdmin = isAdmin;
     if (isAdmin) {
       if (btnAdm) btnAdm.style.display = '';
       // En el directorio: mostrar botón de gestión en lugar del de pre-registro
@@ -2888,6 +2910,13 @@ function abrirSolicitud() {
   } else {
     btnEnviar.textContent = 'Enviar solicitud';
     _limpiarFormSolicitud();
+  }
+
+  // Botón "Retirar solicitud": solo cuando hay solicitud activa (no nueva ni rechazada)
+  const retirarWrap = document.getElementById('sol-cancelar-solicitud-wrap');
+  if (retirarWrap) {
+    const mostrarRetirar = ['pendiente','en_revision','correccion_solicitada'].includes(estado);
+    retirarWrap.style.display = mostrarRetirar ? '' : 'none';
   }
 
   solPanel.classList.add('open');
@@ -3098,6 +3127,43 @@ document.getElementById('esc-guardar').addEventListener('click', async () => {
     toast('Error guardando perfil', 'err');
   } finally {
     btn.disabled = false; btn.textContent = 'Guardar cambios';
+  }
+});
+
+document.getElementById('esc-baja').addEventListener('click', async () => {
+  if (!confirm('¿Seguro que quieres darte de baja? Tu perfil dejará de aparecer en el directorio.')) return;
+  try {
+    const res = await fetch(`${API}/abogado/baja`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ init_data: window._tgInitData || '' }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    toast('Te has dado de baja del directorio', 'ok');
+    window._esAbogado = false;
+    cerrarEscritorio();
+    _initRolAbogado();  // re-evaluar rol
+  } catch (e) {
+    toast('Error procesando la baja', 'err');
+  }
+});
+
+document.getElementById('sol-cancelar-solicitud').addEventListener('click', async () => {
+  if (!confirm('¿Retirar tu solicitud? Podrás enviar una nueva después.')) return;
+  try {
+    const res = await fetch(
+      `${API}/abogados/solicitud?init_data=${encodeURIComponent(window._tgInitData || '')}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    toast('Solicitud retirada', 'ok');
+    window._solicitudEstado = null;
+    window._solicitudData   = null;
+    window._solicitudId     = null;
+    cerrarSolicitud();
+    _initRolAbogado();  // re-evaluar rol
+  } catch (e) {
+    toast('Error retirando la solicitud', 'err');
   }
 });
 

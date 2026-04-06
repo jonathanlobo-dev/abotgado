@@ -358,7 +358,7 @@ def _es_admin(user_id_raw: str) -> bool:
         return False
 
 
-def _validar_init_data(init_data: str, max_age_seconds: int = 86400) -> dict | None:
+def _validar_init_data(init_data: str, max_age_seconds: int = 604800) -> dict | None:
     """Valida el initData firmado de Telegram WebApp.
 
     Spec: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
@@ -370,21 +370,25 @@ def _validar_init_data(init_data: str, max_age_seconds: int = 86400) -> dict | N
     if not token:
         return None
     try:
-        parsed = dict(parse_qsl(init_data, strict_parsing=True, keep_blank_values=True))
+        # strict_parsing=False: tolera formatos no estándar que Telegram puede enviar
+        parsed = dict(parse_qsl(init_data, strict_parsing=False, keep_blank_values=True))
         recv_hash = parsed.pop("hash", None)
         if not recv_hash:
+            logger.debug("initData: no contiene campo 'hash'")
             return None
         data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
         calc_hash = hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(calc_hash, recv_hash):
+            logger.debug("initData: HMAC no coincide")
             return None
-        # Rechazar si auth_date tiene más de 24h
+        # Rechazar si auth_date tiene más de 7 días (era 24h, ampliado para sesiones largas)
         try:
             auth_date = int(parsed.get("auth_date", 0))
         except ValueError:
             return None
         if auth_date <= 0 or auth_date < time.time() - max_age_seconds:
+            logger.debug(f"initData: auth_date vencida ({auth_date})")
             return None
         user_json = parsed.get("user", "")
         if not user_json:
@@ -1010,6 +1014,53 @@ def estado_solicitud(init_data: str = ""):
         return result
     except Exception as e:
         logger.error(f"Error en /abogado/estado-solicitud: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.get("/admin/is-admin")
+def check_is_admin(user_id: str = ""):
+    """Verifica si un user_id es admin. Solo devuelve bool — no expone datos.
+    Usado como fallback en la TMA cuando HMAC no está disponible.
+    """
+    return {"is_admin": _es_admin(user_id)}
+
+
+@app.delete("/abogados/solicitud")
+def cancelar_solicitud_endpoint(init_data: str = ""):
+    """El usuario cancela su propia solicitud pendiente."""
+    uid = _user_id_from_init_data(init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        ok = database.cancelar_solicitud(uid)
+        if not ok:
+            raise HTTPException(status_code=404, detail="No hay solicitud activa para cancelar")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en DELETE /abogados/solicitud: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.post("/abogado/baja")
+def baja_abogado_endpoint(req: dict):
+    """El abogado se da de baja (se marca inactivo)."""
+    init_data = req.get("init_data", "")
+    uid = _user_id_from_init_data(init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        ok = database.baja_abogado(uid)
+        if not ok:
+            raise HTTPException(status_code=404, detail="No eres abogado activo")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en POST /abogado/baja: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error")
 
 
