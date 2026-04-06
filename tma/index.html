@@ -961,6 +961,115 @@
       .chips { grid-template-columns: 1fr; }
       .msg   { max-width: 92%; }
     }
+
+    /* ─── ABOGADOS — FORMULARIO Y ESCRITORIO ─────────────────────── */
+    .abog-form { display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto; flex: 1; }
+    .abog-group { display: flex; flex-direction: column; gap: 5px; }
+    .abog-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+    .abog-label span.req { color: #ef4444; }
+    .abog-input {
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px;
+      color: var(--text); font-size: 14px;
+      transition: border-color .2s;
+      width: 100%;
+    }
+    .abog-input:focus { outline: none; border-color: var(--accent); }
+    .abog-input.err { border-color: #ef4444; }
+    .abog-err { font-size: 11px; color: #ef4444; display: none; }
+    .abog-err.show { display: block; }
+    .abog-radio-group { display: flex; gap: 16px; flex-wrap: wrap; }
+    .abog-radio { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+    .abog-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .abog-check { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13px; padding: 6px 8px; border-radius: 7px; border: 1px solid var(--border); transition: all .2s; }
+    .abog-check:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .abog-info { font-size: 11px; color: var(--text2); background: var(--surface2); border-radius: 8px; padding: 10px 12px; line-height: 1.5; }
+    .abog-sol-banner {
+      background: rgba(37,99,235,.1); border: 1px solid rgba(37,99,235,.25);
+      border-radius: 10px; padding: 10px 12px;
+      font-size: 12px; color: var(--accent);
+      display: none;
+    }
+
+    /* Escritorio — tabs */
+    .abog-tabs { display: flex; gap: 4px; padding: 8px 12px 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .abog-tab { flex: 1; background: none; border: none; color: var(--text2); font-size: 12px; font-weight: 600; padding: 8px 6px; cursor: pointer; border-radius: 6px 6px 0 0; border-bottom: 2px solid transparent; transition: all .2s; }
+    .abog-tab:hover { color: var(--text); }
+    .abog-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .abog-tab-pane { display: none; flex: 1; overflow-y: auto; }
+    .abog-tab-pane.active { display: block; }
+
+    .abog-perfil-header {
+      background: var(--surface2); border-radius: 12px;
+      padding: 14px; margin: 12px 12px 0;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .abog-perfil-avatar { font-size: 36px; }
+    .abog-perfil-nombre { font-weight: 700; font-size: 15px; }
+    .abog-perfil-inpre { font-size: 11px; color: var(--text2); }
+    .abog-badge {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px; margin-left: 4px;
+    }
+    .abog-badge.verificado { background: rgba(34,197,94,.15); color: #22c55e; }
+    .abog-badge.beta { background: rgba(234,179,8,.15); color: #ca8a04; }
+    .abog-badge.activa { background: rgba(37,99,235,.15); color: #2563eb; }
+    .abog-badge.inactiva { background: var(--surface2); color: var(--text2); }
+    .abog-metricas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+    .abog-metric-card { background: var(--surface2); border-radius: 10px; padding: 12px; text-align: center; }
+    .abog-metric-val { font-size: 24px; font-weight: 700; color: var(--accent); }
+    .abog-metric-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+    /* Panel admin abogados */
+    .sol-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px;
+      cursor: pointer; transition: border-color .2s, transform .1s;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .sol-card:hover { border-color: var(--accent); }
+    .sol-card:active { transform: scale(.98); }
+    .sol-card-name { font-weight: 700; font-size: 13px; }
+    .sol-card-meta { font-size: 11px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; }
+    .sol-badge {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px;
+      margin-left: auto;
+    }
+    .sol-badge.pendiente { background: rgba(234,179,8,.15); color: #ca8a04; }
+    .sol-badge.aprobada  { background: rgba(34,197,94,.15); color: #22c55e; }
+    .sol-badge.rechazada { background: rgba(239,68,68,.15);  color: #ef4444; }
+
+    /* Directorio mejorado — badges y filtros */
+    .dir-filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 6px 12px 0; }
+    .dir-filter { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all .2s; }
+    .dir-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .dir-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; outline: none; }
+    .dir-card-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+    .dir-card-badge {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px;
+    }
+    .dir-card-badge.verificado { background: rgba(34,197,94,.15); color: #22c55e; }
+    .dir-card-badge.beta { background: rgba(234,179,8,.15); color: #ca8a04; }
+    .dir-card-modalidad { font-size: 11px; color: var(--text2); }
+    .dir-card-metodos { font-size: 11px; color: var(--text2); }
+
+    /* Sidebar — botón abogado */
+    .sb-abog-btn {
+      margin: 8px 12px 0;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(37,99,235,.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; text-align: left;
+      transition: background .2s;
+      display: none;
+      width: calc(100% - 24px);
+    }
+    .sb-abog-btn:hover { background: var(--accent); color: #fff; }
   </style>
 </head>
 <body>
@@ -1021,10 +1130,207 @@
     <button class="dir-close" id="dir-close" title="Cerrar">✕</button>
   </div>
   <div class="dir-search">
-    <input type="text" id="dir-filtro" placeholder="🔍 Buscar por especialidad o estado…" />
+    <input type="text" id="dir-filtro" placeholder="🔍 Buscar por nombre, especialidad o estado…" />
+  </div>
+  <div class="dir-filters">
+    <button class="dir-filter active" data-modalidad="">Todos</button>
+    <button class="dir-filter" data-modalidad="presencial">Presencial</button>
+    <button class="dir-filter" data-modalidad="online">Online</button>
+    <button class="dir-filter" data-modalidad="ambas">Ambos</button>
   </div>
   <div class="dir-list" id="dir-list">
     <div class="sb-loading">Cargando…</div>
+  </div>
+</div>
+
+<!-- ═══ SOLICITUD DE ABOGADO (formulario) ═══════════════════════════ -->
+<div class="dir-overlay" id="sol-overlay"></div>
+<div class="dir-panel" id="sol-panel">
+  <div class="dir-header">
+    <span class="dir-logo">⚖️</span>
+    <span class="dir-title">Solicitud de Abogado Verificado</span>
+    <button class="dir-close" id="sol-close" title="Cerrar">✕</button>
+  </div>
+  <div class="abog-form" id="sol-form">
+    <div id="sol-banner" class="abog-sol-banner">
+      📋 Tu solicitud está en revisión. Te notificaremos cuando sea procesada.
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Nombre completo <span class="req">*</span></label>
+      <input class="abog-input" id="sol-nombre" placeholder="Abg. Juan Pérez" maxlength="120" />
+      <span class="abog-err" id="sol-nombre-err">Campo requerido</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Cédula de identidad <span class="req">*</span></label>
+      <input class="abog-input" id="sol-cedula" placeholder="V-12345678" maxlength="15" />
+      <span class="abog-err" id="sol-cedula-err">Formato: V-XXXXXXXX o E-XXXXXXXX</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">N° INPREABOGADO <span class="req">*</span></label>
+      <input class="abog-input" id="sol-inpre" placeholder="185432" maxlength="10" inputmode="numeric" />
+      <span class="abog-err" id="sol-inpre-err">Solo números</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Especialidad <span class="req">*</span></label>
+      <select class="abog-input" id="sol-especialidad">
+        <option value="">— Seleccionar —</option>
+        <option>Penal</option><option>Civil</option><option>Laboral</option>
+        <option>Mercantil</option><option>Familia</option><option>Tránsito</option>
+        <option>Administrativo</option><option>Tributario</option><option>Inmobiliario</option>
+        <option>Migratorio</option><option>Electoral</option><option>Ambiental</option>
+        <option>Otro</option>
+      </select>
+      <span class="abog-err" id="sol-esp-err">Selecciona una especialidad</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Teléfono <span class="req">*</span></label>
+      <input class="abog-input" id="sol-telefono" placeholder="+58 412-1234567" maxlength="20" />
+      <span class="abog-err" id="sol-tel-err">Campo requerido</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Estado / Ciudad <span class="req">*</span></label>
+      <select class="abog-input" id="sol-estado">
+        <option value="">— Seleccionar —</option>
+        <option>Amazonas</option><option>Anzoátegui</option><option>Apure</option>
+        <option>Aragua</option><option>Barinas</option><option>Bolívar</option>
+        <option>Carabobo</option><option>Cojedes</option><option>Delta Amacuro</option>
+        <option>Distrito Capital</option><option>Falcón</option><option>Guárico</option>
+        <option>Lara</option><option>Mérida</option><option>Miranda</option>
+        <option>Monagas</option><option>Nueva Esparta</option><option>Portuguesa</option>
+        <option>Sucre</option><option>Táchira</option><option>Trujillo</option>
+        <option>Vargas</option><option>Yaracuy</option><option>Zulia</option>
+      </select>
+      <span class="abog-err" id="sol-estado-err">Selecciona un estado</span>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Modalidad <span class="req">*</span></label>
+      <div class="abog-radio-group">
+        <label class="abog-radio"><input type="radio" name="sol-modalidad" value="presencial" checked> Presencial</label>
+        <label class="abog-radio"><input type="radio" name="sol-modalidad" value="online"> Online</label>
+        <label class="abog-radio"><input type="radio" name="sol-modalidad" value="ambas"> Ambas</label>
+      </div>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Métodos de pago</label>
+      <div class="abog-checks" id="sol-metodos">
+        <label class="abog-check"><input type="checkbox" value="pago_movil"> Pago Móvil</label>
+        <label class="abog-check"><input type="checkbox" value="zinli"> Zinli</label>
+        <label class="abog-check"><input type="checkbox" value="binance"> Binance</label>
+        <label class="abog-check"><input type="checkbox" value="paypal"> PayPal</label>
+        <label class="abog-check"><input type="checkbox" value="wally"> Wally</label>
+        <label class="abog-check"><input type="checkbox" value="zelle"> Zelle</label>
+        <label class="abog-check"><input type="checkbox" value="efectivo"> Efectivo</label>
+      </div>
+    </div>
+    <div class="abog-group">
+      <label class="abog-label">Biografía corta <span style="font-weight:400;color:var(--text2)">(máx. 300 chars)</span></label>
+      <textarea class="abog-input" id="sol-bio" rows="3" maxlength="300" placeholder="Ej: 15 años de experiencia en derecho penal…" style="resize:none"></textarea>
+    </div>
+    <div class="abog-info">ⓘ Tu solicitud será revisada por el administrador. Recibirás una notificación en Telegram con la decisión.</div>
+    <div style="display:flex;gap:10px;padding-bottom:8px">
+      <button class="btn-ghost" id="sol-cancelar" style="flex:1;padding:10px">Cancelar</button>
+      <button id="sol-enviar" style="flex:2;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ESCRITORIO DEL ABOGADO ═══════════════════════════════════════ -->
+<div class="dir-overlay" id="esc-overlay"></div>
+<div class="dir-panel" id="esc-panel">
+  <div class="dir-header">
+    <span class="dir-logo">⚖️</span>
+    <span class="dir-title">Mi Escritorio</span>
+    <button class="dir-close" id="esc-close" title="Cerrar">✕</button>
+  </div>
+  <div class="abog-tabs" id="esc-tabs">
+    <button class="abog-tab active" data-tab="perfil">👤 Perfil</button>
+    <button class="abog-tab" data-tab="metricas">📊 Métricas</button>
+  </div>
+  <div class="abog-tab-pane active" id="esc-tab-perfil">
+    <div class="abog-perfil-header">
+      <div class="abog-perfil-avatar">⚖️</div>
+      <div>
+        <div class="abog-perfil-nombre" id="esc-nombre">—</div>
+        <div class="abog-perfil-inpre" id="esc-inpre">INPRE —</div>
+        <div id="esc-badges"></div>
+      </div>
+    </div>
+    <div class="abog-form" style="padding-top:10px">
+      <div class="abog-group">
+        <label class="abog-label">Modalidad</label>
+        <div class="abog-radio-group">
+          <label class="abog-radio"><input type="radio" name="esc-modalidad" value="presencial"> Presencial</label>
+          <label class="abog-radio"><input type="radio" name="esc-modalidad" value="online"> Online</label>
+          <label class="abog-radio"><input type="radio" name="esc-modalidad" value="ambas"> Ambas</label>
+        </div>
+      </div>
+      <div class="abog-group">
+        <label class="abog-label">Biografía</label>
+        <textarea class="abog-input" id="esc-bio" rows="4" maxlength="300" style="resize:none"></textarea>
+      </div>
+      <div class="abog-group">
+        <label class="abog-label">Teléfono</label>
+        <input class="abog-input" id="esc-telefono" placeholder="+58 412-1234567" />
+      </div>
+      <div class="abog-group">
+        <label class="abog-label">Métodos de pago</label>
+        <div class="abog-checks" id="esc-metodos">
+          <label class="abog-check"><input type="checkbox" value="pago_movil"> Pago Móvil</label>
+          <label class="abog-check"><input type="checkbox" value="zinli"> Zinli</label>
+          <label class="abog-check"><input type="checkbox" value="binance"> Binance</label>
+          <label class="abog-check"><input type="checkbox" value="paypal"> PayPal</label>
+          <label class="abog-check"><input type="checkbox" value="wally"> Wally</label>
+          <label class="abog-check"><input type="checkbox" value="zelle"> Zelle</label>
+          <label class="abog-check"><input type="checkbox" value="efectivo"> Efectivo</label>
+        </div>
+      </div>
+      <button id="esc-guardar" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Guardar cambios</button>
+    </div>
+  </div>
+  <div class="abog-tab-pane" id="esc-tab-metricas">
+    <div class="abog-metricas-grid" id="esc-metricas-grid">
+      <div class="sb-loading" style="grid-column:span 2">Cargando…</div>
+    </div>
+    <div class="abog-info" style="margin:0 12px 12px"><div id="esc-estado-txt">—</div></div>
+  </div>
+</div>
+
+<!-- ═══ PANEL ADMIN ABOGADOS ═════════════════════════════════════════ -->
+<div class="dir-overlay" id="adm-ab-overlay"></div>
+<div class="dir-panel" id="adm-ab-panel">
+  <div class="dir-header">
+    <span class="dir-logo">⚖️</span>
+    <span class="dir-title">Gestión de Abogados</span>
+    <button class="dir-close" id="adm-ab-close" title="Cerrar">✕</button>
+  </div>
+  <div class="abog-tabs" id="adm-ab-tabs">
+    <button class="abog-tab active" data-tab="solicitudes">📋 Solicitudes</button>
+    <button class="abog-tab" data-tab="registrados">✅ Registrados</button>
+  </div>
+  <div class="abog-tab-pane active" id="adm-tab-solicitudes">
+    <div class="tk-filters" style="padding:8px 12px">
+      <button class="tk-filter active" data-estado="pendiente">Pendientes</button>
+      <button class="tk-filter" data-estado="aprobada">Aprobadas</button>
+      <button class="tk-filter" data-estado="rechazada">Rechazadas</button>
+    </div>
+    <div class="tk-list" id="adm-sol-list"><div class="sb-loading">Cargando…</div></div>
+  </div>
+  <div class="abog-tab-pane" id="adm-tab-registrados">
+    <div class="tk-list" id="adm-ab-list"><div class="sb-loading">Cargando…</div></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL SOLICITUD DETALLE (admin) ══════════════════════════════ -->
+<div class="modal-overlay" id="sol-det-overlay">
+  <div class="modal-panel" id="sol-det-panel" style="max-width:400px;width:90%;max-height:85vh;overflow-y:auto">
+    <!-- rellena dinámicamente -->
+  </div>
+</div>
+
+<!-- ═══ MODAL EDICIÓN ABOGADO (admin) ════════════════════════════════ -->
+<div class="modal-overlay" id="ab-edit-overlay">
+  <div class="modal-panel" id="ab-edit-panel" style="max-width:400px;width:90%;max-height:85vh;overflow-y:auto">
+    <!-- rellena dinámicamente -->
   </div>
 </div>
 
@@ -1054,6 +1360,17 @@
       <div class="sb-stats-grid" id="sb-stats-admin-grid"></div>
     </div>
   </div>
+
+  <!-- Sección abogado (rol-dependiente, se rellena en JS) -->
+  <button class="sb-abog-btn" id="sb-abog-sol-btn" title="Registrarte como abogado verificado">
+    ⚖️ ¿Eres abogado? Regístrate
+  </button>
+  <button class="sb-abog-btn" id="sb-abog-esc-btn" title="Escritorio del abogado">
+    ⚖️ Mi Escritorio
+  </button>
+  <button class="sb-abog-btn" id="sb-abog-adm-btn" title="Gestión de abogados (admin)" style="background:rgba(234,179,8,.1);color:#ca8a04;border-color:rgba(234,179,8,.2)">
+    🔧 Gestión de Abogados
+  </button>
 
   <!-- Perfil del usuario -->
   <div class="sb-profile" id="sb-profile">
@@ -2301,8 +2618,596 @@ function abrirModalTicket(tk) {
   overlay.onclick = (e) => { if (e.target === overlay) cerrar(); };
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// DIRECTORIO MEJORADO — modalidad filter + badges ranking
+// ═══════════════════════════════════════════════════════════════════
+let _dirModalidad = '';
+
+document.querySelectorAll('#dir-panel .dir-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#dir-panel .dir-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _dirModalidad = btn.dataset.modalidad;
+    renderDirectorio(_dirDatos);
+  });
+});
+
+// Reemplaza cargarDirectorio — fuerza recarga para obtener nuevos campos del servidor
+async function cargarDirectorio() {
+  _dirDatos = [];  // forzar recarga con nuevos campos
+  dirList.innerHTML = '<div class="sb-loading">Cargando…</div>';
+  try {
+    const res = await fetch(`${API}/directorio`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _dirDatos = await res.json();
+    renderDirectorio(_dirDatos);
+  } catch (e) {
+    dirList.innerHTML = '<div class="dir-empty">⚠️ Error cargando el directorio.<br><small>Intenta cerrar y volver a abrir.</small></div>';
+  }
+}
+
+// Sobrescribir renderDirectorio para soportar nuevos campos
+function renderDirectorio(lista) {
+  const q = (dirFiltro.value || '').toLowerCase().trim();
+  let filtrada = lista;
+  if (_dirModalidad) filtrada = filtrada.filter(a => (a.modalidad || '') === _dirModalidad || a.modalidad === 'ambas');
+  if (q) filtrada = filtrada.filter(a =>
+    (a.nombre || '').toLowerCase().includes(q) ||
+    (a.especialidad || '').toLowerCase().includes(q) ||
+    (a.estado_geo || a.estado || '').toLowerCase().includes(q)
+  );
+
+  if (!filtrada.length) {
+    dirList.innerHTML = q || _dirModalidad
+      ? `<div class="dir-empty">Sin resultados para el filtro aplicado.</div>`
+      : `<div class="dir-empty">👨‍⚖️<br><br>Aún no hay abogados registrados.<br><small>Próximamente podrás encontrar<br>profesionales verificados aquí.</small></div>`;
+    return;
+  }
+
+  dirList.innerHTML = `<div class="dir-count">${filtrada.length} abogado${filtrada.length !== 1 ? 's' : ''} encontrado${filtrada.length !== 1 ? 's' : ''}</div>`;
+  filtrada.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'dir-card';
+    const telLimpio = (a.telefono || '').replace(/\D/g, '');
+    const esMovil   = telLimpio.startsWith('04') || telLimpio.startsWith('58');
+    const numWA     = telLimpio.startsWith('04') ? '58' + telLimpio.slice(1) : telLimpio;
+    const enlace    = esMovil ? `https://wa.me/${numWA}` : `tel:${a.telefono}`;
+    const btnClass  = esMovil ? 'dir-btn-contact wa' : 'dir-btn-contact';
+    const btnIcon   = esMovil ? '💬' : '📞';
+    const btnLabel  = esMovil ? 'WhatsApp' : 'Llamar';
+    const ubicacion = a.estado_geo || a.estado || '';
+    const modalLbl  = { presencial: '🏢 Presencial', online: '💻 Online', ambas: '🏢/💻 Presencial y Online' }[a.modalidad] || '';
+    const badges    = [
+      a.verificado ? '<span class="dir-card-badge verificado">✅ Verificado</span>' : '',
+      a.membresia === 'beta' ? '<span class="dir-card-badge beta">⭐ Beta</span>' : '',
+    ].filter(Boolean).join('');
+    const metodos   = (() => {
+      try { const m = typeof a.metodos_pago === 'string' ? JSON.parse(a.metodos_pago) : (a.metodos_pago || []);
+            return m.length ? `<div class="dir-card-metodos">💳 ${m.join(' · ')}</div>` : ''; }
+      catch { return ''; }
+    })();
+    card.innerHTML = `
+      <div class="dir-card-nombre">${_esc(a.nombre)}</div>
+      <div class="dir-card-inpre">INPRE ${_esc(a.inpreabogado)}</div>
+      ${badges ? `<div class="dir-card-badges">${badges}</div>` : ''}
+      <div class="dir-card-esp">🏛️ ${_esc(a.especialidad)}</div>
+      <div class="dir-card-loc">📍 ${_esc(ubicacion)}</div>
+      ${modalLbl ? `<div class="dir-card-modalidad">${modalLbl}</div>` : ''}
+      ${a.notas || a.biografia ? `<div class="dir-card-notas">${_esc(a.notas || a.biografia)}</div>` : ''}
+      ${metodos}
+      <div class="dir-card-footer">
+        <a class="${btnClass}" href="${enlace}" target="_blank" rel="noopener">${btnIcon} ${btnLabel}</a>
+      </div>`;
+    dirList.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ROL ABOGADO — detección al cargar
+// ═══════════════════════════════════════════════════════════════════
+window._esAbogado       = false;
+window._solicitudEstado = null;  // 'pendiente' | 'aprobada' | 'rechazada' | null
+
+async function _initRolAbogado() {
+  if (window._tgUserId === 'tma_anonimo' || !window._tgInitData) return;
+  try {
+    const res = await fetch(`${API}/abogado/estado-solicitud?init_data=${encodeURIComponent(window._tgInitData)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    window._esAbogado       = data.es_abogado || false;
+    window._solicitudEstado = data.estado || null;
+
+    const btnSol = document.getElementById('sb-abog-sol-btn');
+    const btnEsc = document.getElementById('sb-abog-esc-btn');
+    const btnAdm = document.getElementById('sb-abog-adm-btn');
+
+    if (window._esAbogado) {
+      btnEsc.style.display = '';
+    } else if (data.tiene_solicitud) {
+      btnSol.style.display = '';
+      btnSol.textContent   = '📋 Solicitud en revisión';
+      btnSol.disabled      = true;
+      btnSol.style.opacity = '0.7';
+      btnSol.style.cursor  = 'default';
+    } else {
+      btnSol.style.display = '';
+    }
+
+    // Admin siempre ve el botón de gestión si ya es admin (cargarStats lo muestra)
+    // Lo mostramos aquí también si ya tenemos certeza
+    const isAdmin = window._tgInitData && (await (async () => {
+      try {
+        const r = await fetch(`${API}/stats/admin?init_data=${encodeURIComponent(window._tgInitData)}`);
+        return r.ok;
+      } catch { return false; }
+    })());
+    if (isAdmin && btnAdm) btnAdm.style.display = '';
+  } catch (e) { /* silencioso */ }
+}
+
+// El botón admin de abogados se muestra en _initRolAbogado si el admin check pasa.
+
+// ═══════════════════════════════════════════════════════════════════
+// SOLICITUD DE ABOGADO
+// ═══════════════════════════════════════════════════════════════════
+const solPanel   = document.getElementById('sol-panel');
+const solOverlay = document.getElementById('sol-overlay');
+
+function abrirSolicitud() {
+  // Si tiene solicitud pendiente, mostrar banner sin form
+  const banner = document.getElementById('sol-banner');
+  banner.style.display = window._solicitudEstado === 'pendiente' ? 'block' : 'none';
+  solPanel.classList.add('open');
+  solOverlay.classList.add('open');
+}
+function cerrarSolicitud() {
+  solPanel.classList.remove('open');
+  solOverlay.classList.remove('open');
+}
+
+document.getElementById('sol-close').addEventListener('click', cerrarSolicitud);
+document.getElementById('sol-cancelar').addEventListener('click', cerrarSolicitud);
+solOverlay.addEventListener('click', cerrarSolicitud);
+document.getElementById('sb-abog-sol-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  abrirSolicitud();
+});
+
+document.getElementById('sol-enviar').addEventListener('click', async () => {
+  // Validar campos
+  let ok = true;
+  const field = (id, errId, check) => {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId);
+    const valid = check(el.value.trim());
+    el.classList.toggle('err', !valid);
+    if (err) err.classList.toggle('show', !valid);
+    if (!valid) ok = false;
+    return el.value.trim();
+  };
+  const nombre     = field('sol-nombre',      'sol-nombre-err', v => v.length >= 3);
+  const cedula     = field('sol-cedula',       'sol-cedula-err', v => /^[VEve]-?\d{6,9}$/.test(v.replace(/\s/g,'')));
+  const inpre      = field('sol-inpre',        'sol-inpre-err',  v => /^\d+$/.test(v));
+  const especialidad = field('sol-especialidad','sol-esp-err',   v => v.length > 0);
+  const telefono   = field('sol-telefono',     'sol-tel-err',    v => v.length >= 7);
+  const estado_geo = field('sol-estado',       'sol-estado-err', v => v.length > 0);
+  if (!ok) return;
+
+  const modalidad   = document.querySelector('input[name="sol-modalidad"]:checked')?.value || 'presencial';
+  const metodos_pago = [...document.querySelectorAll('#sol-metodos input:checked')].map(i => i.value);
+  const biografia   = document.getElementById('sol-bio').value.trim();
+
+  const btn = document.getElementById('sol-enviar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const res = await fetch(`${API}/abogados/solicitud`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ init_data: window._tgInitData || '', nombre, cedula, inpreabogado: inpre, especialidad, telefono, estado_geo, biografia, modalidad, metodos_pago }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+    cerrarSolicitud();
+    toast('¡Solicitud enviada! Te notificaremos pronto.', 'ok');
+    window._solicitudEstado = 'pendiente';
+    // Actualizar botón sidebar
+    const btn2 = document.getElementById('sb-abog-sol-btn');
+    btn2.textContent = '📋 Solicitud en revisión';
+    btn2.disabled = true; btn2.style.opacity = '0.7'; btn2.style.cursor = 'default';
+  } catch (e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar solicitud';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ESCRITORIO DEL ABOGADO
+// ═══════════════════════════════════════════════════════════════════
+const escPanel   = document.getElementById('esc-panel');
+const escOverlay = document.getElementById('esc-overlay');
+let   _escDatos  = null;
+
+function abrirEscritorio() {
+  escPanel.classList.add('open');
+  escOverlay.classList.add('open');
+  cargarPerfilAbogado();
+}
+function cerrarEscritorio() {
+  escPanel.classList.remove('open');
+  escOverlay.classList.remove('open');
+}
+
+document.getElementById('esc-close').addEventListener('click', cerrarEscritorio);
+escOverlay.addEventListener('click', cerrarEscritorio);
+document.getElementById('sb-abog-esc-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  abrirEscritorio();
+});
+
+// Tabs del escritorio
+document.getElementById('esc-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.abog-tab');
+  if (!btn) return;
+  document.querySelectorAll('#esc-tabs .abog-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#esc-panel .abog-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`esc-tab-${btn.dataset.tab}`).classList.add('active');
+  if (btn.dataset.tab === 'metricas' && _escDatos) renderMetricas(_escDatos);
+});
+
+async function cargarPerfilAbogado() {
+  if (!window._tgInitData) return;
+  try {
+    const res = await fetch(`${API}/abogado/perfil?init_data=${encodeURIComponent(window._tgInitData)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _escDatos = await res.json();
+    renderPerfilAbogado(_escDatos);
+  } catch (e) {
+    toast('Error cargando perfil', 'err');
+  }
+}
+
+function renderPerfilAbogado(p) {
+  document.getElementById('esc-nombre').textContent = p.nombre || '—';
+  document.getElementById('esc-inpre').textContent   = `INPRE ${p.inpreabogado || '—'} · ${p.especialidad || '—'} · ${p.estado || p.estado_geo || '—'}`;
+  const badges = [
+    p.verificado ? '<span class="abog-badge verificado">✅ Verificado</span>' : '',
+    p.membresia === 'beta'   ? '<span class="abog-badge beta">⭐ Beta</span>'   : '',
+    p.membresia === 'activa' ? '<span class="abog-badge activa">💎 Activo</span>' : '',
+    p.membresia === 'inactiva' ? '<span class="abog-badge inactiva">⏸ Inactivo</span>' : '',
+  ].filter(Boolean).join('');
+  document.getElementById('esc-badges').innerHTML = badges;
+
+  // Rellenar campos editables
+  document.getElementById('esc-bio').value      = p.biografia || '';
+  document.getElementById('esc-telefono').value = p.telefono  || '';
+  const modal = p.modalidad || 'presencial';
+  const r = document.querySelector(`input[name="esc-modalidad"][value="${modal}"]`);
+  if (r) r.checked = true;
+  try {
+    const metodos = typeof p.metodos_pago === 'string' ? JSON.parse(p.metodos_pago) : (p.metodos_pago || []);
+    document.querySelectorAll('#esc-metodos input').forEach(cb => { cb.checked = metodos.includes(cb.value); });
+  } catch {}
+}
+
+function renderMetricas(p) {
+  const expira = p.membresia_expira ? `Expira: ${p.membresia_expira}` : 'Sin fecha de expiración';
+  document.getElementById('esc-metricas-grid').innerHTML = `
+    <div class="abog-metric-card">
+      <div class="abog-metric-val">${p.consultas_atendidas || 0}</div>
+      <div class="abog-metric-lbl">📬 Consultas atendidas</div>
+    </div>
+    <div class="abog-metric-card">
+      <div class="abog-metric-val">${p.calificacion ? p.calificacion.toFixed(1) : '—'}</div>
+      <div class="abog-metric-lbl">⭐ Calificación</div>
+    </div>
+    <div class="abog-metric-card">
+      <div class="abog-metric-val">${p.ranking || 0}</div>
+      <div class="abog-metric-lbl">🏆 Ranking</div>
+    </div>
+    <div class="abog-metric-card">
+      <div class="abog-metric-val">${p.membresia || '—'}</div>
+      <div class="abog-metric-lbl">💎 Membresía</div>
+    </div>`;
+  const activo = p.activo ? '🟢 Activo y visible en el directorio' : '🔴 Perfil inactivo';
+  document.getElementById('esc-estado-txt').textContent = `${activo} · ${expira}`;
+}
+
+document.getElementById('esc-guardar').addEventListener('click', async () => {
+  const biografia    = document.getElementById('esc-bio').value.trim();
+  const telefono     = document.getElementById('esc-telefono').value.trim();
+  const modalidad    = document.querySelector('input[name="esc-modalidad"]:checked')?.value || 'presencial';
+  const metodos_pago = [...document.querySelectorAll('#esc-metodos input:checked')].map(i => i.value);
+  const btn = document.getElementById('esc-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const res = await fetch(`${API}/abogado/perfil`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ init_data: window._tgInitData || '', biografia, telefono, modalidad, metodos_pago }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    toast('Perfil actualizado', 'ok');
+    _escDatos = null;  // invalidar caché
+  } catch (e) {
+    toast('Error guardando perfil', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// PANEL ADMIN — GESTIÓN DE ABOGADOS
+// ═══════════════════════════════════════════════════════════════════
+const admAbPanel   = document.getElementById('adm-ab-panel');
+const admAbOverlay = document.getElementById('adm-ab-overlay');
+let   _admSolEstado = 'pendiente';
+
+function abrirAdminAbogados() {
+  admAbPanel.classList.add('open');
+  admAbOverlay.classList.add('open');
+  cargarAdminSolicitudes();
+}
+function cerrarAdminAbogados() {
+  admAbPanel.classList.remove('open');
+  admAbOverlay.classList.remove('open');
+}
+
+document.getElementById('adm-ab-close').addEventListener('click', cerrarAdminAbogados);
+admAbOverlay.addEventListener('click', cerrarAdminAbogados);
+document.getElementById('sb-abog-adm-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  abrirAdminAbogados();
+});
+
+// Tabs admin abogados
+document.getElementById('adm-ab-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.abog-tab');
+  if (!btn) return;
+  document.querySelectorAll('#adm-ab-tabs .abog-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#adm-ab-panel .abog-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`adm-tab-${btn.dataset.tab}`).classList.add('active');
+  if (btn.dataset.tab === 'solicitudes') cargarAdminSolicitudes();
+  else cargarAdminAbogados();
+});
+
+// Filtros de estado solicitud
+document.querySelectorAll('#adm-tab-solicitudes .tk-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#adm-tab-solicitudes .tk-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _admSolEstado = btn.dataset.estado;
+    cargarAdminSolicitudes();
+  });
+});
+
+async function cargarAdminSolicitudes() {
+  const list = document.getElementById('adm-sol-list');
+  list.innerHTML = '<div class="sb-loading">Cargando…</div>';
+  try {
+    const res = await fetch(`${API}/admin/solicitudes?init_data=${encodeURIComponent(window._tgInitData || '')}&estado=${_admSolEstado}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { items } = await res.json();
+    if (!items.length) { list.innerHTML = '<div class="dir-empty">Sin solicitudes en este estado.</div>'; return; }
+    list.innerHTML = '';
+    items.forEach(sol => {
+      const card = document.createElement('div');
+      card.className = 'sol-card';
+      const fecha = sol.timestamp ? sol.timestamp.slice(0,10) : '—';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sol-card-name">${_esc(sol.nombre)}</div>
+          <span class="sol-badge ${sol.estado_solicitud}">${sol.estado_solicitud}</span>
+        </div>
+        <div class="sol-card-meta">
+          <span>INPRE ${_esc(sol.inpreabogado)}</span>
+          <span>${_esc(sol.especialidad)}</span>
+          <span>${_esc(sol.estado_geo || '')}</span>
+          <span>📅 ${fecha}</span>
+        </div>`;
+      card.addEventListener('click', () => abrirDetalleSolicitud(sol));
+      list.appendChild(card);
+    });
+  } catch (e) {
+    list.innerHTML = `<div class="dir-empty">Error: ${e.message}</div>`;
+  }
+}
+
+function abrirDetalleSolicitud(sol) {
+  const overlay = document.getElementById('sol-det-overlay');
+  const panel   = document.getElementById('sol-det-panel');
+  const esPendiente = sol.estado_solicitud === 'pendiente';
+  panel.innerHTML = `
+    <h3 style="margin-bottom:10px">📋 ${_esc(sol.nombre)}</h3>
+    <div style="font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <div>INPRE: <b>${_esc(sol.inpreabogado)}</b> · Cédula: <b>${_esc(sol.cedula)}</b></div>
+      <div>Especialidad: <b>${_esc(sol.especialidad)}</b> · ${_esc(sol.estado_geo || '')}</div>
+      <div>Teléfono: ${_esc(sol.telefono)}</div>
+      <div>Modalidad: ${_esc(sol.modalidad || '—')}</div>
+      ${sol.biografia ? `<div>Bio: ${_esc(sol.biografia)}</div>` : ''}
+      ${sol.motivo_rechazo ? `<div style="color:#ef4444">Motivo rechazo: ${_esc(sol.motivo_rechazo)}</div>` : ''}
+    </div>
+    ${esPendiente ? `
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--text2)">Membresía al aprobar</label>
+        <select id="sol-mem-tipo" style="width:100%;margin-top:4px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text)">
+          <option value="inactiva">Inactiva</option>
+          <option value="beta">⭐ Beta</option>
+          <option value="activa">💎 Activa</option>
+        </select>
+      </div>
+      <textarea id="sol-rechazo-motivo" placeholder="Motivo del rechazo (opcional)…" maxlength="300"
+        style="width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);padding:8px;font-size:13px;resize:none;display:none" rows="3"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="sol-det-cerrar" class="btn-ghost" style="flex:1;padding:9px">Cerrar</button>
+        <button id="sol-det-rechazar" style="flex:1;padding:9px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:9px;font-weight:600;cursor:pointer">Rechazar</button>
+        <button id="sol-det-aprobar" style="flex:1;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:600;cursor:pointer">Aprobar</button>
+      </div>` : `<button id="sol-det-cerrar" class="btn-ghost" style="width:100%;padding:10px;margin-top:6px">Cerrar</button>`}`;
+
+  overlay.classList.add('open');
+  overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove('open'); };
+  panel.querySelector('#sol-det-cerrar').addEventListener('click', () => overlay.classList.remove('open'));
+
+  if (!esPendiente) return;
+
+  let rechazando = false;
+  panel.querySelector('#sol-det-rechazar').addEventListener('click', () => {
+    rechazando = !rechazando;
+    const ta = panel.querySelector('#sol-rechazo-motivo');
+    ta.style.display = rechazando ? 'block' : 'none';
+    if (rechazando) ta.focus();
+  });
+
+  panel.querySelector('#sol-det-aprobar').addEventListener('click', async () => {
+    if (rechazando) {
+      const motivo = panel.querySelector('#sol-rechazo-motivo').value.trim();
+      const btnR = panel.querySelector('#sol-det-rechazar');
+      btnR.disabled = true; btnR.textContent = 'Rechazando…';
+      try {
+        const res = await fetch(`${API}/admin/solicitudes/${sol.id}/rechazar`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ init_data: window._tgInitData || '', motivo }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        overlay.classList.remove('open');
+        toast('Solicitud rechazada', 'ok');
+        cargarAdminSolicitudes();
+      } catch (e) { btnR.disabled = false; btnR.textContent = 'Rechazar'; toast('Error', 'err'); }
+      return;
+    }
+    const membresia = panel.querySelector('#sol-mem-tipo').value;
+    const btnA = panel.querySelector('#sol-det-aprobar');
+    btnA.disabled = true; btnA.textContent = 'Aprobando…';
+    try {
+      const res = await fetch(`${API}/admin/solicitudes/${sol.id}/aprobar`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '', membresia }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      overlay.classList.remove('open');
+      toast('¡Solicitud aprobada!', 'ok');
+      cargarAdminSolicitudes();
+    } catch (e) { btnA.disabled = false; btnA.textContent = 'Aprobar'; toast('Error', 'err'); }
+  });
+}
+
+async function cargarAdminAbogados() {
+  const list = document.getElementById('adm-ab-list');
+  list.innerHTML = '<div class="sb-loading">Cargando…</div>';
+  try {
+    const res = await fetch(`${API}/admin/abogados?init_data=${encodeURIComponent(window._tgInitData || '')}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { items } = await res.json();
+    if (!items.length) { list.innerHTML = '<div class="dir-empty">Sin abogados registrados.</div>'; return; }
+    list.innerHTML = '';
+    items.forEach(ab => {
+      const card = document.createElement('div');
+      card.className = 'sol-card';
+      const memLbl = { activa: '💎 Activa', beta: '⭐ Beta', inactiva: '⏸ Inactiva' }[ab.membresia] || ab.membresia;
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sol-card-name">${_esc(ab.nombre)}</div>
+          ${ab.activo ? '<span class="sol-badge aprobada">Activo</span>' : '<span class="sol-badge rechazada">Inactivo</span>'}
+        </div>
+        <div class="sol-card-meta">
+          <span>${_esc(ab.especialidad)}</span>
+          <span>${_esc(ab.estado || ab.estado_geo || '—')}</span>
+          <span>${memLbl}</span>
+          <span>Ranking: ${ab.ranking || 0}</span>
+        </div>`;
+      card.addEventListener('click', () => abrirEditarAbogado(ab));
+      list.appendChild(card);
+    });
+  } catch (e) {
+    list.innerHTML = `<div class="dir-empty">Error: ${e.message}</div>`;
+  }
+}
+
+function abrirEditarAbogado(ab) {
+  const overlay = document.getElementById('ab-edit-overlay');
+  const panel   = document.getElementById('ab-edit-panel');
+  panel.innerHTML = `
+    <h3 style="margin-bottom:12px">✏️ ${_esc(ab.nombre)}</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div><label style="font-size:11px;font-weight:600;color:var(--text2)">Membresía</label>
+        <select id="ab-edit-mem" style="width:100%;margin-top:4px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text)">
+          <option value="inactiva" ${ab.membresia==='inactiva'?'selected':''}>Inactiva</option>
+          <option value="beta"     ${ab.membresia==='beta'?'selected':''}>⭐ Beta</option>
+          <option value="activa"   ${ab.membresia==='activa'?'selected':''}>💎 Activa</option>
+        </select>
+      </div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--text2)">Ranking</label>
+        <input id="ab-edit-ranking" type="number" value="${ab.ranking || 0}" min="0"
+          style="width:100%;margin-top:4px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text)"/>
+      </div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--text2)">Notas admin</label>
+        <textarea id="ab-edit-notas" rows="2" maxlength="300"
+          style="width:100%;margin-top:4px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);resize:none">${_esc(ab.notas || '')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="ab-edit-suspender" style="flex:1;padding:8px;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">
+          ${ab.activo ? '⏸ Suspender' : '▶ Activar'}
+        </button>
+        <button id="ab-edit-guardar" style="flex:2;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:600;cursor:pointer">Guardar</button>
+      </div>
+      <button id="ab-edit-cerrar" class="btn-ghost" style="padding:9px">Cerrar</button>
+    </div>`;
+
+  overlay.classList.add('open');
+  overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove('open'); };
+  panel.querySelector('#ab-edit-cerrar').addEventListener('click', () => overlay.classList.remove('open'));
+
+  panel.querySelector('#ab-edit-suspender').addEventListener('click', async () => {
+    const accion = ab.activo ? 'suspender' : 'activar';
+    const btn = panel.querySelector('#ab-edit-suspender');
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/admin/abogados/${ab.id}/${accion}`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '' }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      overlay.classList.remove('open');
+      toast(ab.activo ? 'Abogado suspendido' : 'Abogado activado', 'ok');
+      cargarAdminAbogados();
+    } catch (e) { btn.disabled = false; toast('Error', 'err'); }
+  });
+
+  panel.querySelector('#ab-edit-guardar').addEventListener('click', async () => {
+    const membresia = panel.querySelector('#ab-edit-mem').value;
+    const ranking   = parseInt(panel.querySelector('#ab-edit-ranking').value) || 0;
+    const notas     = panel.querySelector('#ab-edit-notas').value.trim();
+    const btn = panel.querySelector('#ab-edit-guardar');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      // Actualizar campos generales
+      const r1 = await fetch(`${API}/admin/abogados/${ab.id}`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '', ranking, notas }),
+      });
+      // Actualizar membresía
+      const r2 = await fetch(`${API}/admin/abogados/${ab.id}/membresia`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '', tipo: membresia }),
+      });
+      if (!r1.ok || !r2.ok) throw new Error('Error guardando');
+      overlay.classList.remove('open');
+      toast('Cambios guardados', 'ok');
+      cargarAdminAbogados();
+    } catch (e) { btn.disabled = false; btn.textContent = 'Guardar'; toast('Error', 'err'); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Inicializar nombre/avatar en cuanto cargue la página (datos del SDK, sin API)
 _initPerfilSDK();
+// Detectar rol abogado
+_initRolAbogado();
 </script>
 </body>
 </html>

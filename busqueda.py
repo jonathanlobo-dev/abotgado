@@ -829,6 +829,17 @@ _PATRONES_INJECTION = [
     # Payload JSON/XML que simula mensajes de API
     r'"role"\s*:\s*"(?:system|assistant|user)"',
     r"<message\s+role\s*=",
+    # Simulacro / role-play ampliado
+    r"haz\s+(?:de\s+cuenta|como\s+si)\s+",
+    r"pretend\s+(?:you\s+are|to\s+be)\s+",
+    r"f[ií]ngete\s+(?:que\s+eres|como)\s+",
+    r"en\s+este\s+juego\s+de\s+roles?\s+",
+    # Intento de sobreescribir instrucciones con autoridad ficticia
+    r"(?:a\s+partir\s+de\s+ahora|desde\s+este\s+momento)\s+(?:eres|tu\s+nuevo\s+rol|ignora)",
+    r"nueva\s+instrucci[oó]n\s+(?:de\s+sistema|del\s+sistema)\s*:",
+    r"override\s+(?:all\s+)?(?:previous\s+)?(?:instructions|rules|constraints)",
+    # Prompt de continuación — "continúa el texto:" con payload
+    r"contin[uú]a\s+(?:el\s+siguiente\s+)?(?:texto|di[aá]logo|conversaci[oó]n)\s*:\s*(?:Bot|Sistema|User|Asistente)\s*:",
 ]
 
 import re as _re

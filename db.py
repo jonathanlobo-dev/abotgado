@@ -169,6 +169,51 @@ def inicializar_db():
             )
         """)
 
+        # ── Migración abogados: nuevas columnas para perfil verificado ──
+        cols_ab = {r[1] for r in con.execute("PRAGMA table_info(abogados)").fetchall()}
+        _mig_abogados = [
+            ("user_id",            "ALTER TABLE abogados ADD COLUMN user_id INTEGER"),
+            ("modalidad",          "ALTER TABLE abogados ADD COLUMN modalidad TEXT DEFAULT 'presencial'"),
+            ("biografia",          "ALTER TABLE abogados ADD COLUMN biografia TEXT DEFAULT ''"),
+            ("metodos_pago",       "ALTER TABLE abogados ADD COLUMN metodos_pago TEXT DEFAULT '[]'"),
+            ("membresia",          "ALTER TABLE abogados ADD COLUMN membresia TEXT DEFAULT 'inactiva'"),
+            ("membresia_expira",   "ALTER TABLE abogados ADD COLUMN membresia_expira TEXT"),
+            ("ranking",            "ALTER TABLE abogados ADD COLUMN ranking INTEGER DEFAULT 0"),
+            ("consultas_atendidas","ALTER TABLE abogados ADD COLUMN consultas_atendidas INTEGER DEFAULT 0"),
+            ("calificacion",       "ALTER TABLE abogados ADD COLUMN calificacion REAL DEFAULT 0.0"),
+            ("verificado",         "ALTER TABLE abogados ADD COLUMN verificado INTEGER DEFAULT 0"),
+        ]
+        for col, sql in _mig_abogados:
+            if col not in cols_ab:
+                con.execute(sql)
+
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS solicitudes_abogado (
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id          INTEGER NOT NULL,
+                nombre           TEXT NOT NULL,
+                cedula           TEXT NOT NULL,
+                inpreabogado     TEXT NOT NULL,
+                especialidad     TEXT NOT NULL,
+                telefono         TEXT NOT NULL,
+                estado_geo       TEXT NOT NULL,
+                biografia        TEXT DEFAULT '',
+                modalidad        TEXT DEFAULT 'presencial',
+                metodos_pago     TEXT DEFAULT '[]',
+                estado_solicitud TEXT DEFAULT 'pendiente',
+                motivo_rechazo   TEXT DEFAULT '',
+                revisado_por     INTEGER,
+                revisado_en      TEXT,
+                timestamp        TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        con.execute(
+            "CREATE INDEX IF NOT EXISTS idx_sol_user ON solicitudes_abogado(user_id)"
+        )
+        con.execute(
+            "CREATE INDEX IF NOT EXISTS idx_sol_estado ON solicitudes_abogado(estado_solicitud)"
+        )
+
         # ── Tablas TMA (historial de conversaciones por sidebar) ─────
         # Completamente separadas del bot de Telegram.
         con.execute("""
@@ -1084,6 +1129,272 @@ def contar_abogados(solo_activos: bool = True) -> int:
         query += " WHERE activo = 1"
     with get_db() as con:
         return con.execute(query).fetchone()[0]
+
+
+# ─── ABOGADOS VERIFICADOS ────────────────────────────────────────────────────
+
+import json as _json
+
+
+def es_abogado(user_id: int) -> bool:
+    """True si el user_id está vinculado a un abogado activo."""
+    with get_db() as con:
+        row = con.execute(
+            "SELECT id FROM abogados WHERE user_id = ? AND activo = 1", (user_id,)
+        ).fetchone()
+        return row is not None
+
+
+def obtener_abogado_por_user(user_id: int) -> dict | None:
+    """Obtiene el perfil del abogado vinculado a un user_id."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT * FROM abogados WHERE user_id = ? AND activo = 1", (user_id,)
+        )
+        cols = [d[0] for d in cur.description]
+        row = cur.fetchone()
+        return dict(zip(cols, row)) if row else None
+
+
+def actualizar_perfil_abogado(user_id: int, campos: dict) -> bool:
+    """Abogado actualiza su propio perfil (campos permitidos solamente)."""
+    _permitidos = {"biografia", "modalidad", "metodos_pago", "telefono", "notas"}
+    campos_filtrados = {k: v for k, v in campos.items() if k in _permitidos}
+    if not campos_filtrados:
+        return False
+    # Serializar metodos_pago a JSON si es lista
+    if "metodos_pago" in campos_filtrados and isinstance(campos_filtrados["metodos_pago"], list):
+        campos_filtrados["metodos_pago"] = _json.dumps(campos_filtrados["metodos_pago"], ensure_ascii=False)
+    sets = ", ".join(f"{k} = ?" for k in campos_filtrados)
+    vals = list(campos_filtrados.values()) + [user_id]
+    with get_db() as con:
+        cur = con.execute(
+            f"UPDATE abogados SET {sets} WHERE user_id = ? AND activo = 1", vals
+        )
+        return cur.rowcount > 0
+
+
+def admin_actualizar_abogado(abogado_id: int, campos: dict) -> bool:
+    """Admin actualiza cualquier campo del perfil de un abogado."""
+    if not campos:
+        return False
+    if "metodos_pago" in campos and isinstance(campos["metodos_pago"], list):
+        campos["metodos_pago"] = _json.dumps(campos["metodos_pago"], ensure_ascii=False)
+    sets = ", ".join(f"{k} = ?" for k in campos)
+    vals = list(campos.values()) + [abogado_id]
+    with get_db() as con:
+        cur = con.execute(
+            f"UPDATE abogados SET {sets} WHERE id = ?", vals
+        )
+        return cur.rowcount > 0
+
+
+def set_membresia(abogado_id: int, tipo: str, expira: str | None = None) -> bool:
+    """Asigna membresía a un abogado. Si tipo='beta', suma 100 al ranking."""
+    ranking_bonus = 100 if tipo == "beta" else 0
+    with get_db() as con:
+        cur = con.execute(
+            "UPDATE abogados SET membresia = ?, membresia_expira = ?, "
+            "ranking = ranking + ? WHERE id = ?",
+            (tipo, expira, ranking_bonus, abogado_id)
+        )
+        return cur.rowcount > 0
+
+
+def listar_abogados_directorio(especialidad: str = None, estado_geo: str = None,
+                                modalidad: str = None) -> list[dict]:
+    """Lista pública del directorio: solo activos con membresía activa/beta,
+    ordenados por ranking DESC. No expone user_id ni cedula."""
+    query = ("SELECT id, nombre, inpreabogado, especialidad, telefono, estado, "
+             "notas, modalidad, biografia, metodos_pago, membresia, ranking, "
+             "consultas_atendidas, calificacion, verificado "
+             "FROM abogados WHERE activo = 1 AND membresia IN ('activa','beta')")
+    params = []
+    if especialidad:
+        query += " AND LOWER(especialidad) LIKE ?"
+        params.append(f"%{especialidad.lower()}%")
+    if estado_geo:
+        query += " AND LOWER(estado) LIKE ?"
+        params.append(f"%{estado_geo.lower()}%")
+    if modalidad and modalidad != "todos":
+        query += " AND (modalidad = ? OR modalidad = 'ambas')"
+        params.append(modalidad)
+    query += " ORDER BY ranking DESC, calificacion DESC"
+    with get_db() as con:
+        cur = con.execute(query, params)
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for row in cur.fetchall():
+            d = dict(zip(cols, row))
+            # Parsear metodos_pago de JSON a lista
+            try:
+                d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
+            except Exception:
+                d["metodos_pago"] = []
+            rows.append(d)
+        return rows
+
+
+def listar_abogados_admin(incluir_inactivos: bool = True) -> list[dict]:
+    """Lista completa para admin con todos los campos."""
+    query = "SELECT * FROM abogados"
+    if not incluir_inactivos:
+        query += " WHERE activo = 1"
+    query += " ORDER BY ranking DESC, nombre ASC"
+    with get_db() as con:
+        cur = con.execute(query)
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for row in cur.fetchall():
+            d = dict(zip(cols, row))
+            try:
+                d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
+            except Exception:
+                d["metodos_pago"] = []
+            rows.append(d)
+        return rows
+
+
+# ─── SOLICITUDES DE ABOGADO ──────────────────────────────────────────────────
+
+def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
+                             inpreabogado: str, especialidad: str, telefono: str,
+                             estado_geo: str, biografia: str = "",
+                             modalidad: str = "presencial",
+                             metodos_pago: list | None = None) -> int:
+    """Crea una solicitud de verificación. Retorna el id o lanza ValueError."""
+    metodos_pago = metodos_pago or []
+    with get_db() as con:
+        # Validar: no solicitud pendiente del mismo user
+        existente = con.execute(
+            "SELECT id FROM solicitudes_abogado WHERE user_id = ? AND estado_solicitud = 'pendiente'",
+            (user_id,)
+        ).fetchone()
+        if existente:
+            raise ValueError("Ya tienes una solicitud pendiente")
+        # Validar: inpreabogado no registrado
+        registrado = con.execute(
+            "SELECT id FROM abogados WHERE inpreabogado = ? AND activo = 1",
+            (inpreabogado,)
+        ).fetchone()
+        if registrado:
+            raise ValueError("Este INPREABOGADO ya está registrado")
+        cur = con.execute("""
+            INSERT INTO solicitudes_abogado
+                (user_id, nombre, cedula, inpreabogado, especialidad, telefono,
+                 estado_geo, biografia, modalidad, metodos_pago)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, nombre, cedula, inpreabogado, especialidad, telefono,
+              estado_geo, biografia, modalidad,
+              _json.dumps(metodos_pago, ensure_ascii=False)))
+        return cur.lastrowid
+
+
+def listar_solicitudes(estado_solicitud: str = "pendiente",
+                       limit: int = 50) -> list[dict]:
+    """Lista solicitudes de abogados filtradas por estado."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT * FROM solicitudes_abogado WHERE estado_solicitud = ? "
+            "ORDER BY id DESC LIMIT ?",
+            (estado_solicitud, limit)
+        )
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for row in cur.fetchall():
+            d = dict(zip(cols, row))
+            try:
+                d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
+            except Exception:
+                d["metodos_pago"] = []
+            rows.append(d)
+        return rows
+
+
+def obtener_solicitud(solicitud_id: int) -> dict | None:
+    """Obtiene una solicitud por id."""
+    with get_db() as con:
+        cur = con.execute("SELECT * FROM solicitudes_abogado WHERE id = ?", (solicitud_id,))
+        cols = [d[0] for d in cur.description]
+        row = cur.fetchone()
+        if not row:
+            return None
+        d = dict(zip(cols, row))
+        try:
+            d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
+        except Exception:
+            d["metodos_pago"] = []
+        return d
+
+
+def estado_solicitud_usuario(user_id: int) -> dict:
+    """Estado de solicitud y rol del usuario para la TMA."""
+    with get_db() as con:
+        abogado = con.execute(
+            "SELECT id FROM abogados WHERE user_id = ? AND activo = 1", (user_id,)
+        ).fetchone()
+        if abogado:
+            return {"es_abogado": True, "tiene_solicitud": False, "estado": None}
+        sol = con.execute(
+            "SELECT estado_solicitud FROM solicitudes_abogado "
+            "WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            (user_id,)
+        ).fetchone()
+        if sol:
+            return {"es_abogado": False, "tiene_solicitud": True, "estado": sol[0]}
+        return {"es_abogado": False, "tiene_solicitud": False, "estado": None}
+
+
+def aprobar_solicitud(solicitud_id: int, admin_id: int) -> dict | None:
+    """Aprueba solicitud: la mueve a tabla abogados. Retorna dict con user_id."""
+    with get_db() as con:
+        sol = con.execute(
+            "SELECT * FROM solicitudes_abogado WHERE id = ? AND estado_solicitud = 'pendiente'",
+            (solicitud_id,)
+        ).fetchone()
+        if not sol:
+            return None
+        cols = [d[0] for d in con.execute("SELECT * FROM solicitudes_abogado LIMIT 0").description]
+        sol_dict = dict(zip(cols, sol))
+        # Marcar solicitud como aprobada
+        con.execute(
+            "UPDATE solicitudes_abogado SET estado_solicitud = 'aprobada', "
+            "revisado_por = ?, revisado_en = CURRENT_TIMESTAMP WHERE id = ?",
+            (admin_id, solicitud_id)
+        )
+        # Insertar en abogados
+        cur = con.execute("""
+            INSERT INTO abogados
+                (nombre, cedula, inpreabogado, especialidad, telefono, estado,
+                 notas, user_id, modalidad, biografia, metodos_pago,
+                 membresia, verificado, activo)
+            VALUES (?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, 'inactiva', 1, 1)
+        """, (
+            sol_dict["nombre"], sol_dict["cedula"], sol_dict["inpreabogado"],
+            sol_dict["especialidad"], sol_dict["telefono"], sol_dict["estado_geo"],
+            sol_dict["user_id"], sol_dict["modalidad"], sol_dict["biografia"],
+            sol_dict["metodos_pago"],
+        ))
+        return {"abogado_id": cur.lastrowid, "user_id": sol_dict["user_id"],
+                "nombre": sol_dict["nombre"]}
+
+
+def rechazar_solicitud(solicitud_id: int, admin_id: int,
+                       motivo: str = "") -> dict | None:
+    """Rechaza una solicitud. Retorna dict con user_id para notificar."""
+    with get_db() as con:
+        sol = con.execute(
+            "SELECT user_id FROM solicitudes_abogado WHERE id = ? AND estado_solicitud = 'pendiente'",
+            (solicitud_id,)
+        ).fetchone()
+        if not sol:
+            return None
+        con.execute(
+            "UPDATE solicitudes_abogado SET estado_solicitud = 'rechazada', "
+            "motivo_rechazo = ?, revisado_por = ?, revisado_en = CURRENT_TIMESTAMP WHERE id = ?",
+            (motivo, admin_id, solicitud_id)
+        )
+        return {"user_id": sol[0]}
 
 
 # ─── MÉTRICAS DE CONSULTAS ──────────────────────────────────────────────────

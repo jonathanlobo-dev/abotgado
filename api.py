@@ -883,3 +883,412 @@ def admin_resolver_feedback(feedback_id: int, req: ResolverRequest):
     except Exception as e:
         logger.error(f"Error en /admin/feedback/{feedback_id}/resolver: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error resolviendo feedback")
+
+
+# ─── Modelos de abogados ──────────────────────────────────────────────────────
+
+class SolicitudAbogadoRequest(BaseModel):
+    init_data: str
+    nombre: str
+    cedula: str
+    inpreabogado: str
+    especialidad: str
+    telefono: str
+    estado_geo: str
+    biografia: str = ""
+    modalidad: str = "presencial"
+    metodos_pago: list[str] = []
+
+class ActualizarPerfilAbogadoRequest(BaseModel):
+    init_data: str
+    biografia: str | None = None
+    modalidad: str | None = None
+    metodos_pago: list[str] | None = None
+    telefono: str | None = None
+    notas: str | None = None
+
+class AprobarSolicitudRequest(BaseModel):
+    init_data: str
+    membresia: str = "inactiva"
+    ranking_bonus: int = 0
+    expira: str | None = None
+
+class RechazarSolicitudRequest(BaseModel):
+    init_data: str
+    motivo: str = ""
+
+class ActualizarAbogadoAdminRequest(BaseModel):
+    init_data: str
+    nombre: str | None = None
+    especialidad: str | None = None
+    telefono: str | None = None
+    estado: str | None = None
+    notas: str | None = None
+    membresia: str | None = None
+    ranking: int | None = None
+    verificado: int | None = None
+    activo: int | None = None
+
+class MembresiaRequest(BaseModel):
+    init_data: str
+    tipo: str   # "activa" | "inactiva" | "beta"
+    expira: str | None = None
+
+class AccionAbogadoRequest(BaseModel):
+    init_data: str
+
+
+# ─── Endpoints de abogados ────────────────────────────────────────────────────
+
+@app.post("/abogados/solicitud")
+def crear_solicitud(req: SolicitudAbogadoRequest):
+    """Registra una solicitud de abogado verificado desde la TMA."""
+    uid = _user_id_from_init_data(req.init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    # Validaciones de dominio
+    if req.especialidad not in config.ESPECIALIDADES_ABOGADO:
+        raise HTTPException(status_code=400, detail="Especialidad inválida")
+    invalidos = [m for m in req.metodos_pago if m not in config.METODOS_PAGO_VALIDOS]
+    if invalidos:
+        raise HTTPException(status_code=400, detail=f"Métodos de pago inválidos: {invalidos}")
+
+    try:
+        import db as database
+        sol_id = database.crear_solicitud_abogado(
+            user_id=uid,
+            nombre=req.nombre,
+            cedula=req.cedula,
+            inpreabogado=req.inpreabogado,
+            especialidad=req.especialidad,
+            telefono=req.telefono,
+            estado_geo=req.estado_geo,
+            biografia=req.biografia,
+            modalidad=req.modalidad,
+            metodos_pago=req.metodos_pago,
+        )
+        # Notificar admin
+        for admin_id in config.ADMIN_IDS:
+            _enviar_mensaje_telegram(
+                admin_id,
+                f"📋 Nueva solicitud de abogado: {req.nombre} (INPRE {req.inpreabogado})\n"
+                f"Especialidad: {req.especialidad} · {req.estado_geo}\n"
+                f"ID solicitud: {sol_id}"
+            )
+        logger.info(f"Solicitud abogado creada id={sol_id} user={uid}")
+        return {"ok": True, "solicitud_id": sol_id}
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error en /abogados/solicitud: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error registrando solicitud")
+
+
+@app.get("/abogado/estado-solicitud")
+def estado_solicitud(init_data: str = ""):
+    """Devuelve el estado de solicitud/membresía del usuario para decidir qué mostrar en la TMA."""
+    uid = _user_id_from_init_data(init_data)
+    if uid is None:
+        return {"es_abogado": False, "tiene_solicitud": False, "estado": None}
+    try:
+        import db as database
+        return database.estado_solicitud_usuario(uid)
+    except Exception as e:
+        logger.error(f"Error en /abogado/estado-solicitud: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.get("/abogado/perfil")
+def perfil_abogado(init_data: str = ""):
+    """Perfil completo del abogado para el Escritorio (solo si es abogado)."""
+    uid = _user_id_from_init_data(init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        perfil = database.obtener_abogado_por_user(uid)
+        if not perfil:
+            raise HTTPException(status_code=404, detail="No eres abogado verificado")
+        return perfil
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en GET /abogado/perfil: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error obteniendo perfil")
+
+
+@app.put("/abogado/perfil")
+def actualizar_perfil_abogado(req: ActualizarPerfilAbogadoRequest):
+    """El abogado edita su propia bio, modalidad, métodos de pago y teléfono."""
+    uid = _user_id_from_init_data(req.init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    campos = {}
+    if req.biografia is not None:
+        campos["biografia"] = req.biografia
+    if req.modalidad is not None:
+        campos["modalidad"] = req.modalidad
+    if req.metodos_pago is not None:
+        invalidos = [m for m in req.metodos_pago if m not in config.METODOS_PAGO_VALIDOS]
+        if invalidos:
+            raise HTTPException(status_code=400, detail=f"Métodos inválidos: {invalidos}")
+        campos["metodos_pago"] = req.metodos_pago
+    if req.telefono is not None:
+        campos["telefono"] = req.telefono
+    if req.notas is not None:
+        campos["notas"] = req.notas
+
+    if not campos:
+        raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+
+    try:
+        import db as database
+        ok = database.actualizar_perfil_abogado(uid, campos)
+        if not ok:
+            raise HTTPException(status_code=404, detail="No eres abogado verificado")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en PUT /abogado/perfil: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error actualizando perfil")
+
+
+# ─── Endpoints admin de solicitudes ──────────────────────────────────────────
+
+@app.get("/admin/solicitudes")
+def admin_listar_solicitudes(init_data: str = "", estado: str = "pendiente", limit: int = 50):
+    """Lista solicitudes de abogados filtradas por estado — solo admins."""
+    admin_id = _admin_from_init_data(init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        items = database.listar_solicitudes(estado_solicitud=estado, limit=limit)
+        return {"items": items, "count": len(items)}
+    except Exception as e:
+        logger.error(f"Error en /admin/solicitudes: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error listando solicitudes")
+
+
+@app.post("/admin/solicitudes/{solicitud_id}/aprobar")
+def admin_aprobar_solicitud(solicitud_id: int, req: AprobarSolicitudRequest):
+    """Aprueba una solicitud: mueve datos a tabla abogados y asigna membresía."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        result = database.aprobar_solicitud(solicitud_id, admin_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada o ya procesada")
+
+        abogado_id = result.get("abogado_id")
+        # Asignar membresía si se especificó
+        if abogado_id and req.membresia in ("activa", "beta"):
+            database.set_membresia(abogado_id, req.membresia, req.expira)
+        # Ranking bonus extra
+        if abogado_id and req.ranking_bonus > 0:
+            with database.get_db() as con:
+                con.execute(
+                    "UPDATE abogados SET ranking = ranking + ? WHERE id = ?",
+                    (req.ranking_bonus, abogado_id)
+                )
+
+        # Notificar al usuario
+        if result.get("user_id"):
+            _enviar_mensaje_telegram(
+                result["user_id"],
+                "✅ ¡Tu solicitud fue aprobada! Ya eres Abogado Verificado en aBOTgado. "
+                "Abre la app para completar tu perfil en el Escritorio del Abogado."
+            )
+        logger.info(f"Solicitud {solicitud_id} aprobada por admin {admin_id}, abogado_id={abogado_id}")
+        return {"ok": True, "abogado_id": abogado_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error aprobando solicitud {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error aprobando solicitud")
+
+
+@app.post("/admin/solicitudes/{solicitud_id}/rechazar")
+def admin_rechazar_solicitud(solicitud_id: int, req: RechazarSolicitudRequest):
+    """Rechaza una solicitud de abogado y notifica al usuario."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        result = database.rechazar_solicitud(solicitud_id, admin_id, req.motivo)
+        if not result:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada o ya procesada")
+        if result.get("user_id"):
+            motivo_txt = f" Motivo: {req.motivo}" if req.motivo else ""
+            _enviar_mensaje_telegram(
+                result["user_id"],
+                f"❌ Tu solicitud de Abogado Verificado fue rechazada.{motivo_txt}"
+            )
+        logger.info(f"Solicitud {solicitud_id} rechazada por admin {admin_id}")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error rechazando solicitud {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error rechazando solicitud")
+
+
+# ─── Endpoints admin de gestión de abogados ──────────────────────────────────
+
+@app.get("/admin/abogados")
+def admin_listar_abogados(init_data: str = "", incluir_inactivos: bool = True):
+    """Lista todos los abogados para el panel admin (con datos completos)."""
+    admin_id = _admin_from_init_data(init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        return {"items": database.listar_abogados_admin(incluir_inactivos=incluir_inactivos)}
+    except Exception as e:
+        logger.error(f"Error en /admin/abogados: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.put("/admin/abogados/{abogado_id}")
+def admin_actualizar_abogado(abogado_id: int, req: ActualizarAbogadoAdminRequest):
+    """Admin edita cualquier campo de un abogado."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    campos = {k: v for k, v in {
+        "nombre": req.nombre,
+        "especialidad": req.especialidad,
+        "telefono": req.telefono,
+        "estado": req.estado,
+        "notas": req.notas,
+        "membresia": req.membresia,
+        "ranking": req.ranking,
+        "verificado": req.verificado,
+        "activo": req.activo,
+    }.items() if v is not None}
+
+    if not campos:
+        raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+
+    try:
+        import db as database
+        ok = database.admin_actualizar_abogado(abogado_id, campos)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Abogado no encontrado")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en PUT /admin/abogados/{abogado_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error actualizando abogado")
+
+
+@app.post("/admin/abogados/{abogado_id}/membresia")
+def admin_set_membresia(abogado_id: int, req: MembresiaRequest):
+    """Establece o cambia la membresía de un abogado."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    if req.tipo not in ("activa", "inactiva", "beta"):
+        raise HTTPException(status_code=400, detail="Tipo de membresía inválido")
+    try:
+        import db as database
+        ok = database.set_membresia(abogado_id, req.tipo, req.expira)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Abogado no encontrado")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en /admin/abogados/{abogado_id}/membresia: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.post("/admin/abogados/{abogado_id}/suspender")
+def admin_suspender_abogado(abogado_id: int, req: AccionAbogadoRequest):
+    """Desactiva un abogado y le notifica."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        ab = database.admin_actualizar_abogado(abogado_id, {"activo": 0})
+        if not ab:
+            raise HTTPException(status_code=404, detail="Abogado no encontrado")
+        # Buscar user_id para notificar
+        abogados = database.listar_abogados_admin(incluir_inactivos=True)
+        for a in abogados:
+            if a["id"] == abogado_id and a.get("user_id"):
+                _enviar_mensaje_telegram(
+                    a["user_id"],
+                    "⚠️ Tu perfil de Abogado Verificado en aBOTgado ha sido suspendido temporalmente. "
+                    "Contacta al soporte para más información."
+                )
+                break
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error suspendiendo abogado {abogado_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.post("/admin/abogados/{abogado_id}/activar")
+def admin_activar_abogado(abogado_id: int, req: AccionAbogadoRequest):
+    """Reactiva un abogado suspendido y le notifica."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        ok = database.admin_actualizar_abogado(abogado_id, {"activo": 1})
+        if not ok:
+            raise HTTPException(status_code=404, detail="Abogado no encontrado")
+        abogados = database.listar_abogados_admin(incluir_inactivos=True)
+        for a in abogados:
+            if a["id"] == abogado_id and a.get("user_id"):
+                _enviar_mensaje_telegram(
+                    a["user_id"],
+                    "✅ Tu perfil de Abogado Verificado en aBOTgado ha sido reactivado. "
+                    "Ya apareces nuevamente en el directorio."
+                )
+                break
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error activando abogado {abogado_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+# ─── Directorio público mejorado ─────────────────────────────────────────────
+
+@app.get("/directorio")
+def directorio_abogados(
+    especialidad: str | None = None,
+    estado: str | None = None,
+    modalidad: str | None = None,
+):
+    """
+    Lista pública de abogados verificados con membresía activa o beta.
+    Ordenada por ranking DESC. No expone user_id ni cédula.
+    Filtros: ?especialidad=Penal&estado=Miranda&modalidad=online
+    """
+    try:
+        import db as database
+        abogados = database.listar_abogados_directorio(
+            especialidad=especialidad,
+            estado_geo=estado,
+            modalidad=modalidad,
+        )
+        return abogados
+    except Exception as e:
+        logger.error(f"Error en /directorio: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error obteniendo directorio")

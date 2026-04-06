@@ -604,7 +604,8 @@ async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE)
         texto += "<i>No hay más resultados.</i>"
     else:
         for f in feedbacks:
-            icono = "👍" if f["tipo"] == "positivo" else ("👎" if f["tipo"] == "negativo" else "💬")
+            resuelto = "✅ " if f.get("estado") == "resuelto" else ""
+            icono = resuelto + ("👍" if f["tipo"] == "positivo" else ("👎" if f["tipo"] == "negativo" else "💬"))
             comentario = f["comentario"] or ""
             if "\n---\n" in comentario:
                 pregunta, resp = comentario.split("\n---\n", 1)

@@ -64,3 +64,29 @@ PLANES = {
 DOCS_HABILITADOS = False
 
 MAX_HISTORIAL = 10
+
+# ─── AUTO TESTERS ─────────────────────────────────────────────────────────────
+MAX_AUTO_TESTERS = 50  # primeros N usuarios reciben 14 días de Pionero gratis
+
+# ─── DEV MODE ─────────────────────────────────────────────────────────────────
+# Con DEV_MODE=1 se salta la validación HMAC de initData (desarrollo local)
+DEV_MODE = os.getenv("DEV_MODE", "0") == "1"
+
+# ─── ABOGADOS VERIFICADOS ────────────────────────────────────────────────────
+
+ESPECIALIDADES_ABOGADO = [
+    "Penal", "Civil", "Laboral", "Mercantil", "Familia", "Tránsito",
+    "Administrativo", "Tributario", "Inmobiliario", "Migratorio",
+    "Electoral", "Ambiental", "Otro",
+]
+
+METODOS_PAGO_VALIDOS = [
+    "pago_movil", "zinli", "binance", "paypal", "wally", "zelle", "efectivo",
+]
+
+ESTADOS_VENEZUELA = [
+    "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar",
+    "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Falcón",
+    "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
+    "Portuguesa", "Sucre", "Táchira", "Trujillo", "Vargas", "Yaracuy", "Zulia",
+]
