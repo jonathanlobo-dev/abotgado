@@ -1183,15 +1183,22 @@
     </div>
     <div class="abog-group">
       <label class="abog-label">Especialidad <span class="req">*</span></label>
-      <select class="abog-input" id="sol-especialidad">
-        <option value="">— Seleccionar —</option>
-        <option>Penal</option><option>Civil</option><option>Laboral</option>
-        <option>Mercantil</option><option>Familia</option><option>Tránsito</option>
-        <option>Administrativo</option><option>Tributario</option><option>Inmobiliario</option>
-        <option>Migratorio</option><option>Electoral</option><option>Ambiental</option>
-        <option>Otro</option>
-      </select>
-      <span class="abog-err" id="sol-esp-err">Selecciona una especialidad</span>
+      <div class="abog-checks" id="sol-especialidades">
+        <label class="abog-check"><input type="checkbox" value="Penal"> Penal</label>
+        <label class="abog-check"><input type="checkbox" value="Civil"> Civil</label>
+        <label class="abog-check"><input type="checkbox" value="Laboral"> Laboral</label>
+        <label class="abog-check"><input type="checkbox" value="Mercantil"> Mercantil</label>
+        <label class="abog-check"><input type="checkbox" value="Familia"> Familia</label>
+        <label class="abog-check"><input type="checkbox" value="Tránsito"> Tránsito</label>
+        <label class="abog-check"><input type="checkbox" value="Administrativo"> Administrativo</label>
+        <label class="abog-check"><input type="checkbox" value="Tributario"> Tributario</label>
+        <label class="abog-check"><input type="checkbox" value="Inmobiliario"> Inmobiliario</label>
+        <label class="abog-check"><input type="checkbox" value="Migratorio"> Migratorio</label>
+        <label class="abog-check"><input type="checkbox" value="Electoral"> Electoral</label>
+        <label class="abog-check"><input type="checkbox" value="Ambiental"> Ambiental</label>
+        <label class="abog-check"><input type="checkbox" value="Otro"> Otro</label>
+      </div>
+      <span class="abog-err" id="sol-esp-err">Selecciona al menos una especialidad</span>
     </div>
     <div class="abog-group">
       <label class="abog-label">Teléfono <span class="req">*</span></label>
@@ -2309,7 +2316,7 @@ function renderDirectorio(lista) {
     card.innerHTML = `
       <div class="dir-card-nombre">${_esc(a.nombre)}</div>
       <div class="dir-card-inpre">INPRE ${_esc(a.inpreabogado)}</div>
-      <div class="dir-card-esp">🏛️ ${_esc(a.especialidad)}</div>
+      <div class="dir-card-esp">🏛️ ${_esc((() => { try { const e = typeof a.especialidad === 'string' ? JSON.parse(a.especialidad) : a.especialidad; return Array.isArray(e) ? e.join(' · ') : (a.especialidad || ''); } catch { return a.especialidad || ''; } })())}</div>
       <div class="dir-card-loc">📍 ${_esc(a.estado)}</div>
       ${a.notas ? `<div class="dir-card-notas">${_esc(a.notas)}</div>` : ''}
       <div class="dir-card-footer">
@@ -2701,7 +2708,7 @@ function renderDirectorio(lista) {
       <div class="dir-card-nombre">${_esc(a.nombre)}</div>
       <div class="dir-card-inpre">INPRE ${_esc(a.inpreabogado)}</div>
       ${badges ? `<div class="dir-card-badges">${badges}</div>` : ''}
-      <div class="dir-card-esp">🏛️ ${_esc(a.especialidad)}</div>
+      <div class="dir-card-esp">🏛️ ${_esc((() => { try { const e = typeof a.especialidad === 'string' ? JSON.parse(a.especialidad) : a.especialidad; return Array.isArray(e) ? e.join(' · ') : (a.especialidad || ''); } catch { return a.especialidad || ''; } })())}</div>
       <div class="dir-card-loc">📍 ${_esc(ubicacion)}</div>
       ${modalLbl ? `<div class="dir-card-modalidad">${modalLbl}</div>` : ''}
       ${a.notas || a.biografia ? `<div class="dir-card-notas">${_esc(a.notas || a.biografia)}</div>` : ''}
@@ -2818,7 +2825,17 @@ document.getElementById('sol-enviar').addEventListener('click', async () => {
   const nombre     = field('sol-nombre',      'sol-nombre-err', v => v.length >= 3);
   const cedula     = field('sol-cedula',       'sol-cedula-err', v => /^[VEve]-?\d{6,9}$/.test(v.replace(/\s/g,'')));
   const inpre      = field('sol-inpre',        'sol-inpre-err',  v => /^\d+$/.test(v));
-  const especialidad = field('sol-especialidad','sol-esp-err',   v => v.length > 0);
+  const especialidades = [...document.querySelectorAll('#sol-especialidades input:checked')].map(i => i.value);
+  const espErr = document.getElementById('sol-esp-err');
+  const espContainer = document.getElementById('sol-especialidades');
+  if (especialidades.length < 1) {
+    espContainer.classList.add('err');
+    if (espErr) espErr.classList.add('show');
+    ok = false;
+  } else {
+    espContainer.classList.remove('err');
+    if (espErr) espErr.classList.remove('show');
+  }
   const telefono   = field('sol-telefono',     'sol-tel-err',    v => v.length >= 7);
   const estado_geo = field('sol-estado',       'sol-estado-err', v => v.length > 0);
   if (!ok) return;
@@ -2833,7 +2850,7 @@ document.getElementById('sol-enviar').addEventListener('click', async () => {
     const res = await fetch(`${API}/abogados/solicitud`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ init_data: window._tgInitData || '', nombre, cedula, inpreabogado: inpre, especialidad, telefono, estado_geo, biografia, modalidad, metodos_pago }),
+      body: JSON.stringify({ init_data: window._tgInitData || '', nombre, cedula, inpreabogado: inpre, especialidades, telefono, estado_geo, biografia, modalidad, metodos_pago }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);

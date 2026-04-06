@@ -892,7 +892,7 @@ class SolicitudAbogadoRequest(BaseModel):
     nombre: str
     cedula: str
     inpreabogado: str
-    especialidad: str
+    especialidades: list[str]
     telefono: str
     estado_geo: str
     biografia: str = ""
@@ -948,8 +948,11 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
         raise HTTPException(status_code=403, detail="No autorizado")
 
     # Validaciones de dominio
-    if req.especialidad not in config.ESPECIALIDADES_ABOGADO:
-        raise HTTPException(status_code=400, detail="Especialidad inválida")
+    if not req.especialidades:
+        raise HTTPException(status_code=400, detail="Selecciona al menos una especialidad")
+    for e in req.especialidades:
+        if e not in config.ESPECIALIDADES_ABOGADO:
+            raise HTTPException(status_code=400, detail=f"Especialidad inválida: {e}")
     invalidos = [m for m in req.metodos_pago if m not in config.METODOS_PAGO_VALIDOS]
     if invalidos:
         raise HTTPException(status_code=400, detail=f"Métodos de pago inválidos: {invalidos}")
@@ -961,7 +964,7 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
             nombre=req.nombre,
             cedula=req.cedula,
             inpreabogado=req.inpreabogado,
-            especialidad=req.especialidad,
+            especialidad=req.especialidades,
             telefono=req.telefono,
             estado_geo=req.estado_geo,
             biografia=req.biografia,

@@ -1258,7 +1258,7 @@ def listar_abogados_admin(incluir_inactivos: bool = True) -> list[dict]:
 # ─── SOLICITUDES DE ABOGADO ──────────────────────────────────────────────────
 
 def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
-                             inpreabogado: str, especialidad: str, telefono: str,
+                             inpreabogado: str, especialidad: list, telefono: str,
                              estado_geo: str, biografia: str = "",
                              modalidad: str = "presencial",
                              metodos_pago: list | None = None) -> int:
@@ -1284,7 +1284,8 @@ def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
                 (user_id, nombre, cedula, inpreabogado, especialidad, telefono,
                  estado_geo, biografia, modalidad, metodos_pago)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, nombre, cedula, inpreabogado, especialidad, telefono,
+        """, (user_id, nombre, cedula, inpreabogado,
+              _json.dumps(especialidad, ensure_ascii=False), telefono,
               estado_geo, biografia, modalidad,
               _json.dumps(metodos_pago, ensure_ascii=False)))
         return cur.lastrowid
