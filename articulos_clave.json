@@ -3493,10 +3493,6 @@
   },
   "penal": {
     "keywords": [
-      "robo",
-      "robar",
-      "robaron",
-      "hurto",
       "asesinato",
       "homicidio",
       "matar",
@@ -3512,8 +3508,6 @@
       "violación",
       "violacion",
       "pena",
-      "ladrón",
-      "ladron",
       "agresión física",
       "agresion fisica",
       "amenaza",
@@ -3589,14 +3583,6 @@
       409,
       413,
       414,
-      415,
-      420,
-      451,
-      453,
-      455,
-      457,
-      458,
-      460,
       462,
       464
     ]
@@ -5907,6 +5893,43 @@
       40,
       50,
       65
+    ]
+  },
+  "penal_hurto": {
+    "keywords": [
+      "robo",
+      "robar",
+      "robaron",
+      "hurto",
+      "ladrón",
+      "ladron",
+      "me robaron",
+      "nos robaron",
+      "robó la casa",
+      "entraron a robar",
+      "cableado",
+      "cables eléctricos",
+      "cables electricos",
+      "bienes públicos",
+      "bienes publicos",
+      "instalaciones públicas",
+      "instalaciones publicas",
+      "servicio público robado",
+      "acusan de robar",
+      "acusado de hurto",
+      "cargo por robo",
+      "robarme",
+      "robo a mano armada",
+      "asalto"
+    ],
+    "ley": "Código Penal",
+    "articulos": [
+      451,
+      453,
+      455,
+      457,
+      458,
+      460
     ]
   }
 }
