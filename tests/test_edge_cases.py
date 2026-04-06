@@ -100,6 +100,82 @@ CASOS = [
     ("Una empresa me contrató como freelance pero me exige horario fijo",  True,  "edge: falsa independencia laboral"),
     ("¿Cuánto tiempo dura la acción penal en Venezuela?",                 True,  "edge: prescripción penal"),
     ("Me pusieron una demanda civil pero vivo en otro estado, ¿qué hago?", True, "edge: competencia territorial CPC"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # TESTAFERRO / LAVADO / LOPDOFT (casos de Gemini)
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me acusan de ser testaferro de un funcionario corrupto, ¿qué pena tengo?",   True,  "cruce: testaferro LOPDOFT Art35"),
+    ("Usaron mi nombre para abrir empresas sin decirme, ¿soy testaferro?",         True,  "cruce: testaferro involuntario"),
+    ("Me acusan de lavado de dinero, ¿qué dice la ley venezolana?",                True,  "cruce: lavado LOPDOFT"),
+    ("Pasaron dinero de origen ilícito por mi cuenta bancaria, ¿qué hago?",        True,  "cruce: cuenta usada lavado"),
+    ("Mi jefe me pidió que figurara como dueño de la empresa, ¿qué riesgo tengo?", True,  "cruce: prestanombre empresa"),
+    ("Me acusan de legitimación de capitales, ¿cuántos años me dan?",              True,  "cruce: legitimación LOPDOFT Art6"),
+    ("¿Cuál es la diferencia entre testaferro y cómplice en Venezuela?",           True,  "cruce: testaferro vs cómplice"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # CONTRABANDO (ley nueva indexada)
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me agarraron con mercancía sin declarar en la aduana, ¿qué pasa?",           True,  "cruce: contrabando aduana"),
+    ("¿Qué es el contrabando de extracción en Venezuela?",                         True,  "cruce: contrabando extracción"),
+    ("Me acusan de pasar dólares sin declarar al salir del país, ¿es delito?",     True,  "cruce: contrabando divisas"),
+    ("Llevaba productos alimenticios a Colombia sin permiso, ¿qué delito es?",     True,  "cruce: contrabando extracción alimentos"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # CRIMEN ORGANIZADO / LOPDOFT EXPANDIDO
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me acusan de pertenecer a una banda de crimen organizado, ¿qué artículo aplica?", True, "cruce: crimen organizado LOPDOFT"),
+    ("¿Qué diferencia hay entre agavillamiento y delincuencia organizada en Venezuela?", True, "cruce: agavillamiento vs LOPDOFT"),
+    ("Me detuvieron junto a personas de una banda sin saber que lo eran, ¿qué hago?",   True, "cruce: detenido con banda error"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # PROCESO PENAL EXPANDIDO (COPP edge cases nuevos)
+    # ══════════════════════════════════════════════════════════════════════
+    ("¿Qué significa que me den medida cautelar sustitutiva en Venezuela?",        True,  "edge: medida cautelar sustitutiva COPP"),
+    ("Me imputaron y quiero saber qué pasa en la audiencia preliminar",            True,  "edge: audiencia preliminar COPP"),
+    ("Me metieron preso preventivamente sin juicio, ¿cuánto tiempo máximo?",      True,  "edge: privación preventiva límite COPP"),
+    ("¿Puedo solicitar casa por cárcel si estoy preso preventivo?",               True,  "edge: casa por cárcel COPP"),
+    ("El fiscal quiere acusarme pero el juez sobreseyó, ¿qué procede?",           True,  "edge: sobreseimiento vs acusación COPP"),
+    ("Soy víctima de un delito, ¿tengo derecho a un abogado gratis?",             True,  "edge: víctima defensor público COPP"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # PENAL ESPECIAL — CASOS QUE DEBEN CRUZAR CP + LOPDOFT
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me acusan de secuestro, ¿qué artículo del Código Penal aplica?",            True,  "cruce: secuestro CP"),
+    ("¿Qué pena tiene el sicariato en Venezuela?",                                 True,  "cruce: sicariato CP"),
+    ("Me acusan de trata de personas, ¿qué ley aplica?",                          True,  "cruce: trata de personas LOPDOFT+CP"),
+    ("Me detuvieron con droga, no la vendía solo la tenía, ¿qué pasa?",           True,  "cruce: posesión drogas LOCDOFT"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # LABORAL EXPANDIDO — EDGE CASES NUEVOS
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me despidieron en período de prueba sin pagarme nada, ¿tengo derecho?",     True,  "edge: período de prueba LOTTT"),
+    ("Trabajo dos empleos a la vez, ¿puedo acumular prestaciones en ambos?",      True,  "edge: doble empleo prestaciones"),
+    ("Mi empresa me pagó en dólares y ahora quiere pasarme a bolívares, ¿puede?", True,  "edge: pago dólares LOTTT"),
+    ("Me obligaron a firmar una renuncia bajo presión, ¿es válida?",              True,  "edge: renuncia bajo coacción LOTTT"),
+    ("Llevo 6 meses sin que me paguen el sueldo completo, ¿qué hago?",           True,  "edge: salario retenido LOTTT"),
+    ("¿Cuántos días de vacaciones me corresponden con 5 años en la empresa?",     True,  "edge: vacaciones LOTTT cálculo"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # FAMILIA / NIÑEZ EXPANDIDO
+    # ══════════════════════════════════════════════════════════════════════
+    ("Quiero adoptar un niño en Venezuela, ¿cuál es el proceso?",                 True,  "cruce: adopción LOPNNA"),
+    ("Mi hijo fue abusado sexualmente, ¿qué debo hacer legalmente?",              True,  "cruce: abuso niño LOPNNA+penal"),
+    ("El padre de mi hijo no paga la manutención hace 6 meses, ¿qué hago?",      True,  "cruce: manutención obligación LOPNNA"),
+    ("¿Puedo sacar a mi hijo del país sin permiso del padre?",                    True,  "cruce: salida menor LOPNNA"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # DIGITAL / INFORMÁTICA EXPANDIDO
+    # ══════════════════════════════════════════════════════════════════════
+    ("Me clonaron la tarjeta de débito y vaciaron mi cuenta, ¿qué hago?",        True,  "cruce: clonación tarjeta delito informático"),
+    ("Alguien creó un perfil falso en Instagram con mis fotos, ¿qué hago?",      True,  "cruce: suplantación identidad digital"),
+    ("Me enviaron ransomware y me piden bitcoins para liberar mis archivos",      True,  "cruce: ransomware extorsión digital"),
+
+    # ══════════════════════════════════════════════════════════════════════
+    # LEYES FALTANTES NUEVAS (esperamos 0 → False)
+    # ══════════════════════════════════════════════════════════════════════
+    ("¿Qué dice la ley venezolana sobre criptomonedas y el Petro?",               False, "MISSING_LAW: criptomonedas Petro"),
+    ("¿Cómo registro una app móvil como propiedad intelectual en Venezuela?",     False, "MISSING_LAW: software propiedad intelectual"),
+    ("¿Qué normas regulan los drones en Venezuela?",                              False, "MISSING_LAW: drones aeronáutica"),
 ]
 
 # ──────────────────────────────────────────────────────────────────────────────
