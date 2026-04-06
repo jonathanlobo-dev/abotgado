@@ -971,13 +971,20 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
             modalidad=req.modalidad,
             metodos_pago=req.metodos_pago,
         )
-        # Notificar admin
+        # Notificar admin con datos de contacto
+        u_info = database._usuario_info(uid)
+        username_txt = f"@{u_info['username']}" if u_info.get("username") else "sin username"
+        esp_txt = " · ".join(req.especialidades)
         for admin_id in config.ADMIN_IDS:
             _enviar_mensaje_telegram(
                 admin_id,
-                f"📋 Nueva solicitud de abogado: {req.nombre} (INPRE {req.inpreabogado})\n"
-                f"Especialidad: {req.especialidad} · {req.estado_geo}\n"
-                f"ID solicitud: {sol_id}"
+                f"📋 Nueva solicitud de abogado\n"
+                f"👤 {req.nombre} (user_id: {uid} · {username_txt})\n"
+                f"🪪 INPRE {req.inpreabogado} · Cédula {req.cedula}\n"
+                f"⚖️ {esp_txt}\n"
+                f"📍 {req.estado_geo} · {req.modalidad}\n"
+                f"📱 {req.telefono}\n"
+                f"🔢 ID solicitud: {sol_id}"
             )
         logger.info(f"Solicitud abogado creada id={sol_id} user={uid}")
         return {"ok": True, "solicitud_id": sol_id}
@@ -1140,6 +1147,144 @@ def admin_rechazar_solicitud(solicitud_id: int, req: RechazarSolicitudRequest):
     except Exception as e:
         logger.error(f"Error rechazando solicitud {solicitud_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error rechazando solicitud")
+
+
+class EditarSolicitudRequest(BaseModel):
+    init_data: str
+    nombre: str | None = None
+    cedula: str | None = None
+    inpreabogado: str | None = None
+    especialidades: list[str] | None = None
+    telefono: str | None = None
+    estado_geo: str | None = None
+    biografia: str | None = None
+    modalidad: str | None = None
+    metodos_pago: list[str] | None = None
+
+class PedirCorreccionRequest(BaseModel):
+    init_data: str
+    mensaje: str
+
+class MensajeDirectoRequest(BaseModel):
+    init_data: str
+    mensaje: str
+
+
+@app.post("/admin/solicitudes/{solicitud_id}/en-revision")
+def admin_marcar_en_revision(solicitud_id: int, req: AccionAbogadoRequest):
+    """Marca la solicitud como en revisión y notifica al solicitante."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        result = database.marcar_en_revision(solicitud_id, admin_id)
+        if not result:
+            return {"ok": True, "ya_en_revision": True}  # ya estaba revisada, no es error
+        if result.get("user_id"):
+            _enviar_mensaje_telegram(
+                result["user_id"],
+                f"👀 Tu solicitud de Abogado Verificado está siendo revisada. "
+                f"Te notificaremos cuando tengamos una respuesta."
+            )
+        logger.info(f"Solicitud {solicitud_id} marcada en_revision por admin {admin_id}")
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Error marcando en_revision {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.put("/abogados/solicitud/{solicitud_id}")
+def editar_solicitud(solicitud_id: int, req: EditarSolicitudRequest):
+    """El solicitante edita su solicitud (solo si está en pendiente o correccion_solicitada)."""
+    uid = _user_id_from_init_data(req.init_data)
+    if uid is None:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    if req.especialidades is not None:
+        for e in req.especialidades:
+            if e not in config.ESPECIALIDADES_ABOGADO:
+                raise HTTPException(status_code=400, detail=f"Especialidad inválida: {e}")
+    if req.metodos_pago is not None:
+        invalidos = [m for m in req.metodos_pago if m not in config.METODOS_PAGO_VALIDOS]
+        if invalidos:
+            raise HTTPException(status_code=400, detail=f"Métodos inválidos: {invalidos}")
+    campos = {k: v for k, v in {
+        "nombre": req.nombre, "cedula": req.cedula, "inpreabogado": req.inpreabogado,
+        "especialidad": req.especialidades, "telefono": req.telefono,
+        "estado_geo": req.estado_geo, "biografia": req.biografia,
+        "modalidad": req.modalidad, "metodos_pago": req.metodos_pago,
+    }.items() if v is not None}
+    if not campos:
+        raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+    try:
+        import db as database
+        ok = database.actualizar_solicitud(solicitud_id, uid, campos)
+        if not ok:
+            raise HTTPException(status_code=409, detail="No puedes editar esta solicitud")
+        # Notificar admins que la solicitud fue reenviada
+        u_info = database._usuario_info(uid)
+        username_txt = f"@{u_info['username']}" if u_info.get("username") else f"user_id {uid}"
+        for admin_id in config.ADMIN_IDS:
+            _enviar_mensaje_telegram(
+                admin_id,
+                f"✏️ Solicitud #{solicitud_id} actualizada por {username_txt}. "
+                f"Volvió a estado Pendiente."
+            )
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error editando solicitud {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error editando solicitud")
+
+
+@app.post("/admin/solicitudes/{solicitud_id}/pedir-correccion")
+def admin_pedir_correccion(solicitud_id: int, req: PedirCorreccionRequest):
+    """Solicita correcciones al abogado sin rechazarlo."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        result = database.pedir_correccion(solicitud_id, admin_id, req.mensaje)
+        if not result:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada o ya procesada")
+        if result.get("user_id"):
+            _enviar_mensaje_telegram(
+                result["user_id"],
+                f"✏️ Tu solicitud de Abogado Verificado necesita una corrección:\n\n"
+                f"{req.mensaje}\n\n"
+                f"Abre el directorio en la app y usa el botón 'Editar solicitud' para corregirla."
+            )
+        logger.info(f"Corrección solicitada en solicitud {solicitud_id} por admin {admin_id}")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error pidiendo corrección {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.post("/admin/solicitudes/{solicitud_id}/mensaje")
+def admin_enviar_mensaje(solicitud_id: int, req: MensajeDirectoRequest):
+    """Envía un mensaje directo al solicitante vía Telegram."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        import db as database
+        sol = database.obtener_solicitud(solicitud_id)
+        if not sol or not sol.get("user_id"):
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        enviado = _enviar_mensaje_telegram(sol["user_id"], req.mensaje)
+        if not enviado:
+            raise HTTPException(status_code=502, detail="No se pudo enviar el mensaje")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error enviando mensaje a solicitud {solicitud_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
 
 
 # ─── Endpoints admin de gestión de abogados ──────────────────────────────────

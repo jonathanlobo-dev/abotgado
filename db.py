@@ -1257,6 +1257,17 @@ def listar_abogados_admin(incluir_inactivos: bool = True) -> list[dict]:
 
 # ─── SOLICITUDES DE ABOGADO ──────────────────────────────────────────────────
 
+def _usuario_info(user_id: int) -> dict:
+    """Retorna nombre y username del usuario desde la tabla usuarios."""
+    with get_db() as con:
+        row = con.execute(
+            "SELECT nombre, username FROM usuarios WHERE user_id = ?", (user_id,)
+        ).fetchone()
+    if row:
+        return {"nombre": row[0] or "", "username": row[1] or ""}
+    return {"nombre": "", "username": ""}
+
+
 def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
                              inpreabogado: str, especialidad: list, telefono: str,
                              estado_geo: str, biografia: str = "",
@@ -1265,13 +1276,14 @@ def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
     """Crea una solicitud de verificación. Retorna el id o lanza ValueError."""
     metodos_pago = metodos_pago or []
     with get_db() as con:
-        # Validar: no solicitud pendiente del mismo user
+        # Bloquear si tiene solicitud activa (pendiente, en_revision, correccion_solicitada)
         existente = con.execute(
-            "SELECT id FROM solicitudes_abogado WHERE user_id = ? AND estado_solicitud = 'pendiente'",
+            "SELECT id FROM solicitudes_abogado WHERE user_id = ? "
+            "AND estado_solicitud IN ('pendiente','en_revision','correccion_solicitada')",
             (user_id,)
         ).fetchone()
         if existente:
-            raise ValueError("Ya tienes una solicitud pendiente")
+            raise ValueError("Ya tienes una solicitud activa")
         # Validar: inpreabogado no registrado
         registrado = con.execute(
             "SELECT id FROM abogados WHERE inpreabogado = ? AND activo = 1",
@@ -1291,6 +1303,20 @@ def crear_solicitud_abogado(user_id: int, nombre: str, cedula: str,
         return cur.lastrowid
 
 
+def _parsear_solicitud(d: dict) -> dict:
+    """Parsea campos JSON de una solicitud."""
+    try:
+        d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
+    except Exception:
+        d["metodos_pago"] = []
+    try:
+        esp = d.get("especialidad") or "[]"
+        d["especialidad"] = _json.loads(esp) if esp.startswith("[") else [esp]
+    except Exception:
+        d["especialidad"] = [d.get("especialidad", "")]
+    return d
+
+
 def listar_solicitudes(estado_solicitud: str = "pendiente",
                        limit: int = 50) -> list[dict]:
     """Lista solicitudes de abogados filtradas por estado."""
@@ -1301,15 +1327,7 @@ def listar_solicitudes(estado_solicitud: str = "pendiente",
             (estado_solicitud, limit)
         )
         cols = [d[0] for d in cur.description]
-        rows = []
-        for row in cur.fetchall():
-            d = dict(zip(cols, row))
-            try:
-                d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
-            except Exception:
-                d["metodos_pago"] = []
-            rows.append(d)
-        return rows
+        return [_parsear_solicitud(dict(zip(cols, row))) for row in cur.fetchall()]
 
 
 def obtener_solicitud(solicitud_id: int) -> dict | None:
@@ -1320,37 +1338,108 @@ def obtener_solicitud(solicitud_id: int) -> dict | None:
         row = cur.fetchone()
         if not row:
             return None
-        d = dict(zip(cols, row))
-        try:
-            d["metodos_pago"] = _json.loads(d.get("metodos_pago") or "[]")
-        except Exception:
-            d["metodos_pago"] = []
-        return d
+        return _parsear_solicitud(dict(zip(cols, row)))
 
 
 def estado_solicitud_usuario(user_id: int) -> dict:
-    """Estado de solicitud y rol del usuario para la TMA."""
+    """Estado de solicitud y rol del usuario para la TMA.
+    Retorna datos completos de la solicitud para permitir edición."""
     with get_db() as con:
         abogado = con.execute(
             "SELECT id FROM abogados WHERE user_id = ? AND activo = 1", (user_id,)
         ).fetchone()
         if abogado:
-            return {"es_abogado": True, "tiene_solicitud": False, "estado": None}
-        sol = con.execute(
-            "SELECT estado_solicitud FROM solicitudes_abogado "
-            "WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            return {"es_abogado": True, "tiene_solicitud": False, "estado": None, "solicitud": None}
+        row = con.execute(
+            "SELECT * FROM solicitudes_abogado WHERE user_id = ? ORDER BY id DESC LIMIT 1",
             (user_id,)
         ).fetchone()
-        if sol:
-            return {"es_abogado": False, "tiene_solicitud": True, "estado": sol[0]}
-        return {"es_abogado": False, "tiene_solicitud": False, "estado": None}
+        if row:
+            cols = [d[0] for d in con.execute(
+                "SELECT * FROM solicitudes_abogado LIMIT 0").description]
+            sol = _parsear_solicitud(dict(zip(cols, row)))
+            return {
+                "es_abogado": False,
+                "tiene_solicitud": True,
+                "estado": sol["estado_solicitud"],
+                "solicitud": sol,
+            }
+        return {"es_abogado": False, "tiene_solicitud": False, "estado": None, "solicitud": None}
+
+
+def marcar_en_revision(solicitud_id: int, admin_id: int) -> dict | None:
+    """Marca una solicitud como en revisión. Retorna {user_id, nombre}."""
+    with get_db() as con:
+        sol = con.execute(
+            "SELECT user_id, nombre FROM solicitudes_abogado "
+            "WHERE id = ? AND estado_solicitud = 'pendiente'",
+            (solicitud_id,)
+        ).fetchone()
+        if not sol:
+            return None
+        con.execute(
+            "UPDATE solicitudes_abogado SET estado_solicitud = 'en_revision', "
+            "revisado_por = ?, revisado_en = CURRENT_TIMESTAMP WHERE id = ?",
+            (admin_id, solicitud_id)
+        )
+        return {"user_id": sol[0], "nombre": sol[1]}
+
+
+def actualizar_solicitud(solicitud_id: int, user_id: int, campos: dict) -> bool:
+    """Permite al solicitante editar su solicitud si está en pendiente o correccion_solicitada."""
+    permitidos = {"nombre", "cedula", "inpreabogado", "especialidad", "telefono",
+                  "estado_geo", "biografia", "modalidad", "metodos_pago"}
+    campos = {k: v for k, v in campos.items() if k in permitidos}
+    if not campos:
+        return False
+    # Serializar campos JSON
+    if "metodos_pago" in campos and isinstance(campos["metodos_pago"], list):
+        campos["metodos_pago"] = _json.dumps(campos["metodos_pago"], ensure_ascii=False)
+    if "especialidad" in campos and isinstance(campos["especialidad"], list):
+        campos["especialidad"] = _json.dumps(campos["especialidad"], ensure_ascii=False)
+    # Resetear a pendiente al editar (recomienza el ciclo de revisión)
+    campos["estado_solicitud"] = "pendiente"
+    campos["motivo_rechazo"] = ""
+    with get_db() as con:
+        sol = con.execute(
+            "SELECT id FROM solicitudes_abogado WHERE id = ? AND user_id = ? "
+            "AND estado_solicitud IN ('pendiente','correccion_solicitada')",
+            (solicitud_id, user_id)
+        ).fetchone()
+        if not sol:
+            return False
+        sets = ", ".join(f"{k} = ?" for k in campos)
+        con.execute(
+            f"UPDATE solicitudes_abogado SET {sets} WHERE id = ?",
+            (*campos.values(), solicitud_id)
+        )
+        return True
+
+
+def pedir_correccion(solicitud_id: int, admin_id: int, mensaje: str) -> dict | None:
+    """Solicita correcciones al abogado. Retorna {user_id, nombre}."""
+    with get_db() as con:
+        sol = con.execute(
+            "SELECT user_id, nombre FROM solicitudes_abogado "
+            "WHERE id = ? AND estado_solicitud IN ('pendiente','en_revision')",
+            (solicitud_id,)
+        ).fetchone()
+        if not sol:
+            return None
+        con.execute(
+            "UPDATE solicitudes_abogado SET estado_solicitud = 'correccion_solicitada', "
+            "motivo_rechazo = ?, revisado_por = ?, revisado_en = CURRENT_TIMESTAMP WHERE id = ?",
+            (mensaje, admin_id, solicitud_id)
+        )
+        return {"user_id": sol[0], "nombre": sol[1]}
 
 
 def aprobar_solicitud(solicitud_id: int, admin_id: int) -> dict | None:
     """Aprueba solicitud: la mueve a tabla abogados. Retorna dict con user_id."""
     with get_db() as con:
         sol = con.execute(
-            "SELECT * FROM solicitudes_abogado WHERE id = ? AND estado_solicitud = 'pendiente'",
+            "SELECT * FROM solicitudes_abogado WHERE id = ? "
+            "AND estado_solicitud IN ('pendiente','en_revision')",
             (solicitud_id,)
         ).fetchone()
         if not sol:
@@ -1385,7 +1474,8 @@ def rechazar_solicitud(solicitud_id: int, admin_id: int,
     """Rechaza una solicitud. Retorna dict con user_id para notificar."""
     with get_db() as con:
         sol = con.execute(
-            "SELECT user_id FROM solicitudes_abogado WHERE id = ? AND estado_solicitud = 'pendiente'",
+            "SELECT user_id FROM solicitudes_abogado WHERE id = ? "
+            "AND estado_solicitud IN ('pendiente','en_revision','correccion_solicitada')",
             (solicitud_id,)
         ).fetchone()
         if not sol:

@@ -1163,8 +1163,12 @@
     <button class="dir-close" id="sol-close" title="Cerrar">✕</button>
   </div>
   <div class="abog-form" id="sol-form">
-    <div id="sol-banner" class="abog-sol-banner">
+    <div id="sol-banner" class="abog-sol-banner" style="display:none">
       📋 Tu solicitud está en revisión. Te notificaremos cuando sea procesada.
+    </div>
+    <div id="sol-corr-banner" style="display:none;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.35);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-bottom:4px">
+      ⚠️ El administrador solicitó una corrección:
+      <div id="sol-corr-msg" style="margin-top:4px;font-weight:600"></div>
     </div>
     <div class="abog-group">
       <label class="abog-label">Nombre completo <span class="req">*</span></label>
@@ -1327,9 +1331,11 @@
   </div>
   <div class="abog-tab-pane active" id="adm-tab-solicitudes">
     <div class="tk-filters" style="padding:8px 12px">
-      <button class="tk-filter active" data-estado="pendiente">Pendientes</button>
-      <button class="tk-filter" data-estado="aprobada">Aprobadas</button>
-      <button class="tk-filter" data-estado="rechazada">Rechazadas</button>
+      <button class="tk-filter active" data-estado="pendiente">⏳ Pendientes</button>
+      <button class="tk-filter" data-estado="en_revision">🔄 En revisión</button>
+      <button class="tk-filter" data-estado="correccion_solicitada">⚠️ Corrección</button>
+      <button class="tk-filter" data-estado="aprobada">✅ Aprobadas</button>
+      <button class="tk-filter" data-estado="rechazada">❌ Rechazadas</button>
     </div>
     <div class="tk-list" id="adm-sol-list"><div class="sb-loading">Cargando…</div></div>
   </div>
@@ -2724,7 +2730,9 @@ function renderDirectorio(lista) {
 // ROL ABOGADO — detección al cargar
 // ═══════════════════════════════════════════════════════════════════
 window._esAbogado       = false;
-window._solicitudEstado = null;  // 'pendiente' | 'aprobada' | 'rechazada' | null
+window._solicitudEstado = null;  // 'pendiente' | 'en_revision' | 'correccion_solicitada' | 'aprobada' | 'rechazada' | null
+window._solicitudData   = null;  // objeto completo para pre-rellenar el formulario
+window._solicitudId     = null;  // id de la solicitud activa
 
 async function _initRolAbogado() {
   if (window._tgUserId === 'tma_anonimo' || !window._tgInitData) return;
@@ -2734,39 +2742,47 @@ async function _initRolAbogado() {
     const data = await res.json();
     window._esAbogado       = data.es_abogado || false;
     window._solicitudEstado = data.estado || null;
+    window._solicitudData   = data.solicitud || null;
+    window._solicitudId     = data.solicitud ? data.solicitud.id : null;
 
     const btnSol = document.getElementById('sb-abog-sol-btn');
     const btnEsc = document.getElementById('sb-abog-esc-btn');
     const btnAdm = document.getElementById('sb-abog-adm-btn');
-
-    const wrap = document.getElementById('dir-registro-wrap');
+    const wrap   = document.getElementById('dir-registro-wrap');
+    const dirBtn = document.getElementById('dir-btn-registro');
 
     if (window._esAbogado) {
       btnEsc.style.display = '';
-      // Ya es abogado → no mostrar botón de registro en el directorio
     } else if (data.tiene_solicitud) {
       btnSol.style.display = '';
-      btnSol.textContent   = '📋 Solicitud en revisión';
-      btnSol.disabled      = true;
-      btnSol.style.opacity = '0.7';
-      btnSol.style.cursor  = 'default';
-      // Solicitud pendiente → mostrar botón deshabilitado en directorio
-      if (wrap) {
-        wrap.style.display = '';
-        const b = wrap.querySelector('button');
-        b.textContent = '📋 Solicitud en revisión';
-        b.disabled = true;
-        b.style.opacity = '0.6';
-        b.style.cursor  = 'default';
+      const estado = data.estado;
+      if (estado === 'en_revision') {
+        btnSol.textContent = '🔄 En revisión';
+        btnSol.disabled = true; btnSol.style.opacity = '0.7'; btnSol.style.cursor = 'default';
+        if (wrap) {
+          wrap.style.display = '';
+          dirBtn.textContent = '🔄 En revisión'; dirBtn.disabled = true;
+          dirBtn.style.opacity = '0.6'; dirBtn.style.cursor = 'default';
+        }
+      } else if (estado === 'correccion_solicitada') {
+        btnSol.textContent = '⚠️ Corrección requerida';
+        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '⚠️ Corrección requerida'; }
+      } else if (estado === 'pendiente') {
+        btnSol.textContent = '✏️ Editar solicitud';
+        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '✏️ Editar solicitud'; }
+      } else if (estado === 'rechazada') {
+        // Rechazada: permitir nueva solicitud (formulario limpio)
+        btnSol.textContent = '📋 Nueva solicitud';
+        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '📋 Nueva solicitud'; }
+      } else {
+        btnSol.textContent = '📋 Solicitud enviada';
+        btnSol.disabled = true; btnSol.style.opacity = '0.7';
       }
     } else {
       btnSol.style.display = '';
-      // Sin solicitud → mostrar botón de registro en directorio
       if (wrap) wrap.style.display = '';
     }
 
-    // Admin siempre ve el botón de gestión si ya es admin (cargarStats lo muestra)
-    // Lo mostramos aquí también si ya tenemos certeza
     const isAdmin = window._tgInitData && (await (async () => {
       try {
         const r = await fetch(`${API}/stats/admin?init_data=${encodeURIComponent(window._tgInitData)}`);
@@ -2785,10 +2801,82 @@ async function _initRolAbogado() {
 const solPanel   = document.getElementById('sol-panel');
 const solOverlay = document.getElementById('sol-overlay');
 
+function _limpiarFormSolicitud() {
+  ['sol-nombre','sol-cedula','sol-inpre','sol-telefono','sol-bio'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.querySelectorAll('#sol-especialidades input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#sol-metodos input').forEach(cb => cb.checked = false);
+  const presencial = document.querySelector('input[name="sol-modalidad"][value="presencial"]');
+  if (presencial) presencial.checked = true;
+  const sel = document.getElementById('sol-estado'); if (sel) sel.value = '';
+}
+
+function _preRellenarFormSolicitud(sol) {
+  if (!sol) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  set('sol-nombre', sol.nombre);
+  set('sol-cedula', sol.cedula);
+  set('sol-inpre', sol.inpreabogado);
+  set('sol-telefono', sol.telefono);
+  set('sol-bio', sol.biografia || '');
+  const sel = document.getElementById('sol-estado');
+  if (sel && sol.estado_geo) sel.value = sol.estado_geo;
+  const modal = sol.modalidad || 'presencial';
+  const r = document.querySelector(`input[name="sol-modalidad"][value="${modal}"]`);
+  if (r) r.checked = true;
+  try {
+    const esps = typeof sol.especialidad === 'string'
+      ? (sol.especialidad.startsWith('[') ? JSON.parse(sol.especialidad) : [sol.especialidad])
+      : (sol.especialidad || []);
+    document.querySelectorAll('#sol-especialidades input').forEach(cb => { cb.checked = esps.includes(cb.value); });
+  } catch {}
+  try {
+    const metodos = typeof sol.metodos_pago === 'string' ? JSON.parse(sol.metodos_pago) : (sol.metodos_pago || []);
+    document.querySelectorAll('#sol-metodos input').forEach(cb => { cb.checked = metodos.includes(cb.value); });
+  } catch {}
+}
+
 function abrirSolicitud() {
-  // Si tiene solicitud pendiente, mostrar banner sin form
-  const banner = document.getElementById('sol-banner');
-  banner.style.display = window._solicitudEstado === 'pendiente' ? 'block' : 'none';
+  const banner   = document.getElementById('sol-banner');
+  const corrBnr  = document.getElementById('sol-corr-banner');
+  const corrMsg  = document.getElementById('sol-corr-msg');
+  const btnEnviar = document.getElementById('sol-enviar');
+  const formFields = document.getElementById('sol-form');
+  const estado   = window._solicitudEstado;
+
+  // Reset banners
+  banner.style.display  = 'none';
+  corrBnr.style.display = 'none';
+  btnEnviar.style.display = '';
+
+  // Quitar clases de error previas
+  document.querySelectorAll('#sol-form .err').forEach(el => el.classList.remove('err'));
+  document.querySelectorAll('#sol-form .abog-err.show').forEach(el => el.classList.remove('show'));
+
+  if (estado === 'en_revision') {
+    banner.textContent   = '🔄 Tu solicitud está siendo revisada por el equipo. No puedes editarla en este momento.';
+    banner.style.display = '';
+    btnEnviar.style.display = 'none';
+    _preRellenarFormSolicitud(window._solicitudData);
+  } else if (estado === 'correccion_solicitada') {
+    corrBnr.style.display = '';
+    corrMsg.textContent  = window._solicitudData?.motivo_rechazo || '(sin mensaje)';
+    btnEnviar.textContent = 'Reenviar solicitud';
+    _preRellenarFormSolicitud(window._solicitudData);
+  } else if (estado === 'pendiente') {
+    btnEnviar.textContent = 'Guardar cambios';
+    _preRellenarFormSolicitud(window._solicitudData);
+  } else if (estado === 'rechazada') {
+    banner.textContent   = '❌ Tu solicitud anterior fue rechazada. Puedes enviar una nueva.';
+    banner.style.display = '';
+    btnEnviar.textContent = 'Enviar solicitud';
+    _limpiarFormSolicitud();
+  } else {
+    btnEnviar.textContent = 'Enviar solicitud';
+    _limpiarFormSolicitud();
+  }
+
   solPanel.classList.add('open');
   solOverlay.classList.add('open');
 }
@@ -2845,26 +2933,41 @@ document.getElementById('sol-enviar').addEventListener('click', async () => {
   const biografia   = document.getElementById('sol-bio').value.trim();
 
   const btn = document.getElementById('sol-enviar');
+  const originalText = btn.textContent;
   btn.disabled = true; btn.textContent = 'Enviando…';
+
+  const payload = { init_data: window._tgInitData || '', nombre, cedula, inpreabogado: inpre, especialidades, telefono, estado_geo, biografia, modalidad, metodos_pago };
+  const esEdicion = (window._solicitudEstado === 'pendiente' || window._solicitudEstado === 'correccion_solicitada') && window._solicitudId;
+
   try {
-    const res = await fetch(`${API}/abogados/solicitud`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ init_data: window._tgInitData || '', nombre, cedula, inpreabogado: inpre, especialidades, telefono, estado_geo, biografia, modalidad, metodos_pago }),
-    });
+    let res;
+    if (esEdicion) {
+      res = await fetch(`${API}/abogados/solicitud/${window._solicitudId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      res = await fetch(`${API}/abogados/solicitud`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
     cerrarSolicitud();
-    toast('¡Solicitud enviada! Te notificaremos pronto.', 'ok');
+    toast(esEdicion ? '¡Solicitud actualizada!' : '¡Solicitud enviada! Te notificaremos pronto.', 'ok');
     window._solicitudEstado = 'pendiente';
+    if (!esEdicion) window._solicitudId = data.solicitud_id || null;
     // Actualizar botón sidebar
     const btn2 = document.getElementById('sb-abog-sol-btn');
-    btn2.textContent = '📋 Solicitud en revisión';
-    btn2.disabled = true; btn2.style.opacity = '0.7'; btn2.style.cursor = 'default';
+    btn2.textContent = '✏️ Editar solicitud';
+    btn2.disabled = false; btn2.style.opacity = ''; btn2.style.cursor = '';
+    const dirBtn = document.getElementById('dir-btn-registro');
+    if (dirBtn) { dirBtn.textContent = '✏️ Editar solicitud'; dirBtn.disabled = false; }
   } catch (e) {
     toast(`Error: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false; btn.textContent = 'Enviar solicitud';
+    btn.disabled = false; btn.textContent = originalText;
   }
 });
 
@@ -3052,7 +3155,7 @@ async function cargarAdminSolicitudes() {
         </div>
         <div class="sol-card-meta">
           <span>INPRE ${_esc(sol.inpreabogado)}</span>
-          <span>${_esc(sol.especialidad)}</span>
+          <span>${_esc(Array.isArray(sol.especialidad) ? sol.especialidad.join(', ') : (sol.especialidad||''))}</span>
           <span>${_esc(sol.estado_geo || '')}</span>
           <span>📅 ${fecha}</span>
         </div>`;
@@ -3065,21 +3168,35 @@ async function cargarAdminSolicitudes() {
 }
 
 function abrirDetalleSolicitud(sol) {
-  const overlay = document.getElementById('sol-det-overlay');
-  const panel   = document.getElementById('sol-det-panel');
-  const esPendiente = sol.estado_solicitud === 'pendiente';
+  const overlay  = document.getElementById('sol-det-overlay');
+  const panel    = document.getElementById('sol-det-panel');
+  const estado   = sol.estado_solicitud;
+  const esActiva = estado === 'pendiente' || estado === 'en_revision' || estado === 'correccion_solicitada';
+
+  const badgeColor = { pendiente:'#eab308', en_revision:'#2563eb', correccion_solicitada:'#f97316', aprobada:'#22c55e', rechazada:'#ef4444' };
+  const badgeLbl   = { pendiente:'Pendiente', en_revision:'En revisión', correccion_solicitada:'Corrección', aprobada:'Aprobada', rechazada:'Rechazada' };
+
+  const espsArr = Array.isArray(sol.especialidad) ? sol.especialidad
+    : (typeof sol.especialidad === 'string' && sol.especialidad.startsWith('['))
+      ? (() => { try { return JSON.parse(sol.especialidad); } catch { return [sol.especialidad]; } })()
+      : [sol.especialidad || '—'];
+
   panel.innerHTML = `
-    <h3 style="margin-bottom:10px">📋 ${_esc(sol.nombre)}</h3>
-    <div style="font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-      <div>INPRE: <b>${_esc(sol.inpreabogado)}</b> · Cédula: <b>${_esc(sol.cedula)}</b></div>
-      <div>Especialidad: <b>${_esc(sol.especialidad)}</b> · ${_esc(sol.estado_geo || '')}</div>
-      <div>Teléfono: ${_esc(sol.telefono)}</div>
-      <div>Modalidad: ${_esc(sol.modalidad || '—')}</div>
-      ${sol.biografia ? `<div>Bio: ${_esc(sol.biografia)}</div>` : ''}
-      ${sol.motivo_rechazo ? `<div style="color:#ef4444">Motivo rechazo: ${_esc(sol.motivo_rechazo)}</div>` : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <h3 style="font-size:15px">📋 ${_esc(sol.nombre)}</h3>
+      <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:${badgeColor[estado]||'#888'}22;color:${badgeColor[estado]||'#888'}">${badgeLbl[estado]||estado}</span>
     </div>
-    ${esPendiente ? `
-      <div style="margin-bottom:10px">
+    <div style="font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+      <div>👤 user_id: <b>${_esc(String(sol.user_id||'—'))}</b></div>
+      <div>🪪 INPRE: <b>${_esc(sol.inpreabogado)}</b> · Cédula: <b>${_esc(sol.cedula)}</b></div>
+      <div>⚖️ ${espsArr.map(_esc).join(', ')}</div>
+      <div>📍 ${_esc(sol.estado_geo||'')} · ${_esc(sol.modalidad||'—')}</div>
+      <div>📱 ${_esc(sol.telefono)}</div>
+      ${sol.biografia ? `<div>📝 ${_esc(sol.biografia)}</div>` : ''}
+      ${sol.motivo_rechazo ? `<div style="color:#f97316">💬 Mensaje admin: ${_esc(sol.motivo_rechazo)}</div>` : ''}
+    </div>
+    ${esActiva ? `
+      <div style="margin-bottom:8px">
         <label style="font-size:11px;font-weight:600;color:var(--text2)">Membresía al aprobar</label>
         <select id="sol-mem-tipo" style="width:100%;margin-top:4px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text)">
           <option value="inactiva">Inactiva</option>
@@ -3087,9 +3204,19 @@ function abrirDetalleSolicitud(sol) {
           <option value="activa">💎 Activa</option>
         </select>
       </div>
+      <div id="sol-det-extra" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
+        <button id="sol-det-msg-btn" style="padding:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;text-align:left">✉️ Enviar mensaje al solicitante</button>
+        <textarea id="sol-det-msg-ta" placeholder="Mensaje para el solicitante…" maxlength="500" rows="2"
+          style="display:none;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);padding:8px;font-size:13px;resize:none"></textarea>
+        <button id="sol-det-msg-enviar" style="display:none;padding:7px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Enviar mensaje</button>
+        <button id="sol-det-corr-btn" style="padding:8px;background:rgba(249,115,22,.1);color:#f97316;border:1px solid rgba(249,115,22,.3);border-radius:9px;font-size:13px;cursor:pointer;text-align:left">⚠️ Solicitar corrección</button>
+        <textarea id="sol-det-corr-ta" placeholder="Describe qué debe corregir el solicitante…" maxlength="300" rows="2"
+          style="display:none;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);padding:8px;font-size:13px;resize:none"></textarea>
+        <button id="sol-det-corr-enviar" style="display:none;padding:7px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Enviar corrección</button>
+      </div>
       <textarea id="sol-rechazo-motivo" placeholder="Motivo del rechazo (opcional)…" maxlength="300"
-        style="width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);padding:8px;font-size:13px;resize:none;display:none" rows="3"></textarea>
-      <div style="display:flex;gap:8px;margin-top:10px">
+        style="display:none;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);padding:8px;font-size:13px;resize:none" rows="2"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
         <button id="sol-det-cerrar" class="btn-ghost" style="flex:1;padding:9px">Cerrar</button>
         <button id="sol-det-rechazar" style="flex:1;padding:9px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:9px;font-weight:600;cursor:pointer">Rechazar</button>
         <button id="sol-det-aprobar" style="flex:1;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:600;cursor:pointer">Aprobar</button>
@@ -3099,8 +3226,72 @@ function abrirDetalleSolicitud(sol) {
   overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove('open'); };
   panel.querySelector('#sol-det-cerrar').addEventListener('click', () => overlay.classList.remove('open'));
 
-  if (!esPendiente) return;
+  // Auto-marcar en revisión si estaba pendiente
+  if (estado === 'pendiente') {
+    fetch(`${API}/admin/solicitudes/${sol.id}/en-revision`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ init_data: window._tgInitData || '' }),
+    }).catch(() => {});
+  }
 
+  if (!esActiva) return;
+
+  // ── Mensaje directo ──
+  panel.querySelector('#sol-det-msg-btn').addEventListener('click', () => {
+    const ta  = panel.querySelector('#sol-det-msg-ta');
+    const btn = panel.querySelector('#sol-det-msg-enviar');
+    const visible = ta.style.display !== 'none';
+    ta.style.display  = visible ? 'none' : 'block';
+    btn.style.display = visible ? 'none' : 'block';
+    if (!visible) ta.focus();
+  });
+  panel.querySelector('#sol-det-msg-enviar').addEventListener('click', async () => {
+    const mensaje = panel.querySelector('#sol-det-msg-ta').value.trim();
+    if (!mensaje) return;
+    const btn = panel.querySelector('#sol-det-msg-enviar');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    try {
+      const res = await fetch(`${API}/admin/solicitudes/${sol.id}/mensaje`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '', mensaje }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toast('Mensaje enviado', 'ok');
+      panel.querySelector('#sol-det-msg-ta').value = '';
+      panel.querySelector('#sol-det-msg-ta').style.display = 'none';
+      btn.style.display = 'none';
+    } catch { toast('Error al enviar mensaje', 'err'); }
+    finally { btn.disabled = false; btn.textContent = 'Enviar mensaje'; }
+  });
+
+  // ── Solicitar corrección ──
+  panel.querySelector('#sol-det-corr-btn').addEventListener('click', () => {
+    const ta  = panel.querySelector('#sol-det-corr-ta');
+    const btn = panel.querySelector('#sol-det-corr-enviar');
+    const visible = ta.style.display !== 'none';
+    ta.style.display  = visible ? 'none' : 'block';
+    btn.style.display = visible ? 'none' : 'block';
+    if (!visible) ta.focus();
+  });
+  panel.querySelector('#sol-det-corr-enviar').addEventListener('click', async () => {
+    const mensaje = panel.querySelector('#sol-det-corr-ta').value.trim();
+    if (!mensaje) { toast('Escribe qué debe corregir', 'err'); return; }
+    const btn = panel.querySelector('#sol-det-corr-enviar');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    try {
+      const res = await fetch(`${API}/admin/solicitudes/${sol.id}/pedir-correccion`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ init_data: window._tgInitData || '', mensaje }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      overlay.classList.remove('open');
+      toast('Corrección solicitada', 'ok');
+      cargarAdminSolicitudes();
+    } catch { toast('Error', 'err'); }
+    finally { btn.disabled = false; btn.textContent = 'Enviar corrección'; }
+  });
+
+  // ── Rechazar ──
   let rechazando = false;
   panel.querySelector('#sol-det-rechazar').addEventListener('click', () => {
     rechazando = !rechazando;
@@ -3109,6 +3300,7 @@ function abrirDetalleSolicitud(sol) {
     if (rechazando) ta.focus();
   });
 
+  // ── Aprobar ──
   panel.querySelector('#sol-det-aprobar').addEventListener('click', async () => {
     if (rechazando) {
       const motivo = panel.querySelector('#sol-rechazo-motivo').value.trim();
@@ -3123,7 +3315,7 @@ function abrirDetalleSolicitud(sol) {
         overlay.classList.remove('open');
         toast('Solicitud rechazada', 'ok');
         cargarAdminSolicitudes();
-      } catch (e) { btnR.disabled = false; btnR.textContent = 'Rechazar'; toast('Error', 'err'); }
+      } catch { btnR.disabled = false; btnR.textContent = 'Rechazar'; toast('Error', 'err'); }
       return;
     }
     const membresia = panel.querySelector('#sol-mem-tipo').value;
@@ -3138,7 +3330,7 @@ function abrirDetalleSolicitud(sol) {
       overlay.classList.remove('open');
       toast('¡Solicitud aprobada!', 'ok');
       cargarAdminSolicitudes();
-    } catch (e) { btnA.disabled = false; btnA.textContent = 'Aprobar'; toast('Error', 'err'); }
+    } catch { btnA.disabled = false; btnA.textContent = 'Aprobar'; toast('Error', 'err'); }
   });
 }
 
