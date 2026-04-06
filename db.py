@@ -1351,7 +1351,8 @@ def estado_solicitud_usuario(user_id: int) -> dict:
         if abogado:
             return {"es_abogado": True, "tiene_solicitud": False, "estado": None, "solicitud": None}
         row = con.execute(
-            "SELECT * FROM solicitudes_abogado WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM solicitudes_abogado WHERE user_id = ? "
+            "AND estado_solicitud != 'cancelada' ORDER BY id DESC LIMIT 1",
             (user_id,)
         ).fetchone()
         if row:
