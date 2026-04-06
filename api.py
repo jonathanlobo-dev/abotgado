@@ -366,7 +366,7 @@ def _validar_init_data(init_data: str, max_age_seconds: int = 604800) -> dict | 
     """
     if not init_data:
         return None
-    token = getattr(config, "TELEGRAM_TOKEN", "") or ""
+    token = (getattr(config, "TELEGRAM_TOKEN", "") or "").strip()
     if not token:
         return None
     try:
@@ -1000,11 +1000,18 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
 
 
 @app.get("/abogado/estado-solicitud")
-def estado_solicitud(init_data: str = ""):
+def estado_solicitud(init_data: str = "", user_id: str = ""):
     """Devuelve el estado de solicitud/membresía del usuario para decidir qué mostrar en la TMA.
     Incluye is_admin para que el frontend no necesite una segunda llamada.
+    Acepta init_data (firmado, preferido) o user_id como fallback.
     """
     uid = _user_id_from_init_data(init_data)
+    if uid is None and user_id:
+        # Fallback: user_id sin firma (solo para estado de solicitud, no acciones)
+        try:
+            uid = int(user_id)
+        except (ValueError, TypeError):
+            uid = None
     if uid is None:
         return {"es_abogado": False, "tiene_solicitud": False, "estado": None, "is_admin": False}
     try:
@@ -1026,9 +1033,14 @@ def check_is_admin(user_id: str = ""):
 
 
 @app.delete("/abogados/solicitud")
-def cancelar_solicitud_endpoint(init_data: str = ""):
+def cancelar_solicitud_endpoint(init_data: str = "", user_id: str = ""):
     """El usuario cancela su propia solicitud pendiente."""
     uid = _user_id_from_init_data(init_data)
+    if uid is None and user_id:
+        try:
+            uid = int(user_id)
+        except (ValueError, TypeError):
+            uid = None
     if uid is None:
         raise HTTPException(status_code=403, detail="No autorizado")
     try:

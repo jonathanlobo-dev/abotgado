@@ -2757,9 +2757,16 @@ window._solicitudData   = null;  // objeto completo para pre-rellenar el formula
 window._solicitudId     = null;  // id de la solicitud activa
 
 async function _initRolAbogado() {
-  if (window._tgUserId === 'tma_anonimo' || !window._tgInitData) return;
+  if (window._tgUserId === 'tma_anonimo') return;
   try {
-    const res = await fetch(`${API}/abogado/estado-solicitud?init_data=${encodeURIComponent(window._tgInitData)}`);
+    // Construir URL: prefiere initData firmado, fallback a user_id
+    let estadoUrl = `${API}/abogado/estado-solicitud`;
+    if (window._tgInitData) {
+      estadoUrl += `?init_data=${encodeURIComponent(window._tgInitData)}`;
+    } else {
+      estadoUrl += `?user_id=${encodeURIComponent(window._tgUserId)}`;
+    }
+    const res = await fetch(estadoUrl);
     if (!res.ok) return;
     const data = await res.json();
     window._esAbogado       = data.es_abogado || false;
@@ -3151,10 +3158,10 @@ document.getElementById('esc-baja').addEventListener('click', async () => {
 document.getElementById('sol-cancelar-solicitud').addEventListener('click', async () => {
   if (!confirm('¿Retirar tu solicitud? Podrás enviar una nueva después.')) return;
   try {
-    const res = await fetch(
-      `${API}/abogados/solicitud?init_data=${encodeURIComponent(window._tgInitData || '')}`,
-      { method: 'DELETE' }
-    );
+    const authParam = window._tgInitData
+      ? `init_data=${encodeURIComponent(window._tgInitData)}`
+      : `user_id=${encodeURIComponent(window._tgUserId)}`;
+    const res = await fetch(`${API}/abogados/solicitud?${authParam}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     toast('Solicitud retirada', 'ok');
     window._solicitudEstado = null;
