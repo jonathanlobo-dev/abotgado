@@ -1688,11 +1688,11 @@
       7,
       13,
       21,
+      22,
       27,
       33,
       34,
       38,
-      39,
       51
     ]
   },
@@ -2928,7 +2928,25 @@
       "quitar al niño",
       "quitar a mi hijo",
       "no pago la pension",
-      "deja ver"
+      "deja ver",
+      "no es su hijo",
+      "no es el padre",
+      "paternidad falsa",
+      "descubri que no es mi hijo",
+      "prueba de adn",
+      "test de paternidad",
+      "impugnacion de paternidad",
+      "negar paternidad",
+      "desconocer paternidad",
+      "reconocer hijo",
+      "reconocimiento de hijo",
+      "filiacion",
+      "padre biologico",
+      "devolver manutension",
+      "devolver pension alimentaria",
+      "manutencion sin ser el padre",
+      "pague manutencion sin ser padre",
+      "extincion de manutencion"
     ],
     "ley": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
     "articulos": [
@@ -2938,7 +2956,11 @@
       360,
       385,
       386,
-      387
+      387,
+      365,
+      366,
+      367,
+      383
     ]
   },
   "divorcio": {
