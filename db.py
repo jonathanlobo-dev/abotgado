@@ -601,6 +601,16 @@ def regalar_documento(user_id: int, cantidad: int = 1):
                    (cantidad, user_id))
 
 
+def buscar_user_id_por_username(username: str) -> int | None:
+    """Busca el user_id por username (sin @). Retorna None si no existe."""
+    username = username.lstrip("@").lower()
+    with get_db() as con:
+        row = con.execute(
+            "SELECT user_id FROM usuarios WHERE LOWER(username) = ?", (username,)
+        ).fetchone()
+        return row[0] if row else None
+
+
 def _resetear_docs_mes(user_id: int):
     """Resetea contador mensual si cambió el mes."""
     mes_actual = datetime.now().strftime("%Y-%m")

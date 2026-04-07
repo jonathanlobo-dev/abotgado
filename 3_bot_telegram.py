@@ -915,14 +915,22 @@ async def cmd_regalar_doc(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
     if not context.args:
-        await update.message.reply_text("Uso: /regalar_doc <user_id> [cantidad]")
+        await update.message.reply_text("Uso: /regalar_doc <user_id o @username> [cantidad]")
         return
     try:
-        target_id = int(context.args[0])
-        cantidad  = int(context.args[1]) if len(context.args) > 1 else 1
+        cantidad = int(context.args[1]) if len(context.args) > 1 else 1
     except ValueError:
-        await update.message.reply_text("user_id y cantidad deben ser numeros.")
+        await update.message.reply_text("La cantidad debe ser un número.")
         return
+
+    destino = context.args[0]
+    if destino.startswith("@") or not destino.lstrip("-").isdigit():
+        target_id = db.buscar_user_id_por_username(destino)
+        if not target_id:
+            await update.message.reply_text(f"No encontré al usuario '{destino}'. Debe haber usado el bot al menos una vez.")
+            return
+    else:
+        target_id = int(destino)
 
     db.regalar_documento(target_id, cantidad)
     await update.message.reply_text(f"Regalado {cantidad} documento(s) a {target_id}")
