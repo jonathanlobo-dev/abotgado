@@ -743,10 +743,9 @@ async def cmd_borrar_guardados(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def cmd_referir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    bot_username = (await context.bot.get_me()).username
     refs = db.obtener_referidos_count(user_id)
 
-    link = f"https://t.me/{bot_username}?start=ref_{user_id}"
+    link = f"https://t.me/{config.BOT_USERNAME}?start=ref_{user_id}"
 
     await enviar_respuesta(
         update.message,
@@ -1953,9 +1952,8 @@ async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Formatear para enviar
     respuesta_formateada = busqueda.formatear_respuesta(respuesta)
     # Agregar crédito al final
-    bot_username = (await context.bot.get_me()).username
-    ref_link = f"https://t.me/{bot_username}?start=ref_{user_id}"
-    respuesta_formateada += f'\n\n<i>Consultado via <a href="{ref_link}">@{bot_username}</a></i>'
+    ref_link = f"https://t.me/{config.BOT_USERNAME}?start=ref_{user_id}"
+    respuesta_formateada += f'\n\n<i>Consultado via <a href="{ref_link}">@{config.BOT_USERNAME}</a></i>'
 
     # ID único para este resultado
     result_id = hashlib.md5(f"{user_id}_{texto}".encode()).hexdigest()

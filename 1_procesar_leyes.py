@@ -115,7 +115,9 @@ NOMBRES_CORRECTOS = {
     "LEY PARA LA PROMOCIÓN Y USO DEL LENGUAJE DE GÉNERO.pdf":
         "Ley para la Promoción y Uso del Lenguaje de Género",
 
-    # ── Código Penal y Delincuencia Organizada ───────────────────────────────
+    # ── Código Penal, Delincuencia Organizada y Extorsión ───────────────────────
+    "ley-contra-el-secuestro-y-la-extorsion.pdf":
+        "Ley Contra el Secuestro y la Extorsión",
     "codigo_penal.pdf":                             "Código Penal",
     "reforma-del-codigo-penal.pdf":                 "Código Penal",
     "ley contra la delincuencia organizada y financiacion del terrorismo.pdf":

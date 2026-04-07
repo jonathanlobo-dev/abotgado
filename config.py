@@ -67,6 +67,9 @@ MAX_HISTORIAL = 10
 # ─── AUTO TESTERS ─────────────────────────────────────────────────────────────
 MAX_AUTO_TESTERS = 50  # primeros N usuarios reciben 14 días de Pionero gratis
 
+# ─── BOT ─────────────────────────────────────────────────────────────────────
+BOT_USERNAME = os.getenv("BOT_USERNAME", "abotgadoBOT")
+
 # ─── DEV MODE ─────────────────────────────────────────────────────────────────
 # Con DEV_MODE=1 se salta la validación HMAC de initData (desarrollo local)
 DEV_MODE = os.getenv("DEV_MODE", "0") == "1"

@@ -1402,6 +1402,7 @@ LEY_A_RAMA: dict[str, str] = {
     "Ley de Registro de Antecedentes Penales": "penal",
     "Ley Constitucional contra el Odio": "penal",
     "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)": "penal",
+    "Ley Contra el Secuestro y la Extorsión": "penal",
     # Civil / Mercantil (tratadas como civil para filtros)
     "Código Civil venezolano": "civil",
     "Código de Procedimiento Civil": "civil",
