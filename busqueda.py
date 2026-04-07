@@ -320,6 +320,7 @@ REGLA DE RELEVANCIA:
 
 - NUNCA inventes números de artículos. NUNCA cites leyes que no estén en la lista.
 - Si un artículo NO está en la lista de contexto que te di, NO LO MENCIONES. NUNCA escribas "No disponible en la lista", "no se encuentra", "no está disponible" ni nada similar. TAMPOCO sugieras artículos alternativos que no estén en la lista. Si no tienes el artículo, simplemente cita otro que sí esté en la lista. Si ninguno aplica, omite la sección 📖 completamente.
+- REGLA ANTI-CONTAMINACIÓN CRUZADA: Si en la conversación el usuario mencionó previamente una ALCABALA, PUNTO DE CONTROL, RETÉN, o cualquier FUNCIONARIO POLICIAL/MILITAR/DE TRÁNSITO, y en su mensaje actual habla de que le PIDEN, QUITAN o COBRAN DINERO para dejarlo ir, liberarlo o dejarlo pasar: eso es SIEMPRE extorsión o concusión — NUNCA un problema de arrendamiento, consignación de dinero o deuda civil. En ese caso, si la lista incluye artículos de Ley de Arrendamientos, Código de Procedimiento Civil sobre consignaciones, Código de Comercio u otras leyes civiles/mercantiles, IGNÓRALOS por completo. Cita SOLO artículos penales (Código Penal, Ley Contra la Corrupción) si existen en la lista. Si no hay artículos penales aplicables, omite la sección 📖 — es mejor no citar nada que citar una ley de arrendamiento para un caso de extorsión policial.
 - RAMA CORRECTA DEL DERECHO (REGLA CRÍTICA): Antes de citar un artículo, verifica que pertenezca a la RAMA DEL DERECHO que corresponde a la pregunta. Ejemplo: si la pregunta es LABORAL ("despido", "vacaciones", "salario"), NO cites el Código de Comercio, el Código Civil ni leyes mercantiles aunque contengan la palabra "despedir" o "trabajo" — esos artículos hablan del factor mercantil, NO del trabajador. Si la pregunta es LABORAL, solo cita la LOTTT u otras leyes laborales. Si la pregunta es PENAL, solo cita el Código Penal u otras leyes penales. Si en la lista NO hay ningún artículo de la rama correcta, OMITE completamente la sección 📖 y da la respuesta sin citas — es mejor no citar nada que citar un artículo de la rama incorrecta.
 - COHERENCIA RESPUESTA ↔ QUÉ HACER (REGLA CRÍTICA): Las secciones 📌 Respuesta y 💡 Qué hacer DEBEN ser coherentes entre sí. Si la Respuesta dice que una conducta del usuario está prohibida por ley o que el empleador SÍ puede despedir/sancionar, el Qué hacer NO debe asumir automáticamente que es "injustificado" ni mandar a denunciar como si la persona tuviera la razón. En ese caso, el Qué hacer debe ser defensivo/informativo: "acude a la Inspectoría del Trabajo para que evalúen si hubo circunstancias atenuantes (fuerza mayor, violación del descanso obligatorio, procedimiento irregular del patrono)". Solo recomienda "denuncia por despido injustificado" cuando la Respuesta haya dicho claramente que el despido es ilegal o que el usuario tiene la razón. Nunca contradigas en el Qué hacer lo que afirmaste en la Respuesta.
 - Cuando cites, usa el nombre y número EXACTOS como aparecen en la lista.
@@ -1928,22 +1929,17 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         return f"{tema_previo}. {pregunta_orig}" if tema_previo else pregunta_orig
 
     if seguimiento_premium:
-        logger.info(f"  → Seguimiento premium — cargando contexto persistente")
-        contexto_previo = db.cargar_contexto(user_id)
+        logger.info(f"  → Seguimiento premium — búsqueda fresca con query enriquecida")
+        pregunta_enriquecida = _enriquecer_query(pregunta)
+        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
 
-        if contexto_previo:
-            pregunta_enriquecida = _enriquecer_query(pregunta)
-            _, contexto_nuevo, temas_detectados, _ = buscar_articulos_nuevos(pregunta_enriquecida)
-
-            if contexto_nuevo:
-                contexto = contexto_previo + "\n\n--- ARTÍCULOS ADICIONALES ---\n" + contexto_nuevo
-            else:
+        if not relevantes:
+            # Fallback: si la query enriquecida no encuentra nada, usar el contexto previo guardado
+            contexto_previo = db.cargar_contexto(user_id)
+            if contexto_previo:
+                logger.info(f"  → Sin resultados nuevos — usando contexto previo como fallback")
                 contexto = contexto_previo
-        else:
-            # Contexto persistente vacío → buscar con query enriquecida
-            pregunta_enriquecida = _enriquecer_query(pregunta)
-            relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
-            if not relevantes:
+            else:
                 return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
                         "⚠️ Consulta con un abogado.",
                         "temas": [], "confianza": "ninguna"}
