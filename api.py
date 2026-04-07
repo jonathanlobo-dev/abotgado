@@ -431,12 +431,32 @@ def _enviar_mensaje_telegram(chat_id: int, texto: str) -> bool:
         import httpx
         r = httpx.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            json={"chat_id": chat_id, "text": texto},
+            json={"chat_id": chat_id, "text": texto, "parse_mode": "HTML"},
             timeout=10,
         )
         return r.status_code == 200
     except Exception as e:
         logger.warning(f"No se pudo notificar al usuario {chat_id}: {e}")
+        return False
+
+
+def _enviar_documento_telegram(chat_id: int, file_bytes: bytes, filename: str, caption: str = "") -> bool:
+    """Envía un documento .docx al chat del usuario vía Telegram Bot API."""
+    token = getattr(config, "TELEGRAM_TOKEN", "") or ""
+    if not token or not chat_id:
+        return False
+    try:
+        import httpx
+        mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        r = httpx.post(
+            f"https://api.telegram.org/bot{token}/sendDocument",
+            data={"chat_id": chat_id, "caption": caption, "parse_mode": "HTML"},
+            files={"document": (filename, file_bytes, mime)},
+            timeout=30,
+        )
+        return r.status_code == 200
+    except Exception as e:
+        logger.warning(f"No se pudo enviar documento al usuario {chat_id}: {e}")
         return False
 
 
@@ -1071,9 +1091,15 @@ def baja_abogado_endpoint(req: dict):
         raise HTTPException(status_code=403, detail="No autorizado")
     try:
         import db as database
+        nombre = database.obtener_nombre_abogado(uid) or f"user {uid}"
         ok = database.baja_abogado(uid)
         if not ok:
             raise HTTPException(status_code=404, detail="No eres abogado activo")
+        for admin_id in config.ADMIN_IDS:
+            _enviar_mensaje_telegram(
+                admin_id,
+                f"🚪 <b>{nombre}</b> se dio de baja voluntariamente del directorio de abogados."
+            )
         return {"ok": True}
     except HTTPException:
         raise
@@ -1605,23 +1631,37 @@ def generar_documento_endpoint(req: dict):
         logger.error(f"Error generando documento: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error generando el documento")
 
-    database.registrar_doc_usado(uid)
-
     nombre_archivo = plantilla["archivo"]
 
-    def _stream_and_delete():
+    # Leer en memoria y eliminar el archivo temporal
+    try:
+        with open(ruta, "rb") as f:
+            file_bytes = f.read()
+    finally:
         try:
-            with open(ruta, "rb") as f:
-                yield from f
-        finally:
-            try: os.remove(ruta)
-            except: pass
+            os.remove(ruta)
+        except Exception:
+            pass
 
-    return StreamingResponse(
-        _stream_and_delete(),
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f'attachment; filename="{nombre_archivo}"'},
-    )
+    database.registrar_doc_usado(uid)
+
+    # Enviar el documento al chat de Telegram del usuario
+    caption = f"📄 <b>{plantilla['nombre']}</b>\n\nGenerado desde aBOTgado. Listo para editar o compartir."
+    enviado = _enviar_documento_telegram(uid, file_bytes, nombre_archivo, caption)
+
+    if not enviado:
+        # Fallback: devolver el archivo directamente (si Telegram falla)
+        import io
+        return StreamingResponse(
+            io.BytesIO(file_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="{nombre_archivo}"',
+                "X-Fallback": "1",
+            },
+        )
+
+    return {"ok": True, "nombre": plantilla["nombre"], "archivo": nombre_archivo}
 
 
 # ─── Directorio público mejorado ─────────────────────────────────────────────

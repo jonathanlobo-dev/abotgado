@@ -1355,11 +1355,19 @@ def estado_solicitud_usuario(user_id: int) -> dict:
     """Estado de solicitud y rol del usuario para la TMA.
     Retorna datos completos de la solicitud para permitir edición."""
     with get_db() as con:
-        abogado = con.execute(
+        # Abogado activo
+        abogado_activo = con.execute(
             "SELECT id FROM abogados WHERE user_id = ? AND activo = 1", (user_id,)
         ).fetchone()
-        if abogado:
+        if abogado_activo:
             return {"es_abogado": True, "tiene_solicitud": False, "estado": None, "solicitud": None}
+        # Abogado que se dio de baja voluntariamente (activo=0) —
+        # se trata como usuario nuevo: puede solicitar de nuevo sin bloquearse
+        abogado_baja = con.execute(
+            "SELECT id FROM abogados WHERE user_id = ? AND activo = 0", (user_id,)
+        ).fetchone()
+        if abogado_baja:
+            return {"es_abogado": False, "tiene_solicitud": False, "estado": None, "solicitud": None}
         row = con.execute(
             "SELECT * FROM solicitudes_abogado WHERE user_id = ? "
             "AND estado_solicitud != 'cancelada' ORDER BY id DESC LIMIT 1",
@@ -1508,6 +1516,15 @@ def cancelar_solicitud(user_id: int) -> bool:
             (user_id,)
         )
         return cur.rowcount > 0
+
+
+def obtener_nombre_abogado(user_id: int) -> str | None:
+    """Devuelve el nombre del abogado dado su user_id."""
+    with get_db() as con:
+        row = con.execute(
+            "SELECT nombre FROM abogados WHERE user_id = ?", (user_id,)
+        ).fetchone()
+        return row[0] if row else None
 
 
 def baja_abogado(user_id: int) -> bool:

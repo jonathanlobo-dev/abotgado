@@ -3836,51 +3836,43 @@ document.getElementById('doc-btn-generar').addEventListener('click', async () =>
       const err = await res.json().catch(() => ({detail: `Error ${res.status}`}));
       throw new Error(err.detail || `Error ${res.status}`);
     }
-    // Mostrar estado de éxito con opciones de acción
-    const blob     = await res.blob();
-    const fileName = p.nombre.replace(/\s+/g, '_') + '.docx';
-    const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    const file     = new File([blob], fileName, { type: mimeType });
-    const blobUrl  = URL.createObjectURL(blob);
 
-    const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    const isFallback = res.headers.get('X-Fallback') === '1';
 
-    const btnStyle = `display:flex;align-items:center;justify-content:center;gap:8px;
-      width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;
-      cursor:pointer;border:none;text-decoration:none;box-sizing:border-box;`;
-
-    loadDiv.innerHTML = `
-      <div style="font-size:48px">✅</div>
-      <div style="font-weight:700;font-size:15px">¡Documento listo!</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">${_esc(p.nombre)}.docx</div>
-      <div style="width:100%;display:flex;flex-direction:column;gap:8px;max-width:280px">
-        ${canShare ? `<button id="doc-btn-share" style="${btnStyle}background:var(--accent);color:#fff">📤 Compartir</button>` : ''}
-        <button id="doc-btn-open" style="${btnStyle}background:var(--surface2);color:var(--text);border:1px solid var(--border)">📂 Abrir documento</button>
-        <a id="doc-dl-link" href="${blobUrl}" download="${_esc(fileName)}"
-           style="${btnStyle}background:var(--surface2);color:var(--text);border:1px solid var(--border)">
-          ⬇️ Guardar en Descargas
-        </a>
-      </div>
-      <button id="doc-dl-nuevo" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;margin-top:4px">
-        Generar otro documento
-      </button>`;
-
-    if (canShare) {
-      document.getElementById('doc-btn-share').addEventListener('click', async () => {
-        try { await navigator.share({ files: [file], title: p.nombre }); }
-        catch (e) { if (e.name !== 'AbortError') toast('No se pudo compartir', 'err'); }
-      });
+    if (isFallback) {
+      // Fallback: Telegram no pudo enviar — descarga directa
+      const blob    = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const fname   = p.nombre.replace(/\s+/g, '_') + '.docx';
+      const a       = document.createElement('a');
+      a.href = blobUrl; a.download = fname;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 1000);
+      loadDiv.innerHTML = `
+        <div style="font-size:48px">⚠️</div>
+        <div style="font-weight:700;font-size:15px">Descarga iniciada</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">
+          No se pudo enviar por Telegram.<br>El archivo se descargó directamente.
+        </div>
+        <button id="doc-dl-nuevo" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;margin-top:8px">
+          Generar otro documento
+        </button>`;
+    } else {
+      // Éxito: el documento fue enviado al chat de Telegram del usuario
+      const data = await res.json();
+      loadDiv.innerHTML = `
+        <div style="font-size:48px">✅</div>
+        <div style="font-weight:700;font-size:15px">¡Documento enviado!</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:240px;text-align:center">
+          Tu documento <b>${_esc(data.nombre || p.nombre)}</b> llegó a tu chat de <b>aBOTgado</b> en Telegram.<br><br>
+          Desde ahí puedes abrirlo, guardarlo o compartirlo por WhatsApp, correo, etc.
+        </div>
+        <button id="doc-dl-nuevo" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;margin-top:8px">
+          Generar otro documento
+        </button>`;
     }
 
-    document.getElementById('doc-btn-open').addEventListener('click', () => {
-      window.open(blobUrl, '_blank');
-    });
-
-    document.getElementById('doc-dl-nuevo').addEventListener('click', () => {
-      URL.revokeObjectURL(blobUrl);
-      _docMostrarLista();
-    });
-    document.getElementById('doc-close').addEventListener('click', () => URL.revokeObjectURL(blobUrl), { once: true });
+    document.getElementById('doc-dl-nuevo').addEventListener('click', _docMostrarLista);
   } catch (e) {
     toast(e.message || 'Error generando documento', 'err');
     document.getElementById('doc-step-form').style.display = 'flex';
