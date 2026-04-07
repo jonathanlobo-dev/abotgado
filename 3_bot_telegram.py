@@ -1170,9 +1170,13 @@ async def cmd_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if docs <= 0:
             await enviar_respuesta(
                 update.message,
-                "<b>Generador de Documentos</b>\n\n"
-                "No tienes documentos disponibles.\n\n"
-                "Escribe /estado para ver tu plan actual."
+                "📄 <b>Generador de Documentos</b>\n\n"
+                "No tienes documentos disponibles este mes.\n\n"
+                "📋 <b>Documentos incluidos por plan:</b>\n"
+                "• Gratis: sin acceso\n"
+                "• ⭐ Pionero: 2 documentos/mes\n"
+                "• 💎 Premium: ilimitados\n\n"
+                "Escribe /estado para ver tu plan o /ayuda para más info."
             )
             return
 
@@ -1521,12 +1525,14 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         if ruta_archivo:
             db.registrar_doc_usado(user_id)
+            restantes = db.docs_disponibles(user_id)
+            restantes_txt = "ilimitados" if restantes >= 999 else str(restantes)
             await enviar_respuesta(update.message, respuesta_doc)
             with open(ruta_archivo, "rb") as f:
                 await update.message.reply_document(
                     document=f,
                     filename=os.path.basename(ruta_archivo),
-                    caption="Documento generado por aBOTgado"
+                    caption=f"📄 Documento generado por aBOTgado\nTe quedan {restantes_txt} documento(s) disponibles este mes."
                 )
             try:
                 os.remove(ruta_archivo)
