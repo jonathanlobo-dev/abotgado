@@ -1903,9 +1903,7 @@ async function enviarFeedback(msgId, valor, pregunta = '', respuesta = '', motiv
 // ═══════════════════════════════════════════════════════════════════
 function limpiarChat() {
   historial = [];
-  // Eliminar todos los mensajes y metas
-  [...chat.querySelectorAll('.msg, .meta')].forEach(el => el.remove());
-  // Restaurar bienvenida
+  [...chat.querySelectorAll('.msg, .meta, #welcome')].forEach(el => el.remove());
   chat.insertBefore(crearWelcome(), typing);
 }
 
@@ -2150,7 +2148,7 @@ function nuevaConversacion() {
   convActualId = null;
   hConvTitulo.textContent = 'Asistente jurídico venezolano';
   historial = [];
-  [...chat.querySelectorAll('.msg, .meta')].forEach(el => el.remove());
+  [...chat.querySelectorAll('.msg, .meta, #welcome')].forEach(el => el.remove());
   chat.insertBefore(crearWelcome(), typing);
 }
 
@@ -2776,6 +2774,15 @@ async function _initRolAbogado() {
     const wrap   = document.getElementById('dir-registro-wrap');
     const dirBtn = document.getElementById('dir-btn-registro');
 
+    // Reset role buttons before re-evaluating (important after baja/cancel)
+    btnSol.style.display = 'none';
+    btnEsc.style.display = 'none';
+    if (btnAdm) btnAdm.style.display = 'none';
+    const navTicketsEl = document.getElementById('sb-nav-tickets');
+    const navAbogAdmEl = document.getElementById('sb-nav-abog-admin');
+    if (navTicketsEl) navTicketsEl.style.display = 'none';
+    if (navAbogAdmEl) navAbogAdmEl.style.display = 'none';
+
     // Mostrar botón de documentos para todos los usuarios autenticados
     if (btnDoc) btnDoc.style.display = 'block';
     const navDoc = document.getElementById('sb-nav-doc');
@@ -2823,6 +2830,9 @@ async function _initRolAbogado() {
     }
     window._esAdmin = isAdmin;
     if (isAdmin) {
+      // Admin no necesita ver la opción de registrarse como abogado
+      btnSol.style.display = 'none';
+      if (wrap) wrap.style.display = 'none';
       if (btnAdm) btnAdm.style.display = 'block';
       const navTickets = document.getElementById('sb-nav-tickets');
       const navAbogAdmin = document.getElementById('sb-nav-abog-admin');
@@ -3826,17 +3836,31 @@ document.getElementById('doc-btn-generar').addEventListener('click', async () =>
       const err = await res.json().catch(() => ({detail: `Error ${res.status}`}));
       throw new Error(err.detail || `Error ${res.status}`);
     }
-    // Descargar el blob
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = p.nombre.replace(/\s+/g, '_') + '.docx';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
-    toast('Documento generado y descargado ✓', 'ok');
-    cerrarDocumentos();
+    // Mostrar estado de éxito con botón de descarga explícito
+    const blob     = await res.blob();
+    const blobUrl  = URL.createObjectURL(blob);
+    const fileName = p.nombre.replace(/\s+/g, '_') + '.docx';
+    loadDiv.innerHTML = `
+      <div style="font-size:48px">✅</div>
+      <div style="font-weight:700;font-size:15px">¡Documento listo!</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5">
+        Tu documento <b>${_esc(p.nombre)}</b> fue generado.<br>
+        Toca el botón para descargarlo.
+      </div>
+      <a id="doc-dl-link" href="${blobUrl}" download="${_esc(fileName)}"
+         style="display:inline-block;padding:12px 24px;background:var(--accent);color:#fff;
+                border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;margin-top:4px">
+        ⬇️ Descargar ${_esc(fileName)}
+      </a>
+      <button id="doc-dl-nuevo" style="background:none;border:none;color:var(--accent);
+              font-size:13px;cursor:pointer;margin-top:2px">
+        Generar otro documento
+      </button>`;
+    document.getElementById('doc-dl-nuevo').addEventListener('click', () => {
+      URL.revokeObjectURL(blobUrl);
+      _docMostrarLista();
+    });
+    document.getElementById('doc-close').addEventListener('click', () => URL.revokeObjectURL(blobUrl), { once: true });
   } catch (e) {
     toast(e.message || 'Error generando documento', 'err');
     document.getElementById('doc-step-form').style.display = 'flex';
