@@ -1420,6 +1420,7 @@ LEY_A_RAMA: dict[str, str] = {
     # Vivienda
     "Ley de Propiedad Horizontal": "vivienda",
     "Ley para la Regularización y Control de los Arrendamientos de Vivienda": "vivienda",
+    "Ley de Arrendamientos Inmobiliarios": "vivienda",
     # Constitucional
     "Constitución de la República Bolivariana de Venezuela": "constitucional",
     # Administrativo
