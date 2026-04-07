@@ -1339,6 +1339,40 @@
   </div>
 </div>
 
+<!-- ═══ PANEL DOCUMENTOS LEGALES ════════════════════════════════════ -->
+<div class="dir-overlay" id="doc-overlay"></div>
+<div class="dir-panel" id="doc-panel">
+  <div class="dir-header">
+    <span class="dir-logo">📄</span>
+    <span class="dir-title">Documentos Legales</span>
+    <button class="dir-close" id="doc-close" title="Cerrar">✕</button>
+  </div>
+
+  <!-- Paso 1: Selector de plantilla -->
+  <div id="doc-step-lista" style="padding:12px 12px 0;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:13px;color:var(--text2)">Selecciona el tipo de documento:</div>
+    <div id="doc-lista-cards" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div id="doc-sin-docs" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;font-size:13px;line-height:1.6"></div>
+  </div>
+
+  <!-- Paso 2: Formulario dinámico -->
+  <div id="doc-step-form" style="display:none;overflow-y:auto;flex:1;padding:12px;display:flex;flex-direction:column;gap:0">
+    <button id="doc-btn-volver" style="align-self:flex-start;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:0;margin-bottom:10px">← Volver</button>
+    <div id="doc-form-titulo" style="font-weight:700;font-size:15px;margin-bottom:4px"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Los datos se guardan en MAYÚSCULAS en el documento.</div>
+    <div id="doc-form-campos" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="abog-info" style="margin:10px 0 8px">ⓘ Revisa todos los datos antes de generar. Una vez generado se descarga el .docx listo para editar.</div>
+    <button id="doc-btn-generar" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">📄 Generar documento</button>
+  </div>
+
+  <!-- Paso 3: Generando -->
+  <div id="doc-step-loading" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 20px;text-align:center">
+    <div style="font-size:44px">⏳</div>
+    <div style="font-weight:600;font-size:15px">Generando tu documento…</div>
+    <div style="font-size:13px;color:var(--text2)">Esto puede tomar unos segundos</div>
+  </div>
+</div>
+
 <!-- ═══ PANEL ADMIN ABOGADOS ═════════════════════════════════════════ -->
 <div class="dir-overlay" id="adm-ab-overlay"></div>
 <div class="dir-panel" id="adm-ab-panel">
@@ -1408,6 +1442,9 @@
   </div>
 
   <!-- Sección abogado (rol-dependiente, se rellena en JS) -->
+  <button class="sb-abog-btn" id="sb-doc-btn" title="Generar documentos legales" style="display:none">
+    📄 Documentos Legales
+  </button>
   <button class="sb-abog-btn" id="sb-abog-sol-btn" title="Registrarte como abogado verificado">
     ⚖️ ¿Eres abogado? Regístrate
   </button>
@@ -2775,8 +2812,12 @@ async function _initRolAbogado() {
     const btnSol = document.getElementById('sb-abog-sol-btn');
     const btnEsc = document.getElementById('sb-abog-esc-btn');
     const btnAdm = document.getElementById('sb-abog-adm-btn');
+    const btnDoc = document.getElementById('sb-doc-btn');
     const wrap   = document.getElementById('dir-registro-wrap');
     const dirBtn = document.getElementById('dir-btn-registro');
+
+    // Mostrar botón de documentos para todos los usuarios autenticados
+    if (btnDoc) btnDoc.style.display = '';
 
     if (window._esAbogado) {
       btnEsc.style.display = '';
@@ -3523,6 +3564,350 @@ function abrirEditarAbogado(ab) {
     } catch (e) { btn.disabled = false; btn.textContent = 'Guardar'; toast('Error', 'err'); }
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// PANEL DOCUMENTOS LEGALES
+// ═══════════════════════════════════════════════════════════════════
+
+// Definición de plantillas (espejo de documentos.py) con tipo de cada campo
+const _DOC_PLANTILLAS = {
+  "1": {
+    nombre: "Contrato de Arrendamiento", icono: "🏠",
+    descripcion: "Contrato entre arrendador e inquilino para alquiler de vivienda",
+    campos: [
+      {id:"ARRENDADOR_NOMBRE",  label:"Nombre completo del arrendador (dueño)", tipo:"nombre", max:100, ej:"María López Rodríguez"},
+      {id:"ARRENDADOR_CEDULA",  label:"Cédula del arrendador",                  tipo:"cedula", max:15,  ej:"V-12345678"},
+      {id:"ARRENDATARIO_NOMBRE",label:"Nombre completo del arrendatario (inquilino)", tipo:"nombre", max:100, ej:"Carlos Pérez García"},
+      {id:"ARRENDATARIO_CEDULA",label:"Cédula del arrendatario",                tipo:"cedula", max:15,  ej:"V-23456789"},
+      {id:"DIRECCION_INMUEBLE", label:"Dirección completa del inmueble",        tipo:"texto",  max:200, ej:"Av. Principal, Edif. Sol, Piso 3, Apto 3-A"},
+      {id:"CIUDAD",             label:"Ciudad",                                 tipo:"nombre", max:60,  ej:"Caracas"},
+      {id:"CANON_MENSUAL",      label:"Canon mensual (monto y moneda)",         tipo:"monto",  max:80,  ej:"200 dólares americanos"},
+      {id:"CANON_LETRAS",       label:"Canon en letras",                        tipo:"monto",  max:100, ej:"doscientos dólares americanos"},
+      {id:"DURACION_MESES",     label:"Duración del contrato (meses)",          tipo:"numero", max:3,   ej:"12"},
+      {id:"FECHA_INICIO",       label:"Fecha de inicio",                        tipo:"fecha",  max:40,  ej:"01 de abril de 2026"},
+      {id:"FECHA_FIRMA",        label:"Fecha de firma",                         tipo:"fecha",  max:40,  ej:"17 de marzo de 2026"},
+    ]
+  },
+  "2": {
+    nombre: "Carta de Renuncia Voluntaria", icono: "✉️",
+    descripcion: "Carta formal de renuncia a un empleo con solicitud de prestaciones",
+    campos: [
+      {id:"TRABAJADOR_NOMBRE",  label:"Tu nombre completo",          tipo:"nombre", max:100, ej:"José Hernández Díaz"},
+      {id:"TRABAJADOR_CEDULA",  label:"Tu cédula",                   tipo:"cedula", max:15,  ej:"V-15678901"},
+      {id:"EMPRESA_NOMBRE",     label:"Nombre de la empresa",        tipo:"texto",  max:100, ej:"Inversiones ABC, C.A."},
+      {id:"CARGO",              label:"Tu cargo actual",             tipo:"nombre", max:80,  ej:"Analista de Sistemas"},
+      {id:"FECHA_INGRESO",      label:"Fecha en que ingresaste",     tipo:"fecha",  max:40,  ej:"15 de enero de 2023"},
+      {id:"FECHA_RENUNCIA",     label:"Fecha efectiva de la renuncia", tipo:"fecha", max:40, ej:"30 de abril de 2026"},
+      {id:"CIUDAD",             label:"Ciudad",                      tipo:"nombre", max:60,  ej:"Valencia"},
+      {id:"FECHA_FIRMA",        label:"Fecha de hoy",                tipo:"fecha",  max:40,  ej:"17 de marzo de 2026"},
+    ]
+  },
+  "3": {
+    nombre: "Poder Notarial General", icono: "📜",
+    descripcion: "Poder para que otra persona actúe en tu nombre ante instituciones",
+    campos: [
+      {id:"PODERDANTE_NOMBRE",  label:"Tu nombre completo (quien otorga el poder)", tipo:"nombre", max:100, ej:"Ana María Gutiérrez"},
+      {id:"PODERDANTE_CEDULA",  label:"Tu cédula",                                  tipo:"cedula", max:15,  ej:"V-18901234"},
+      {id:"APODERADO_NOMBRE",   label:"Nombre del apoderado (quien recibe el poder)", tipo:"nombre", max:100, ej:"Pedro José Ramírez"},
+      {id:"APODERADO_CEDULA",   label:"Cédula del apoderado",                       tipo:"cedula", max:15,  ej:"V-20123456"},
+      {id:"FACULTADES",         label:"Facultades otorgadas (qué puede hacer en tu nombre)", tipo:"texto", max:400, ej:"Realizar trámites bancarios, cobrar cheques…"},
+      {id:"CIUDAD",             label:"Ciudad",                                     tipo:"nombre", max:60,  ej:"Maracaibo"},
+      {id:"FECHA_FIRMA",        label:"Fecha de hoy",                               tipo:"fecha",  max:40,  ej:"17 de marzo de 2026"},
+    ]
+  },
+  "4": {
+    nombre: "Constancia de Residencia", icono: "🏡",
+    descripcion: "Documento que certifica tu dirección de residencia",
+    campos: [
+      {id:"NOMBRE_COMPLETO",    label:"Tu nombre completo",     tipo:"nombre", max:100, ej:"Luis Alberto Morales"},
+      {id:"CEDULA",             label:"Tu cédula",              tipo:"cedula", max:15,  ej:"V-22345678"},
+      {id:"DIRECCION",          label:"Dirección completa",     tipo:"texto",  max:200, ej:"Calle 5, Casa N° 12, Sector El Paraíso"},
+      {id:"MUNICIPIO",          label:"Municipio",              tipo:"nombre", max:60,  ej:"Libertador"},
+      {id:"ESTADO",             label:"Estado",                 tipo:"nombre", max:60,  ej:"Distrito Capital"},
+      {id:"TIEMPO_RESIDENCIA",  label:"Tiempo viviendo ahí",   tipo:"texto",  max:50,  ej:"3 años"},
+      {id:"CIUDAD",             label:"Ciudad",                 tipo:"nombre", max:60,  ej:"Caracas"},
+      {id:"FECHA_FIRMA",        label:"Fecha de hoy",           tipo:"fecha",  max:40,  ej:"17 de marzo de 2026"},
+    ]
+  },
+  "5": {
+    nombre: "Acta Constitutiva de C.A.", icono: "🏢",
+    descripcion: "Para registrar una Compañía Anónima ante el Registro Mercantil",
+    campos: [
+      {id:"EMPRESA_NOMBRE",     label:"Nombre de la empresa (sin C.A.)",    tipo:"texto",  max:100, ej:"Tech Solutions"},
+      {id:"OBJETO_SOCIAL",      label:"Actividad de la empresa (objeto social)", tipo:"texto", max:400, ej:"Consultoría en tecnología de información…"},
+      {id:"SOCIO1_NOMBRE",      label:"Nombre completo del Socio 1",        tipo:"nombre", max:100, ej:"Jonathan Lobo"},
+      {id:"SOCIO1_CEDULA",      label:"Cédula del Socio 1",                 tipo:"cedula", max:15,  ej:"V-25123456"},
+      {id:"SOCIO1_PORCENTAJE",  label:"Porcentaje del Socio 1 (%)",         tipo:"numero", max:3,   ej:"50"},
+      {id:"SOCIO2_NOMBRE",      label:"Nombre completo del Socio 2",        tipo:"nombre", max:100, ej:"María García"},
+      {id:"SOCIO2_CEDULA",      label:"Cédula del Socio 2",                 tipo:"cedula", max:15,  ej:"V-26789012"},
+      {id:"SOCIO2_PORCENTAJE",  label:"Porcentaje del Socio 2 (%)",         tipo:"numero", max:3,   ej:"50"},
+      {id:"CAPITAL_SOCIAL",     label:"Capital social (monto)",             tipo:"monto",  max:80,  ej:"1.000 dólares americanos"},
+      {id:"CAPITAL_LETRAS",     label:"Capital en letras",                  tipo:"monto",  max:100, ej:"un mil dólares americanos"},
+      {id:"DIRECCION_EMPRESA",  label:"Dirección de la empresa",            tipo:"texto",  max:200, ej:"Centro Comercial Plaza, Nivel 2, Local 15"},
+      {id:"MUNICIPIO",          label:"Municipio",                          tipo:"nombre", max:60,  ej:"Chacao"},
+      {id:"ESTADO",             label:"Estado",                             tipo:"nombre", max:60,  ej:"Miranda"},
+      {id:"CIUDAD",             label:"Ciudad",                             tipo:"nombre", max:60,  ej:"Caracas"},
+      {id:"FECHA_FIRMA",        label:"Fecha de hoy",                       tipo:"fecha",  max:40,  ej:"17 de marzo de 2026"},
+    ]
+  },
+};
+
+// Regex de inyección (cliente)
+const _INJECTION_RE = /ignore\s+previous|forget\s+(all|everything)|you\s+are\s+now|act\s+as|system\s*:|assistant\s*:|jailbreak|\[INST\]/gi;
+
+// Caracteres permitidos por tipo (para bloquear en keydown)
+const _LETRAS_RE = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\.\-]$/;
+const _CEDULA_RE = /^[VEveJ0-9\-\.]$/;
+const _NUMERO_RE = /^[0-9]$/;
+
+const docPanel   = document.getElementById('doc-panel');
+const docOverlay = document.getElementById('doc-overlay');
+
+function abrirDocumentos() {
+  docPanel.classList.add('open');
+  docOverlay.classList.add('open');
+  _docMostrarLista();
+}
+function cerrarDocumentos() {
+  docPanel.classList.remove('open');
+  docOverlay.classList.remove('open');
+}
+
+function _docMostrarLista() {
+  document.getElementById('doc-step-lista').style.display = '';
+  document.getElementById('doc-step-form').style.display = 'none';
+  document.getElementById('doc-step-loading').style.display = 'none';
+  _docCargarLista();
+}
+
+async function _docCargarLista() {
+  const cards = document.getElementById('doc-lista-cards');
+  const sinDocs = document.getElementById('doc-sin-docs');
+  cards.innerHTML = '<div style="color:var(--text2);font-size:13px">Cargando…</div>';
+  sinDocs.style.display = 'none';
+  try {
+    const uid = window._tgUserId || '';
+    const id  = window._tgInitData ? `&init_data=${encodeURIComponent(window._tgInitData)}` : '';
+    const res = await fetch(`${API}/documentos/plantillas?user_id=${encodeURIComponent(uid)}${id}`);
+    const data = await res.json();
+    const disp = data.docs_disponibles || 0;
+    if (disp <= 0) {
+      cards.innerHTML = '';
+      sinDocs.innerHTML =
+        '📄 <b>Sin documentos disponibles</b><br><br>' +
+        '• Gratis: sin acceso<br>' +
+        '• ⭐ Pionero: 2 documentos/mes<br>' +
+        '• 💎 Premium: ilimitados<br><br>' +
+        'Escribe <b>/estado</b> en el bot para ver tu plan.';
+      sinDocs.style.display = '';
+      return;
+    }
+    const dispTxt = disp >= 999 ? 'ilimitados' : `${disp} disponible${disp !== 1 ? 's' : ''}`;
+    cards.innerHTML = `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px">📋 Tienes ${dispTxt} este mes</div>`;
+    for (const [pid, p] of Object.entries(_DOC_PLANTILLAS)) {
+      const card = document.createElement('div');
+      card.style.cssText = 'padding:12px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:background .15s';
+      card.innerHTML = `<div style="font-size:18px">${p.icono}</div>
+        <div style="font-weight:600;font-size:13px;margin:4px 0 2px">${p.nombre}</div>
+        <div style="font-size:12px;color:var(--text2)">${p.descripcion}</div>`;
+      card.addEventListener('mouseenter', () => card.style.background = 'var(--accent-soft)');
+      card.addEventListener('mouseleave', () => card.style.background = '');
+      card.addEventListener('click', () => _docAbrirForm(pid));
+      cards.appendChild(card);
+    }
+  } catch (e) {
+    cards.innerHTML = '<div style="color:#ef4444;font-size:13px">Error cargando plantillas</div>';
+  }
+}
+
+function _docAbrirForm(pid) {
+  const p = _DOC_PLANTILLAS[pid];
+  if (!p) return;
+  document.getElementById('doc-step-lista').style.display = 'none';
+  const formDiv = document.getElementById('doc-step-form');
+  formDiv.style.display = 'flex';
+  formDiv.style.flexDirection = 'column';
+  document.getElementById('doc-form-titulo').textContent = `${p.icono} ${p.nombre}`;
+  const campos = document.getElementById('doc-form-campos');
+  campos.innerHTML = '';
+  campos.dataset.pid = pid;
+  for (const campo of p.campos) {
+    const wrap = document.createElement('div');
+    const esLargo = campo.tipo === 'texto' && campo.max > 100;
+    wrap.innerHTML = `
+      <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">${campo.label} <span style="color:#ef4444">*</span></label>
+      ${esLargo
+        ? `<textarea id="docf-${campo.id}" maxlength="${campo.max}" rows="3"
+            placeholder="${campo.ej}"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;resize:none;box-sizing:border-box"></textarea>`
+        : `<input id="docf-${campo.id}" type="text" maxlength="${campo.max}"
+            placeholder="${campo.ej}" autocomplete="off" spellcheck="false"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;box-sizing:border-box">`
+      }
+      <span id="docf-${campo.id}-err" style="display:none;font-size:11px;color:#ef4444;margin-top:2px"></span>`;
+    campos.appendChild(wrap);
+    const el = document.getElementById(`docf-${campo.id}`);
+    // Bloquear caracteres inválidos en tiempo real
+    if (campo.tipo === 'nombre') {
+      el.addEventListener('keydown', e => {
+        if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+        if (!_LETRAS_RE.test(e.key)) e.preventDefault();
+      });
+      el.addEventListener('input', () => { el.value = el.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\.\-]/g, ''); });
+    } else if (campo.tipo === 'cedula') {
+      el.addEventListener('keydown', e => {
+        if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+        if (!_CEDULA_RE.test(e.key)) e.preventDefault();
+      });
+    } else if (campo.tipo === 'numero') {
+      el.setAttribute('inputmode', 'numeric');
+      el.addEventListener('keydown', e => {
+        if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+        if (!_NUMERO_RE.test(e.key)) e.preventDefault();
+      });
+      el.addEventListener('input', () => { el.value = el.value.replace(/[^0-9]/g, ''); });
+    }
+    // Borrar error al escribir
+    el.addEventListener('input', () => { document.getElementById(`docf-${campo.id}-err`).style.display = 'none'; el.style.borderColor = ''; });
+  }
+}
+
+document.getElementById('doc-btn-volver').addEventListener('click', _docMostrarLista);
+
+document.getElementById('doc-btn-generar').addEventListener('click', async () => {
+  const pid = document.getElementById('doc-form-campos').dataset.pid;
+  const p   = _DOC_PLANTILLAS[pid];
+  if (!p) return;
+
+  // Validar todos los campos
+  let ok = true;
+  const datos = {};
+  for (const campo of p.campos) {
+    const el  = document.getElementById(`docf-${campo.id}`);
+    const err = document.getElementById(`docf-${campo.id}-err`);
+    let val = el.value.trim();
+    // Detección de inyección
+    if (_INJECTION_RE.test(val)) {
+      val = val.replace(_INJECTION_RE, '').trim();
+      el.value = val;
+    }
+    if (!val) {
+      err.textContent = 'Este campo es obligatorio';
+      err.style.display = 'block';
+      el.style.borderColor = '#ef4444';
+      ok = false; continue;
+    }
+    if (campo.tipo === 'nombre' && /\d/.test(val)) {
+      err.textContent = 'Solo se permiten letras';
+      err.style.display = 'block';
+      el.style.borderColor = '#ef4444';
+      ok = false; continue;
+    }
+    if (campo.tipo === 'numero' && !/^\d+$/.test(val)) {
+      err.textContent = 'Solo se permiten números';
+      err.style.display = 'block';
+      el.style.borderColor = '#ef4444';
+      ok = false; continue;
+    }
+    datos[campo.id] = val;
+  }
+  if (!ok) { toast('Corrige los campos marcados', 'err'); return; }
+
+  // Mostrar loading
+  document.getElementById('doc-step-form').style.display = 'none';
+  const loadDiv = document.getElementById('doc-step-loading');
+  loadDiv.style.display = 'flex';
+  loadDiv.style.flexDirection = 'column';
+
+  try {
+    const res = await fetch(`${API}/documentos/generar`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        init_data:   window._tgInitData  || '',
+        user_id:     window._tgUserId    || '',
+        plantilla_id: pid,
+        datos,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({detail: `Error ${res.status}`}));
+      throw new Error(err.detail || `Error ${res.status}`);
+    }
+    // Descargar el blob
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = p.nombre.replace(/\s+/g, '_') + '.docx';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+    toast('Documento generado y descargado ✓', 'ok');
+    cerrarDocumentos();
+  } catch (e) {
+    toast(e.message || 'Error generando documento', 'err');
+    document.getElementById('doc-step-form').style.display = 'flex';
+    loadDiv.style.display = 'none';
+  }
+});
+
+document.getElementById('doc-close').addEventListener('click', cerrarDocumentos);
+docOverlay.addEventListener('click', cerrarDocumentos);
+document.getElementById('sb-doc-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  abrirDocumentos();
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDACIONES FORMULARIO SOLICITUD ABOGADO
+// ═══════════════════════════════════════════════════════════════════
+(function _initValidacionesSolicitud() {
+  // Nombre: solo letras, espacios, punto y guión
+  const solNombre = document.getElementById('sol-nombre');
+  if (solNombre) {
+    solNombre.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+      if (!_LETRAS_RE.test(e.key)) e.preventDefault();
+    });
+    solNombre.addEventListener('input', () => {
+      solNombre.value = solNombre.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\.\-]/g, '');
+    });
+  }
+  // INPRE: solo números
+  const solInpre = document.getElementById('sol-inpre');
+  if (solInpre) {
+    solInpre.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+      if (!_NUMERO_RE.test(e.key)) e.preventDefault();
+    });
+    solInpre.addEventListener('input', () => { solInpre.value = solInpre.value.replace(/[^0-9]/g, ''); });
+  }
+  // Cédula: V/E + guión + números
+  const solCedula = document.getElementById('sol-cedula');
+  if (solCedula) {
+    solCedula.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+      if (!_CEDULA_RE.test(e.key)) e.preventDefault();
+    });
+  }
+  // Bio: anti-inyección al perder foco
+  const solBio = document.getElementById('sol-bio');
+  if (solBio) {
+    solBio.addEventListener('blur', () => {
+      solBio.value = solBio.value.replace(_INJECTION_RE, '').substring(0, 300);
+    });
+  }
+  // Teléfono: solo dígitos, +, guión, espacio
+  const solTel = document.getElementById('sol-telefono');
+  if (solTel) {
+    solTel.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'].includes(e.key)) return;
+      if (!/^[0-9\+\-\s]$/.test(e.key)) e.preventDefault();
+    });
+  }
+})();
 
 // ═══════════════════════════════════════════════════════════════════
 // Inicializar nombre/avatar en cuanto cargue la página (datos del SDK, sin API)

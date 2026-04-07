@@ -19,6 +19,7 @@ import logging
 from urllib.parse import parse_qsl
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, field_validator
 
 import config
@@ -1486,6 +1487,141 @@ def admin_activar_abogado(abogado_id: int, req: AccionAbogadoRequest):
     except Exception as e:
         logger.error(f"Error activando abogado {abogado_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error")
+
+
+# ─── Documentos legales ──────────────────────────────────────────────────────
+
+import re as _re
+
+# Palabras clave de prompt injection a eliminar
+_INJECTION_PATTERNS = [
+    r'ignore\s+(previous|all|the)', r'forget\s+(all|everything|previous)',
+    r'you\s+are\s+now', r'act\s+as', r'system\s*:', r'assistant\s*:',
+    r'human\s*:', r'\[INST\]', r'<\|.*?\|>', r'jailbreak', r'dan\s+mode',
+]
+
+def _sanitizar_campo_doc(valor: str, tipo: str = 'texto', max_len: int = 300) -> str:
+    """Limpia, valida tipo y convierte a mayúsculas para el documento."""
+    valor = str(valor).strip()
+    valor = _re.sub(r'<[^>]+>', '', valor)          # strip HTML
+    valor = _re.sub(r'[{}<>]', '', valor)           # strip template markers
+    for pat in _INJECTION_PATTERNS:
+        valor = _re.sub(pat, '', valor, flags=_re.IGNORECASE)
+    valor = valor[:max_len].strip()
+    if tipo == 'nombre':
+        valor = _re.sub(r'[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\.\-]', '', valor)
+    elif tipo == 'numero':
+        valor = _re.sub(r'[^0-9]', '', valor)
+    elif tipo == 'cedula':
+        valor = _re.sub(r'[^VEveJ0-9\-\.]', '', valor)
+    return valor.upper().strip()
+
+
+# Tipo de cada sufijo de campo en los documentos
+_TIPO_POR_SUFIJO = {
+    'NOMBRE': 'nombre', 'CARGO': 'nombre', 'CIUDAD': 'nombre',
+    'MUNICIPIO': 'nombre', 'ESTADO': 'nombre',
+    'CEDULA': 'cedula',
+    'INPRE': 'numero', 'INPREABOGADO': 'numero',
+    'MESES': 'numero', 'PORCENTAJE': 'numero',
+}
+_LIMITE_POR_TIPO = {'nombre': 100, 'cedula': 15, 'numero': 6, 'fecha': 40,
+                    'monto': 100, 'texto': 400}
+
+
+@app.get("/documentos/plantillas")
+def listar_plantillas_endpoint(init_data: str = "", user_id: str = ""):
+    """Devuelve las plantillas disponibles y cuántos docs le quedan al usuario."""
+    uid = _user_id_from_init_data(init_data)
+    if uid is None and user_id:
+        try: uid = int(user_id)
+        except: uid = None
+    try:
+        import db as database
+        import documentos as docs_mod
+        docs_disp = database.docs_disponibles(uid) if uid else 0
+        plantillas = []
+        for pid, p in docs_mod.PLANTILLAS.items():
+            plantillas.append({
+                "id": pid,
+                "nombre": p["nombre"],
+                "descripcion": p["descripcion"],
+                "num_campos": len(p["campos"]),
+            })
+        return {"plantillas": plantillas, "docs_disponibles": docs_disp}
+    except Exception as e:
+        logger.error(f"Error en /documentos/plantillas: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error")
+
+
+@app.post("/documentos/generar")
+def generar_documento_endpoint(req: dict):
+    """Genera un documento legal rellenando la plantilla .docx con los datos del usuario.
+    Devuelve el archivo .docx directamente como descarga.
+    """
+    import documentos as docs_mod
+    import db as database
+
+    # ── Auth ──────────────────────────────────────────────────────────────────
+    uid = _user_id_from_init_data(req.get("init_data", ""))
+    if uid is None:
+        try: uid = int(req.get("user_id", 0)) or None
+        except: uid = None
+    if not uid:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    # ── Cuota ─────────────────────────────────────────────────────────────────
+    docs = database.docs_disponibles(uid)
+    if docs <= 0:
+        raise HTTPException(
+            status_code=402,
+            detail="No tienes documentos disponibles. Necesitas plan Pionero (2/mes) o Premium (ilimitados)."
+        )
+
+    # ── Plantilla ─────────────────────────────────────────────────────────────
+    plantilla_id = str(req.get("plantilla_id", ""))
+    if plantilla_id not in docs_mod.PLANTILLAS:
+        raise HTTPException(status_code=400, detail="Plantilla inválida")
+    plantilla = docs_mod.PLANTILLAS[plantilla_id]
+
+    # ── Validar y sanitizar campos ────────────────────────────────────────────
+    datos_raw = req.get("datos", {})
+    datos: dict[str, str] = {}
+    for campo in plantilla["campos"]:
+        cid = campo["id"]
+        valor = str(datos_raw.get(cid, "")).strip()
+        if not valor:
+            raise HTTPException(status_code=400, detail=f"Campo requerido: {campo['pregunta']}")
+        tipo = next((t for sfx, t in _TIPO_POR_SUFIJO.items() if cid.endswith(sfx)), 'texto')
+        max_len = _LIMITE_POR_TIPO.get(tipo, 300)
+        datos[cid] = _sanitizar_campo_doc(valor, tipo, max_len)
+        if not datos[cid]:
+            raise HTTPException(status_code=400, detail=f"Valor inválido en: {campo['pregunta']}")
+
+    # ── Generar documento ─────────────────────────────────────────────────────
+    try:
+        ruta = docs_mod.generar_documento(plantilla, datos)
+    except Exception as e:
+        logger.error(f"Error generando documento: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error generando el documento")
+
+    database.registrar_doc_usado(uid)
+
+    nombre_archivo = plantilla["archivo"]
+
+    def _stream_and_delete():
+        try:
+            with open(ruta, "rb") as f:
+                yield from f
+        finally:
+            try: os.remove(ruta)
+            except: pass
+
+    return StreamingResponse(
+        _stream_and_delete(),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{nombre_archivo}"'},
+    )
 
 
 # ─── Directorio público mejorado ─────────────────────────────────────────────
