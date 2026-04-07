@@ -1269,6 +1269,12 @@ class MensajeDirectoRequest(BaseModel):
     mensaje: str
 
 
+class BroadcastRequest(BaseModel):
+    init_data: str
+    mensaje: str
+    target: str = "todos"  # "todos" | "abogados" | "premium"
+
+
 @app.post("/admin/solicitudes/{solicitud_id}/en-revision")
 def admin_marcar_en_revision(solicitud_id: int, req: AccionAbogadoRequest):
     """Marca la solicitud como en revisión y notifica al solicitante."""
@@ -1662,6 +1668,58 @@ def generar_documento_endpoint(req: dict):
         )
 
     return {"ok": True, "nombre": plantilla["nombre"], "archivo": nombre_archivo}
+
+
+# ─── Broadcast de anuncios ───────────────────────────────────────────────────
+
+@app.post("/admin/broadcast")
+def admin_broadcast(req: BroadcastRequest):
+    """Envía un anuncio masivo a usuarios vía Telegram — solo admins."""
+    admin_id = _admin_from_init_data(req.init_data)
+    if not admin_id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    mensaje = req.mensaje.strip()
+    if not mensaje:
+        raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío")
+    if len(mensaje) > 3000:
+        raise HTTPException(status_code=400, detail="Mensaje demasiado largo (máx. 3000 caracteres)")
+
+    try:
+        import db as database
+        import time
+
+        # Obtener destinatarios según target
+        if req.target == "abogados":
+            abogados = database.listar_abogados_admin(incluir_inactivos=False)
+            user_ids = [a["user_id"] for a in abogados if a.get("user_id")]
+        elif req.target == "premium":
+            usuarios = database.listar_usuarios()
+            user_ids = [u["user_id"] for u in usuarios if (u.get("plan_id") or 0) >= 2]
+        else:  # todos
+            usuarios = database.listar_usuarios()
+            user_ids = [u["user_id"] for u in usuarios]
+
+        texto = f"📢 <b>Anuncio de aBOTgado:</b>\n\n{mensaje}"
+        enviados = 0
+        fallidos = 0
+
+        for uid in user_ids:
+            ok = _enviar_mensaje_telegram(uid, texto)
+            if ok:
+                enviados += 1
+            else:
+                fallidos += 1
+            time.sleep(0.05)  # ~20 msgs/s — dentro del límite de Telegram
+
+        logger.info(f"Broadcast por admin {admin_id}: target={req.target} total={len(user_ids)} enviados={enviados} fallidos={fallidos}")
+        return {"ok": True, "enviados": enviados, "fallidos": fallidos, "total": len(user_ids)}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en /admin/broadcast: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error enviando anuncio")
 
 
 # ─── Directorio público mejorado ─────────────────────────────────────────────

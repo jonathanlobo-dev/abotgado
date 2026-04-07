@@ -1135,6 +1135,33 @@
 <!-- ═══ TOAST CONTAINER ═════════════════════════════════════════════ -->
 <div id="toast-container"></div>
 
+<!-- ═══ PANEL ANUNCIOS (admin) ══════════════════════════════════════ -->
+<div class="dir-overlay" id="anuncio-overlay"></div>
+<div class="dir-panel" id="anuncio-panel">
+  <div class="dir-header">
+    <span class="dir-logo">📢</span>
+    <span class="dir-title">Enviar anuncio</span>
+    <button class="dir-close" id="anuncio-close" title="Cerrar">✕</button>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1">
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Destinatarios</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="anuncio-target active" data-target="todos" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--accent);color:#fff;font-size:13px;cursor:pointer">👥 Todos</button>
+        <button class="anuncio-target" data-target="abogados" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;cursor:pointer">⚖️ Abogados</button>
+        <button class="anuncio-target" data-target="premium" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;cursor:pointer">⭐ Premium</button>
+      </div>
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Mensaje <span style="font-weight:400;text-transform:none">(HTML permitido: &lt;b&gt;, &lt;i&gt;, &lt;a&gt;)</span></label>
+      <textarea id="anuncio-texto" rows="7" placeholder="Escribe el mensaje del anuncio…" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+      <div id="anuncio-chars" style="text-align:right;font-size:11px;color:var(--text-muted);margin-top:3px">0 / 3000</div>
+    </div>
+    <div id="anuncio-result" style="display:none;padding:12px;border-radius:8px;font-size:13px;text-align:center"></div>
+    <button id="anuncio-enviar" style="width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">📤 Enviar anuncio</button>
+  </div>
+</div>
+
 <!-- ═══ DIRECTORIO DE ABOGADOS ══════════════════════════════════════ -->
 <div class="dir-overlay" id="dir-overlay"></div>
 <div class="dir-panel" id="dir-panel">
@@ -1446,6 +1473,7 @@
     <button class="sb-nav-item" id="sb-nav-stats">📊 Estadísticas</button>
     <button class="sb-nav-item sb-nav-admin" id="sb-nav-tickets" style="display:none">🎫 Tickets</button>
     <button class="sb-nav-item sb-nav-admin" id="sb-abog-adm-btn" style="display:none">🔧 Gestión Abogados</button>
+    <button class="sb-nav-item sb-nav-admin" id="sb-anuncio-btn" style="display:none">📢 Anuncios</button>
     <button class="sb-nav-item" id="sb-abog-sol-btn" style="display:none">⚖️ ¿Eres abogado? Regístrate</button>
     <button class="sb-nav-item" id="sb-abog-esc-btn" style="display:none">⚖️ Mi Escritorio</button>
   </nav>
@@ -2488,6 +2516,94 @@ function cerrarTickets() {
 }
 
 document.getElementById('btn-tickets').addEventListener('click', abrirTickets);
+
+// ── Panel de Anuncios (admin) ────────────────────────────────────────────────
+const anuncioPanel   = document.getElementById('anuncio-panel');
+const anuncioOverlay = document.getElementById('anuncio-overlay');
+let _anuncioTarget = 'todos';
+
+function abrirAnuncios() {
+  // Resetear estado
+  document.getElementById('anuncio-texto').value = '';
+  document.getElementById('anuncio-chars').textContent = '0 / 3000';
+  document.getElementById('anuncio-result').style.display = 'none';
+  document.getElementById('anuncio-enviar').disabled = false;
+  document.getElementById('anuncio-enviar').textContent = '📤 Enviar anuncio';
+  _anuncioTarget = 'todos';
+  document.querySelectorAll('.anuncio-target').forEach(b => {
+    const isActive = b.dataset.target === 'todos';
+    b.style.background = isActive ? 'var(--accent)' : 'var(--bg2)';
+    b.style.color      = isActive ? '#fff' : 'var(--text)';
+  });
+  anuncioPanel.classList.add('open');
+  anuncioOverlay.classList.add('open');
+}
+function cerrarAnuncios() {
+  anuncioPanel.classList.remove('open');
+  anuncioOverlay.classList.remove('open');
+}
+
+document.getElementById('anuncio-close').addEventListener('click', cerrarAnuncios);
+anuncioOverlay.addEventListener('click', cerrarAnuncios);
+
+document.querySelectorAll('.anuncio-target').forEach(btn => {
+  btn.addEventListener('click', () => {
+    _anuncioTarget = btn.dataset.target;
+    document.querySelectorAll('.anuncio-target').forEach(b => {
+      const active = b.dataset.target === _anuncioTarget;
+      b.style.background = active ? 'var(--accent)' : 'var(--bg2)';
+      b.style.color      = active ? '#fff' : 'var(--text)';
+    });
+  });
+});
+
+document.getElementById('anuncio-texto').addEventListener('input', function() {
+  document.getElementById('anuncio-chars').textContent = `${this.value.length} / 3000`;
+});
+
+document.getElementById('anuncio-enviar').addEventListener('click', async () => {
+  const texto = document.getElementById('anuncio-texto').value.trim();
+  const resultEl = document.getElementById('anuncio-result');
+  const btnEnviar = document.getElementById('anuncio-enviar');
+
+  if (!texto) { toast('Escribe el mensaje antes de enviar', 'err'); return; }
+  if (texto.length > 3000) { toast('Mensaje demasiado largo', 'err'); return; }
+
+  btnEnviar.disabled = true;
+  btnEnviar.textContent = '⏳ Enviando…';
+  resultEl.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/admin/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        init_data: window._tgInitData || '',
+        mensaje:   texto,
+        target:    _anuncioTarget,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+
+    const targetLabel = { todos: 'usuarios', abogados: 'abogados', premium: 'Premium' }[_anuncioTarget] || 'usuarios';
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'color-mix(in srgb, var(--accent) 12%, var(--bg2))';
+    resultEl.style.border = '1px solid color-mix(in srgb, var(--accent) 30%, transparent)';
+    resultEl.innerHTML = `✅ <b>Anuncio enviado</b><br>
+      <span style="color:var(--text-muted)">Enviado: <b>${data.enviados}</b> · Fallidos: <b>${data.fallidos}</b> · Total ${targetLabel}: <b>${data.total}</b></span>`;
+    btnEnviar.textContent = '✅ Enviado';
+    document.getElementById('anuncio-texto').value = '';
+    document.getElementById('anuncio-chars').textContent = '0 / 3000';
+  } catch (e) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'color-mix(in srgb, #ef4444 12%, var(--bg2))';
+    resultEl.style.border = '1px solid color-mix(in srgb, #ef4444 30%, transparent)';
+    resultEl.innerHTML = `⚠️ Error: ${e.message}`;
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = '📤 Enviar anuncio';
+  }
+});
 document.getElementById('tk-close').addEventListener('click', cerrarTickets);
 tkOverlay.addEventListener('click', cerrarTickets);
 
@@ -2768,6 +2884,8 @@ async function _initRolAbogado() {
     if (btnAdm) btnAdm.style.display = 'none';
     const navTicketsEl = document.getElementById('sb-nav-tickets');
     if (navTicketsEl) navTicketsEl.style.display = 'none';
+    const navAnuncioEl = document.getElementById('sb-anuncio-btn');
+    if (navAnuncioEl) navAnuncioEl.style.display = 'none';
 
     // Documentos: visible para todos los usuarios autenticados
     if (btnDoc) btnDoc.style.display = 'flex';
@@ -2818,6 +2936,8 @@ async function _initRolAbogado() {
       if (wrap) wrap.style.display = 'none';
       if (btnAdm) btnAdm.style.display = 'flex';
       if (navTicketsEl) navTicketsEl.style.display = 'flex';
+      const btnAnuncio = document.getElementById('sb-anuncio-btn');
+      if (btnAnuncio) btnAnuncio.style.display = 'flex';
       // En el directorio: mostrar botón de gestión en lugar del de pre-registro
       const dirAdmBtn = document.getElementById('dir-btn-admin-abog');
       if (dirAdmBtn) {
@@ -2854,6 +2974,10 @@ document.getElementById('sb-nav-tickets').addEventListener('click', () => {
 document.getElementById('sb-abog-adm-btn').addEventListener('click', () => {
   cerrarSidebar();
   abrirAdminAbogados();
+});
+document.getElementById('sb-anuncio-btn').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirAnuncios();
 });
 document.getElementById('sb-abog-sol-btn').addEventListener('click', () => {
   cerrarSidebar();
