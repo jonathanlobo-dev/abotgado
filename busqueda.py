@@ -1484,6 +1484,39 @@ RAMA_POR_TEMA = {
 }
 
 
+# ─── SCORING UNIFICADO ──────────────────────────────────────────────────────
+
+def _score_embedding(distancia: float) -> float:
+    """Convierte distancia coseno (0–0.75) a score (1.0–0.0)."""
+    return max(0.0, 1.0 - distancia / 0.75)
+
+
+def _score_bm25(score: float, max_score: float) -> float:
+    """Normaliza score BM25 al rango 0.0–1.0."""
+    return score / max_score if max_score > 0 else 0.0
+
+
+SCORE_ARTICULO_CLAVE = 0.95  # Keyword match exacto → alta confianza
+SCORE_DIRECTO = 1.0          # Lookup exacto "Art. X de Ley Y" → confianza máxima
+
+# Domain boost: artículos de la rama correcta suben, los de otra rama bajan,
+# la CRBV (constitucional) nunca se penaliza porque aplica a todos los dominios.
+DOMAIN_BOOST   = 1.3
+DOMAIN_NEUTRAL = 1.0
+DOMAIN_PENALTY = 0.5
+
+
+def _domain_multiplier(rama_art: str, ramas_detectadas: "set[str] | None") -> float:
+    """Multiplicador de relevancia según coincidencia de rama legal."""
+    if not ramas_detectadas:
+        return 1.0
+    if rama_art in ramas_detectadas:
+        return DOMAIN_BOOST
+    if rama_art in ("constitucional", "general"):
+        return DOMAIN_NEUTRAL  # CRBV y genéricas nunca penalizadas
+    return DOMAIN_PENALTY
+
+
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
 def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], float]:
@@ -1496,21 +1529,27 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     ids_vistos = set()
     relevantes = []
 
-    def agregar(arts):
+    def agregar(arts, default_score=0.5):
         for art in arts:
             clave = f"{art['ley']}_{art['articulo']}"
             if clave not in ids_vistos:
+                if "relevance_score" not in art:
+                    art["relevance_score"] = default_score
                 relevantes.append(art)
                 ids_vistos.add(clave)
 
     # 0. Búsqueda directa por artículo (si pide uno específico)
     directos = buscar_articulo_directo(pregunta)
     if directos:
+        for d in directos:
+            d["relevance_score"] = SCORE_DIRECTO
         agregar(directos)
         logger.info(f"  Búsqueda directa: {len(directos)} artículos")
 
     # 1. Artículos Clave (más precisos — keywords)
     arts_clave, temas_detectados = buscar_articulos_clave(pregunta)
+    for a in arts_clave:
+        a["relevance_score"] = SCORE_ARTICULO_CLAVE
     agregar(arts_clave)
 
     # 1b. Fallback: si keywords no detectaron nada pero el LLM sí → usar tema del LLM
@@ -1529,10 +1568,12 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
                     include=["documents", "metadatas", "distances"]
                 )
                 for i in range(len(resultado["documents"][0])):
+                    dist = resultado["distances"][0][i]
                     agregar([{
-                        "texto":    resultado["documents"][0][i],
-                        "ley":      resultado["metadatas"][0][i]["ley"],
-                        "articulo": resultado["metadatas"][0][i]["articulo"],
+                        "texto":           resultado["documents"][0][i],
+                        "ley":             resultado["metadatas"][0][i]["ley"],
+                        "articulo":        resultado["metadatas"][0][i]["articulo"],
+                        "relevance_score": _score_embedding(dist),
                     }])
             except Exception as e:
                 logger.warning(f"  Embedding fallback para {tema_llm}: {e}")
@@ -1546,104 +1587,104 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
             )
             for i in range(len(resultado["documents"])):
                 agregar([{
-                    "texto":    resultado["documents"][i],
-                    "ley":      resultado["metadatas"][i]["ley"],
-                    "articulo": resultado["metadatas"][i]["articulo"],
+                    "texto":           resultado["documents"][i],
+                    "ley":             resultado["metadatas"][i]["ley"],
+                    "articulo":        resultado["metadatas"][i]["articulo"],
+                    "relevance_score": SCORE_ARTICULO_CLAVE,
                 }])
 
-    # 2. Determinar ramas para filtrar embeddings
+    # 2. Determinar ramas detectadas (para domain boost — ya no filtro binario)
     ramas_detectadas = list(set(
         RAMA_POR_TEMA.get(t, "general") for t in temas_detectados
     )) if temas_detectados else None
-    # Si solo detectó "general", no filtrar (buscar en todo)
+    # Si solo detectó "general", tratar como sin rama (buscar en todo sin boost)
     if ramas_detectadas and ramas_detectadas == ["general"]:
         ramas_detectadas = None
 
-    # 3. Embeddings (Semántica pura) — filtrado por rama si hay tema
-    resultados_emb = buscar_embedding(pregunta_juridica, top_n=10, ramas=ramas_detectadas)
+    # 3. Embeddings (semántica pura) — sin filtro de rama, el boost lo manejará después
+    resultados_emb = buscar_embedding(pregunta_juridica, top_n=10, ramas=None)
     mejor_distancia = min((r["distancia"] for r in resultados_emb), default=1.0)
+    for r in resultados_emb:
+        r["relevance_score"] = _score_embedding(r.get("distancia", 0.5))
     agregar(resultados_emb)
 
-    # 4. BM25 (Palabras exactas) - complemento
-    agregar(buscar_bm25(pregunta_juridica, top_n=8))
-    agregar(buscar_bm25(pregunta, top_n=5))
+    # 4. BM25 (palabras exactas) — complemento léxico
+    resultados_bm25_1 = buscar_bm25(pregunta_juridica, top_n=8)
+    resultados_bm25_2 = buscar_bm25(pregunta, top_n=5)
+    max_bm25 = max(
+        (r["score_bm25"] for r in resultados_bm25_1 + resultados_bm25_2),
+        default=1.0
+    )
+    for r in resultados_bm25_1 + resultados_bm25_2:
+        r["relevance_score"] = _score_bm25(r["score_bm25"], max_bm25)
+    agregar(resultados_bm25_1)
+    agregar(resultados_bm25_2)
 
-    # 4. Filtro de Diversidad (Máx 4 por ley, máx 10 total)
-    # Priorizar artículos clave (keyword match) sobre BM25/embeddings
-    por_ley = {}
-    relevantes_finales = []
+    # 5. Scoring unificado con domain boost + ranking
     MAX_POR_LEY = 4
     MAX_TOTAL = 10
+
+    ramas_set = set(ramas_detectadas) if ramas_detectadas else None
+    for art in relevantes:
+        rama = rama_de_ley(art["ley"])
+        mult = _domain_multiplier(rama, ramas_set)
+        art["score_final"] = art.get("relevance_score", 0.5) * mult
+
+    relevantes_sorted = sorted(relevantes, key=lambda a: a["score_final"], reverse=True)
+
+    # Log top 5 candidatos para debugging en Railway
+    for art in relevantes_sorted[:5]:
+        rama_art = rama_de_ley(art["ley"])
+        mult = _domain_multiplier(rama_art, ramas_set)
+        logger.info(
+            f"    [{rama_art}] {art['ley']} Art.{art['articulo']}: "
+            f"rel={art.get('relevance_score', 0):.2f} × dom={mult:.1f} "
+            f"= {art['score_final']:.2f}"
+        )
 
     # Calcular leyes a excluir según temas detectados
     leyes_excluidas: set[str] = set()
     for tema in temas_detectados:
         leyes_excluidas |= LEYES_EXCLUIR_POR_TEMA.get(tema, set())
 
-    # Filtrado por rama: si el clasificador detectó una rama específica (no "general"),
-    # descartar artículos de otras ramas traídos por BM25 / lookup directo.
-    # Esto evita citar, por ej., Art. 104 Código de Comercio para una pregunta laboral.
-    # Resolvemos la rama con LEY_A_RAMA (fuente única de verdad), ignorando el metadata
-    # del artículo que puede estar ausente o desactualizado.
-    if ramas_detectadas:
-        ramas_set = set(ramas_detectadas)
-        candidatos_rama = [a for a in relevantes if rama_de_ley(a["ley"]) in ramas_set]
-        # Solo aplicar el filtro si deja al menos 1 candidato; si no, usar todos (fallback)
-        if candidatos_rama:
-            logger.info(f"  Filtro por rama {ramas_set}: {len(relevantes)} → {len(candidatos_rama)} candidatos")
-            relevantes_iter = candidatos_rama
-        else:
-            relevantes_iter = relevantes
-    else:
-        relevantes_iter = relevantes
-
-    for art in relevantes_iter:
+    # Diversidad: max 4 por ley, max 10 total — sobre lista ya ordenada por score
+    por_ley: dict = {}
+    relevantes_finales = []
+    for art in relevantes_sorted:
         ley = art["ley"]
-
-        # Omitir leyes que el tema principal hace irrelevantes
         if ley in leyes_excluidas:
             continue
-
-        if ley not in por_ley:
-            por_ley[ley] = 0
-
+        por_ley.setdefault(ley, 0)
         if por_ley[ley] < MAX_POR_LEY:
             relevantes_finales.append(art)
             por_ley[ley] += 1
-
         if len(relevantes_finales) >= MAX_TOTAL:
             break
 
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
 
-    # ── FALLBACK: si el filtro de rama bloqueó artículos válidos, reintentar sin él ──
-    # Ocurre cuando el clasificador detecta un tema incorrecto (ej: "laboral" para
-    # "asociación para delinquir") → embeddings filtrados a rama equivocada → vacío.
-    if not relevantes_finales and ramas_detectadas is not None:
-        logger.info(f"  ↻ Retry embeddings global (ramas={ramas_detectadas} no produjo resultados)")
+    # ── FALLBACK: safety net si el scoring dejó vacío (no debería ocurrir) ──
+    if not relevantes_finales:
+        logger.info(f"  ↻ Fallback global (scoring produjo lista vacía)")
         resultados_global = buscar_embedding(pregunta_juridica, top_n=10, ramas=None)
         dist_global = min((r["distancia"] for r in resultados_global), default=1.0)
-
         if dist_global < UMBRAL_RECHAZO:
-            logger.info(f"  ✓ Retry global encontró artículos relevantes (dist={dist_global:.3f})")
             mejor_distancia = dist_global
+            por_ley_r: dict = {}
             for art in resultados_global:
                 clave = f"{art['ley']}_{art['articulo']}"
                 if clave not in ids_vistos:
                     relevantes.append(art)
                     ids_vistos.add(clave)
-
-            por_ley_r: dict = {}
-            for art in relevantes:
+            for art in resultados_global:
                 ley = art["ley"]
-                if ley not in por_ley_r:
-                    por_ley_r[ley] = 0
+                por_ley_r.setdefault(ley, 0)
                 if por_ley_r[ley] < MAX_POR_LEY:
                     relevantes_finales.append(art)
                     por_ley_r[ley] += 1
                 if len(relevantes_finales) >= MAX_TOTAL:
                     break
-            logger.info(f"  Total al LLM (retry): {len(relevantes_finales)}")
+            logger.info(f"  Total al LLM (fallback): {len(relevantes_finales)}")
 
     if not relevantes_finales:
         return [], "", temas_detectados, mejor_distancia
