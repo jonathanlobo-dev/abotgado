@@ -420,7 +420,16 @@
       "trasladar trabajador",
       "me cambiaron de trabajo",
       "traslado sin avisar",
-      "nuevo lugar de trabajo"
+      "nuevo lugar de trabajo",
+      "contrato temporal",
+      "contrato a tiempo determinado",
+      "contrato por tiempo determinado",
+      "contrato renovado",
+      "renovaciones de contrato",
+      "ya soy fijo",
+      "volverme fijo",
+      "convertirse en fijo",
+      "contrato indefinido"
     ],
     "ley": "Ley Orgánica del Trabajo (LOTTT)",
     "articulos": [
@@ -1796,6 +1805,8 @@
       "obligación civil",
       "obligacion civil",
       "contrato de compraventa",
+      "contrato de venta",
+      "contrato verbal",
       "contrato de servicios",
       "contrato firmado",
       "incumplimiento de contrato",
