@@ -1055,6 +1055,20 @@
     .dir-card-modalidad { font-size: 11px; color: var(--text2); }
     .dir-card-metodos { font-size: 11px; color: var(--text2); }
 
+    /* Sidebar — nav */
+    .sb-nav { border-bottom: 1px solid var(--border); padding: 4px 8px 8px; }
+    .sb-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 9px 12px;
+      background: none; border: none;
+      color: var(--text); font-size: 13px; text-align: left;
+      cursor: pointer; border-radius: 8px;
+      transition: background .15s;
+    }
+    .sb-nav-item:hover { background: var(--surface2); }
+    .sb-nav-admin { color: #ca8a04; }
+    [data-theme="dark"] .sb-nav-admin { color: #fcd34d; }
+
     /* Sidebar — botón abogado */
     .sb-abog-btn {
       margin: 8px 12px 0;
@@ -1425,6 +1439,14 @@
   <button class="sb-new" id="sb-new">
     ✏️ Nueva conversación
   </button>
+  <nav class="sb-nav">
+    <button class="sb-nav-item" id="sb-nav-conv">💬 Conversaciones</button>
+    <button class="sb-nav-item" id="sb-nav-dir">👨‍⚖️ Directorio</button>
+    <button class="sb-nav-item" id="sb-nav-doc" style="display:none">📄 Documentos</button>
+    <button class="sb-nav-item" id="sb-nav-stats">📊 Estadísticas</button>
+    <button class="sb-nav-item sb-nav-admin" id="sb-nav-tickets" style="display:none">🎫 Tickets</button>
+    <button class="sb-nav-item sb-nav-admin" id="sb-nav-abog-admin" style="display:none">🔧 Gestión Abogados</button>
+  </nav>
   <div class="sb-list" id="sb-list">
     <div class="sb-loading">Cargando…</div>
   </div>
@@ -1479,9 +1501,9 @@
     </div>
   </div>
   <div class="h-actions">
-    <button class="btn-icon" id="btn-dir"    title="Directorio de abogados">👨‍⚖️</button>
-    <button class="btn-icon" id="btn-tickets" title="Tickets de feedback" style="display:none">🎫</button>
-    <button class="btn-icon" id="btn-export" title="Exportar conversación">📥</button>
+    <button class="btn-icon" id="btn-dir"    title="Directorio de abogados" style="display:none">👨‍⚖️</button>
+    <button class="btn-icon" id="btn-tickets" title="Tickets de feedback"   style="display:none">🎫</button>
+    <button class="btn-icon" id="btn-export" title="Exportar conversación"  style="display:none">📥</button>
     <button class="btn-icon" id="btn-nuevo"  title="Nueva consulta">✏️ Nuevo</button>
     <button class="btn-icon" id="btn-theme"  title="Cambiar tema">🌙</button>
   </div>
@@ -1532,7 +1554,7 @@
     <button class="btn-send" id="btn-send" disabled>➤</button>
   </div>
   <div class="input-hint">
-    ⚠️ Info orientativa · No sustituye asesoría legal · <strong>Enter</strong> enviar · <strong>Shift+Enter</strong> nueva línea
+    ⚠️ Info orientativa · No sustituye asesoría legal
   </div>
 </div>
 
@@ -2332,67 +2354,6 @@ document.getElementById('btn-dir').addEventListener('click', abrirDirectorio);
 document.getElementById('dir-close').addEventListener('click', cerrarDirectorio);
 dirOverlay.addEventListener('click', cerrarDirectorio);
 
-async function cargarDirectorio() {
-  if (_dirDatos.length) { renderDirectorio(_dirDatos); return; }
-  dirList.innerHTML = '<div class="sb-loading">Cargando directorio…</div>';
-  try {
-    const res = await fetch(`${API}/directorio`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    _dirDatos = await res.json();
-    renderDirectorio(_dirDatos);
-  } catch (e) {
-    dirList.innerHTML = '<div class="dir-empty">⚠️ Error cargando el directorio.<br><small>Intenta cerrar y volver a abrir.</small></div>';
-  }
-}
-
-function renderDirectorio(lista) {
-  const q = (dirFiltro.value || '').toLowerCase().trim();
-  const filtrada = q
-    ? lista.filter(a =>
-        a.especialidad.toLowerCase().includes(q) ||
-        a.estado.toLowerCase().includes(q) ||
-        a.nombre.toLowerCase().includes(q)
-      )
-    : lista;
-
-  if (!filtrada.length) {
-    dirList.innerHTML = q
-      ? `<div class="dir-empty">Sin resultados para "<b>${q}</b>".<br>Prueba con otro término.</div>`
-      : `<div class="dir-empty">👨‍⚖️<br><br>Aún no hay abogados registrados.<br><small>Próximamente podrás encontrar<br>profesionales verificados aquí.</small></div>`;
-    return;
-  }
-
-  dirList.innerHTML = `<div class="dir-count">${filtrada.length} abogado${filtrada.length !== 1 ? 's' : ''} encontrado${filtrada.length !== 1 ? 's' : ''}</div>`;
-  filtrada.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'dir-card';
-
-    // Detectar si el teléfono parece WhatsApp (número venezolano móvil 04xx)
-    const telLimpio = (a.telefono || '').replace(/\D/g, '');
-    const esMovil   = telLimpio.startsWith('04') || telLimpio.startsWith('58');
-    const numWA     = telLimpio.startsWith('04') ? '58' + telLimpio.slice(1) : telLimpio;
-    const enlace    = esMovil
-      ? `https://wa.me/${numWA}`
-      : `tel:${a.telefono}`;
-    const btnClass  = esMovil ? 'dir-btn-contact wa' : 'dir-btn-contact';
-    const btnIcon   = esMovil ? '💬' : '📞';
-    const btnLabel  = esMovil ? 'WhatsApp' : 'Llamar';
-
-    card.innerHTML = `
-      <div class="dir-card-nombre">${_esc(a.nombre)}</div>
-      <div class="dir-card-inpre">INPRE ${_esc(a.inpreabogado)}</div>
-      <div class="dir-card-esp">🏛️ ${_esc((() => { try { const e = typeof a.especialidad === 'string' ? JSON.parse(a.especialidad) : a.especialidad; return Array.isArray(e) ? e.join(' · ') : (a.especialidad || ''); } catch { return a.especialidad || ''; } })())}</div>
-      <div class="dir-card-loc">📍 ${_esc(a.estado)}</div>
-      ${a.notas ? `<div class="dir-card-notas">${_esc(a.notas)}</div>` : ''}
-      <div class="dir-card-footer">
-        <a class="${btnClass}" href="${enlace}" target="_blank" rel="noopener">
-          ${btnIcon} ${btnLabel}
-        </a>
-      </div>`;
-    dirList.appendChild(card);
-  });
-}
-
 // Filtro en tiempo real (client-side, no vuelve a la API)
 dirFiltro.addEventListener('input', () => renderDirectorio(_dirDatos));
 
@@ -2447,9 +2408,6 @@ async function cargarStats() {
     if (res.ok) {
       const s = await res.json();
       statsAdmin.style.display = 'block';
-      // Mostrar botón 🎫 de tickets en el header
-      const btnTk = document.getElementById('btn-tickets');
-      if (btnTk) btnTk.style.display = '';
       let planesHtml = '';
       for (const [nombre, count] of Object.entries(s.por_plan)) {
         planesHtml += `
@@ -2734,11 +2692,13 @@ function renderDirectorio(lista) {
   const q = (dirFiltro.value || '').toLowerCase().trim();
   let filtrada = lista;
   if (_dirModalidad) filtrada = filtrada.filter(a => (a.modalidad || '') === _dirModalidad || a.modalidad === 'ambas');
-  if (q) filtrada = filtrada.filter(a =>
-    (a.nombre || '').toLowerCase().includes(q) ||
-    (a.especialidad || '').toLowerCase().includes(q) ||
-    (a.estado_geo || a.estado || '').toLowerCase().includes(q)
-  );
+  if (q) filtrada = filtrada.filter(a => {
+    let espTxt = '';
+    try { const e = typeof a.especialidad === 'string' ? JSON.parse(a.especialidad) : (a.especialidad || []); espTxt = Array.isArray(e) ? e.join(' ') : String(a.especialidad || ''); } catch { espTxt = String(a.especialidad || ''); }
+    return (a.nombre || '').toLowerCase().includes(q) ||
+           espTxt.toLowerCase().includes(q) ||
+           (a.estado_geo || a.estado || '').toLowerCase().includes(q);
+  });
 
   if (!filtrada.length) {
     dirList.innerHTML = q || _dirModalidad
@@ -2817,38 +2777,40 @@ async function _initRolAbogado() {
     const dirBtn = document.getElementById('dir-btn-registro');
 
     // Mostrar botón de documentos para todos los usuarios autenticados
-    if (btnDoc) btnDoc.style.display = '';
+    if (btnDoc) btnDoc.style.display = 'block';
+    const navDoc = document.getElementById('sb-nav-doc');
+    if (navDoc) navDoc.style.display = 'flex';
 
     if (window._esAbogado) {
-      btnEsc.style.display = '';
+      btnEsc.style.display = 'block';
     } else if (data.tiene_solicitud) {
-      btnSol.style.display = '';
+      btnSol.style.display = 'block';
       const estado = data.estado;
       if (estado === 'en_revision') {
         btnSol.textContent = '🔄 En revisión';
         btnSol.disabled = true; btnSol.style.opacity = '0.7'; btnSol.style.cursor = 'default';
         if (wrap) {
-          wrap.style.display = '';
+          wrap.style.display = 'block';
           dirBtn.textContent = '🔄 En revisión'; dirBtn.disabled = true;
           dirBtn.style.opacity = '0.6'; dirBtn.style.cursor = 'default';
         }
       } else if (estado === 'correccion_solicitada') {
         btnSol.textContent = '⚠️ Corrección requerida';
-        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '⚠️ Corrección requerida'; }
+        if (wrap) { wrap.style.display = 'block'; dirBtn.textContent = '⚠️ Corrección requerida'; }
       } else if (estado === 'pendiente') {
         btnSol.textContent = '✏️ Editar solicitud';
-        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '✏️ Editar solicitud'; }
+        if (wrap) { wrap.style.display = 'block'; dirBtn.textContent = '✏️ Editar solicitud'; }
       } else if (estado === 'rechazada') {
         // Rechazada: permitir nueva solicitud (formulario limpio)
         btnSol.textContent = '📋 Nueva solicitud';
-        if (wrap) { wrap.style.display = ''; dirBtn.textContent = '📋 Nueva solicitud'; }
+        if (wrap) { wrap.style.display = 'block'; dirBtn.textContent = '📋 Nueva solicitud'; }
       } else {
         btnSol.textContent = '📋 Solicitud enviada';
         btnSol.disabled = true; btnSol.style.opacity = '0.7';
       }
     } else {
-      btnSol.style.display = '';
-      if (wrap) wrap.style.display = '';
+      btnSol.style.display = 'block';
+      if (wrap) wrap.style.display = 'block';
     }
 
     // Detectar admin: primero por initData validado, fallback por user_id
@@ -2861,18 +2823,48 @@ async function _initRolAbogado() {
     }
     window._esAdmin = isAdmin;
     if (isAdmin) {
-      if (btnAdm) btnAdm.style.display = '';
+      if (btnAdm) btnAdm.style.display = 'block';
+      const navTickets = document.getElementById('sb-nav-tickets');
+      const navAbogAdmin = document.getElementById('sb-nav-abog-admin');
+      if (navTickets) navTickets.style.display = 'flex';
+      if (navAbogAdmin) navAbogAdmin.style.display = 'flex';
       // En el directorio: mostrar botón de gestión en lugar del de pre-registro
       const dirAdmBtn = document.getElementById('dir-btn-admin-abog');
       if (dirAdmBtn) {
         if (dirBtn) dirBtn.style.display = 'none';
-        dirAdmBtn.style.display = '';
-        if (wrap) wrap.style.display = '';
+        dirAdmBtn.style.display = 'block';
+        if (wrap) wrap.style.display = 'block';
         dirAdmBtn.onclick = () => abrirAdminAbogados();
       }
     }
   } catch (e) { /* silencioso */ }
 }
+
+// ── Handlers del nav del sidebar ────────────────────────────────────
+document.getElementById('sb-nav-conv').addEventListener('click', () => {
+  cerrarSidebar();
+  document.getElementById('sb-list').scrollIntoView({ behavior: 'smooth' });
+});
+document.getElementById('sb-nav-dir').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirDirectorio();
+});
+document.getElementById('sb-nav-doc').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirDocumentos();
+});
+document.getElementById('sb-nav-stats').addEventListener('click', () => {
+  cargarStats();
+  setTimeout(() => document.getElementById('sb-stats').scrollIntoView({ behavior: 'smooth' }), 100);
+});
+document.getElementById('sb-nav-tickets').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirTickets();
+});
+document.getElementById('sb-nav-abog-admin').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirAdminAbogados();
+});
 
 // El botón admin de abogados se muestra en _initRolAbogado si el admin check pasa.
 
