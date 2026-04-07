@@ -1442,10 +1442,12 @@
   <nav class="sb-nav">
     <button class="sb-nav-item" id="sb-nav-conv">💬 Conversaciones</button>
     <button class="sb-nav-item" id="sb-nav-dir">👨‍⚖️ Directorio</button>
-    <button class="sb-nav-item" id="sb-nav-doc" style="display:none">📄 Documentos</button>
+    <button class="sb-nav-item" id="sb-doc-btn" style="display:none">📄 Documentos</button>
     <button class="sb-nav-item" id="sb-nav-stats">📊 Estadísticas</button>
     <button class="sb-nav-item sb-nav-admin" id="sb-nav-tickets" style="display:none">🎫 Tickets</button>
-    <button class="sb-nav-item sb-nav-admin" id="sb-nav-abog-admin" style="display:none">🔧 Gestión Abogados</button>
+    <button class="sb-nav-item sb-nav-admin" id="sb-abog-adm-btn" style="display:none">🔧 Gestión Abogados</button>
+    <button class="sb-nav-item" id="sb-abog-sol-btn" style="display:none">⚖️ ¿Eres abogado? Regístrate</button>
+    <button class="sb-nav-item" id="sb-abog-esc-btn" style="display:none">⚖️ Mi Escritorio</button>
   </nav>
   <div class="sb-list" id="sb-list">
     <div class="sb-loading">Cargando…</div>
@@ -1462,20 +1464,6 @@
       <div class="sb-stats-grid" id="sb-stats-admin-grid"></div>
     </div>
   </div>
-
-  <!-- Sección abogado (rol-dependiente, se rellena en JS) -->
-  <button class="sb-abog-btn" id="sb-doc-btn" title="Generar documentos legales" style="display:none">
-    📄 Documentos Legales
-  </button>
-  <button class="sb-abog-btn" id="sb-abog-sol-btn" title="Registrarte como abogado verificado">
-    ⚖️ ¿Eres abogado? Regístrate
-  </button>
-  <button class="sb-abog-btn" id="sb-abog-esc-btn" title="Escritorio del abogado">
-    ⚖️ Mi Escritorio
-  </button>
-  <button class="sb-abog-btn" id="sb-abog-adm-btn" title="Gestión de abogados (admin)" style="background:rgba(234,179,8,.1);color:#ca8a04;border-color:rgba(234,179,8,.2)">
-    🔧 Gestión de Abogados
-  </button>
 
   <!-- Perfil del usuario -->
   <div class="sb-profile" id="sb-profile">
@@ -2779,19 +2767,15 @@ async function _initRolAbogado() {
     btnEsc.style.display = 'none';
     if (btnAdm) btnAdm.style.display = 'none';
     const navTicketsEl = document.getElementById('sb-nav-tickets');
-    const navAbogAdmEl = document.getElementById('sb-nav-abog-admin');
     if (navTicketsEl) navTicketsEl.style.display = 'none';
-    if (navAbogAdmEl) navAbogAdmEl.style.display = 'none';
 
-    // Mostrar botón de documentos para todos los usuarios autenticados
-    if (btnDoc) btnDoc.style.display = 'block';
-    const navDoc = document.getElementById('sb-nav-doc');
-    if (navDoc) navDoc.style.display = 'flex';
+    // Documentos: visible para todos los usuarios autenticados
+    if (btnDoc) btnDoc.style.display = 'flex';
 
     if (window._esAbogado) {
-      btnEsc.style.display = 'block';
+      btnEsc.style.display = 'flex';
     } else if (data.tiene_solicitud) {
-      btnSol.style.display = 'block';
+      btnSol.style.display = 'flex';
       const estado = data.estado;
       if (estado === 'en_revision') {
         btnSol.textContent = '🔄 En revisión';
@@ -2808,7 +2792,6 @@ async function _initRolAbogado() {
         btnSol.textContent = '✏️ Editar solicitud';
         if (wrap) { wrap.style.display = 'block'; dirBtn.textContent = '✏️ Editar solicitud'; }
       } else if (estado === 'rechazada') {
-        // Rechazada: permitir nueva solicitud (formulario limpio)
         btnSol.textContent = '📋 Nueva solicitud';
         if (wrap) { wrap.style.display = 'block'; dirBtn.textContent = '📋 Nueva solicitud'; }
       } else {
@@ -2816,7 +2799,7 @@ async function _initRolAbogado() {
         btnSol.disabled = true; btnSol.style.opacity = '0.7';
       }
     } else {
-      btnSol.style.display = 'block';
+      btnSol.style.display = 'flex';
       if (wrap) wrap.style.display = 'block';
     }
 
@@ -2830,14 +2813,11 @@ async function _initRolAbogado() {
     }
     window._esAdmin = isAdmin;
     if (isAdmin) {
-      // Admin no necesita ver la opción de registrarse como abogado
+      // Admin no ve la opción de registrarse como abogado
       btnSol.style.display = 'none';
       if (wrap) wrap.style.display = 'none';
-      if (btnAdm) btnAdm.style.display = 'block';
-      const navTickets = document.getElementById('sb-nav-tickets');
-      const navAbogAdmin = document.getElementById('sb-nav-abog-admin');
-      if (navTickets) navTickets.style.display = 'flex';
-      if (navAbogAdmin) navAbogAdmin.style.display = 'flex';
+      if (btnAdm) btnAdm.style.display = 'flex';
+      if (navTicketsEl) navTicketsEl.style.display = 'flex';
       // En el directorio: mostrar botón de gestión en lugar del de pre-registro
       const dirAdmBtn = document.getElementById('dir-btn-admin-abog');
       if (dirAdmBtn) {
@@ -2859,7 +2839,7 @@ document.getElementById('sb-nav-dir').addEventListener('click', () => {
   cerrarSidebar();
   abrirDirectorio();
 });
-document.getElementById('sb-nav-doc').addEventListener('click', () => {
+document.getElementById('sb-doc-btn').addEventListener('click', () => {
   cerrarSidebar();
   abrirDocumentos();
 });
@@ -2871,9 +2851,17 @@ document.getElementById('sb-nav-tickets').addEventListener('click', () => {
   cerrarSidebar();
   abrirTickets();
 });
-document.getElementById('sb-nav-abog-admin').addEventListener('click', () => {
+document.getElementById('sb-abog-adm-btn').addEventListener('click', () => {
   cerrarSidebar();
   abrirAdminAbogados();
+});
+document.getElementById('sb-abog-sol-btn').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirSolicitud();
+});
+document.getElementById('sb-abog-esc-btn').addEventListener('click', () => {
+  cerrarSidebar();
+  abrirEscritorio();
 });
 
 // El botón admin de abogados se muestra en _initRolAbogado si el admin check pasa.
@@ -2982,11 +2970,6 @@ document.getElementById('dir-btn-registro').addEventListener('click', () => {
 document.getElementById('sol-close').addEventListener('click', cerrarSolicitud);
 document.getElementById('sol-cancelar').addEventListener('click', cerrarSolicitud);
 solOverlay.addEventListener('click', cerrarSolicitud);
-document.getElementById('sb-abog-sol-btn').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('open');
-  abrirSolicitud();
-});
 
 document.getElementById('sol-enviar').addEventListener('click', async () => {
   // Validar campos
@@ -3080,11 +3063,6 @@ function cerrarEscritorio() {
 
 document.getElementById('esc-close').addEventListener('click', cerrarEscritorio);
 escOverlay.addEventListener('click', cerrarEscritorio);
-document.getElementById('sb-abog-esc-btn').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('open');
-  abrirEscritorio();
-});
 
 // Tabs del escritorio
 document.getElementById('esc-tabs').addEventListener('click', e => {
@@ -3657,6 +3635,13 @@ const _DOC_PLANTILLAS = {
 // Regex de inyección (cliente)
 const _INJECTION_RE = /ignore\s+previous|forget\s+(all|everything)|you\s+are\s+now|act\s+as|system\s*:|assistant\s*:|jailbreak|\[INST\]/gi;
 
+function _formatearFechaES(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+}
+
 // Caracteres permitidos por tipo (para bloquear en keydown)
 const _LETRAS_RE = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\.\-]$/;
 const _CEDULA_RE = /^[VEveJ0-9\-\.]$/;
@@ -3736,16 +3721,20 @@ function _docAbrirForm(pid) {
   for (const campo of p.campos) {
     const wrap = document.createElement('div');
     const esLargo = campo.tipo === 'texto' && campo.max > 100;
+    const esFecha = campo.tipo === 'fecha';
+    const inputStyle = 'width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;box-sizing:border-box';
+    let inputHtml;
+    if (esFecha) {
+      const hoy = new Date().toISOString().slice(0, 10);
+      inputHtml = `<input id="docf-${campo.id}" type="date" value="${hoy}" style="${inputStyle}">`;
+    } else if (esLargo) {
+      inputHtml = `<textarea id="docf-${campo.id}" maxlength="${campo.max}" rows="3" placeholder="${campo.ej}" style="${inputStyle.replace('padding:9px 10px', 'padding:9px 10px')};resize:none"></textarea>`;
+    } else {
+      inputHtml = `<input id="docf-${campo.id}" type="text" maxlength="${campo.max}" placeholder="${campo.ej}" autocomplete="off" spellcheck="false" style="${inputStyle}">`;
+    }
     wrap.innerHTML = `
       <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">${campo.label} <span style="color:#ef4444">*</span></label>
-      ${esLargo
-        ? `<textarea id="docf-${campo.id}" maxlength="${campo.max}" rows="3"
-            placeholder="${campo.ej}"
-            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;resize:none;box-sizing:border-box"></textarea>`
-        : `<input id="docf-${campo.id}" type="text" maxlength="${campo.max}"
-            placeholder="${campo.ej}" autocomplete="off" spellcheck="false"
-            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;box-sizing:border-box">`
-      }
+      ${inputHtml}
       <span id="docf-${campo.id}-err" style="display:none;font-size:11px;color:#ef4444;margin-top:2px"></span>`;
     campos.appendChild(wrap);
     const el = document.getElementById(`docf-${campo.id}`);
@@ -3811,7 +3800,7 @@ document.getElementById('doc-btn-generar').addEventListener('click', async () =>
       el.style.borderColor = '#ef4444';
       ok = false; continue;
     }
-    datos[campo.id] = val;
+    datos[campo.id] = campo.tipo === 'fecha' ? _formatearFechaES(el.value) : val;
   }
   if (!ok) { toast('Corrige los campos marcados', 'err'); return; }
 
@@ -3882,11 +3871,6 @@ document.getElementById('doc-btn-generar').addEventListener('click', async () =>
 
 document.getElementById('doc-close').addEventListener('click', cerrarDocumentos);
 docOverlay.addEventListener('click', cerrarDocumentos);
-document.getElementById('sb-doc-btn').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('open');
-  abrirDocumentos();
-});
 
 // ═══════════════════════════════════════════════════════════════════
 // VALIDACIONES FORMULARIO SOLICITUD ABOGADO
