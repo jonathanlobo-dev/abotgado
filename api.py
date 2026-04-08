@@ -335,7 +335,7 @@ def _cmd_referir(user_id_raw: str) -> ConsultaResponse:
     try:
         import db as database
         count = database.obtener_referidos_count(uid)
-        enlace = f"https://t.me/aBOTgadoVEBot?start=ref_{uid}"
+        enlace = f"https://t.me/{config.BOT_USERNAME}?start=ref_{uid}"
         texto = (
             f"🔗 <b>Tu enlace de referido</b>\n\n"
             f"<code>{enlace}</code>\n\n"
