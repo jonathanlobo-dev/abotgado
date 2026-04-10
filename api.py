@@ -730,6 +730,8 @@ def consultar(req: ConsultaRequest):
             temas      = []
             confianza  = "n/a"
 
+        resp_html = motor.formatear_respuesta(resp_html)
+
         # ── Auto-guardar en conversación TMA si se indicó conv_id ──
         if req.conv_id and req.user_id != "tma_anonimo":
             try:
