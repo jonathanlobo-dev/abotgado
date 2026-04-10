@@ -429,7 +429,33 @@
       "ya soy fijo",
       "volverme fijo",
       "convertirse en fijo",
-      "contrato indefinido"
+      "contrato indefinido",
+      "permiso por fallecimiento",
+      "murió un familiar",
+      "murio un familiar",
+      "falleció un familiar",
+      "fallecio un familiar",
+      "muerte de un familiar",
+      "días por muerte",
+      "dias por muerte",
+      "permiso por luto",
+      "licencia por luto",
+      "permiso remunerado",
+      "días de permiso",
+      "dias de permiso",
+      "permiso personal",
+      "licencia personal",
+      "se murió mi",
+      "se murio mi",
+      "falleció mi",
+      "fallecio mi",
+      "murió mi",
+      "murio mi",
+      "muerte familiar",
+      "duelo laboral",
+      "días pagados por muerte",
+      "cuántos días de permiso",
+      "cuantos dias de permiso"
     ],
     "ley": "Ley Orgánica del Trabajo (LOTTT)",
     "articulos": [
@@ -445,7 +471,10 @@
       167,
       173,
       174,
-      175
+      175,
+      339,
+      193,
+      194
     ]
   },
   "comunicaciones": {

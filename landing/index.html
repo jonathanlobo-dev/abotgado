@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="aBOTgado — Tu asistente legal venezolano en Telegram. Consulta leyes, conoce tus derechos y recibe orientación jurídica al instante." />
+  <meta property="og:title" content="aBOTgado — Tu asistente legal en Telegram" />
+  <meta property="og:description" content="Consulta leyes venezolanas al instante, sin cita ni espera. Disponible 24/7 en Telegram." />
+  <meta property="og:image" content="logo.png" />
+  <title>aBOTgado — Tu asistente legal en Telegram</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#05101f',
+              900: '#0d1b3e',
+              800: '#142454',
+              700: '#1b3068',
+            },
+            gold: {
+              300: '#eddfa8',
+              400: '#d9c07a',
+              500: '#c9a84c',
+              600: '#a8863a',
+            }
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .gold-gradient { background: linear-gradient(135deg, #c9a84c 0%, #e8d5a0 50%, #c9a84c 100%); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c9a84c, #d4b96a);
+      color: #0d1b3e;
+      font-weight: 800;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #d4b96a, #eddfa8);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(201, 168, 76, 0.45);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .card {
+      background: rgba(27, 48, 104, 0.25);
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-glow {
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201, 168, 76, 0.12) 0%, transparent 60%),
+        #0d1b3e;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    .float { animation: float 5s ease-in-out infinite; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+    .chat-bubble-user {
+      background: rgba(201, 168, 76, 0.15);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    }
+    .chat-bubble-bot {
+      background: rgba(27, 48, 104, 0.5);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    }
+
+    .step-number {
+      background: linear-gradient(135deg, #c9a84c, #d4b96a);
+      color: #0d1b3e;
+      font-weight: 900;
+      font-size: 1.5rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+    }
+
+    .section-divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent);
+    }
+  </style>
+</head>
+
+<body class="bg-navy-900 text-white min-h-screen">
+
+  <!-- ─── NAV ─────────────────────────────────────────────────────── -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-navy-900/85 backdrop-blur-lg border-b border-gold-500/15">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <span class="font-black text-xl tracking-tight select-none">
+        <span class="text-white">aBOT</span><span class="text-gold-500">gado</span>
+      </span>
+      <a href="https://t.me/abotgadoBOT" target="_blank" rel="noopener"
+         class="btn-primary px-5 py-2.5 rounded-full text-sm">
+        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-2.04 9.61c-.15.67-.546.834-1.107.518l-3.059-2.254-1.476 1.42c-.163.163-.3.3-.617.3l.22-3.117 5.675-5.127c.247-.22-.054-.34-.382-.122L7.932 13.6l-3.023-.944c-.657-.205-.67-.657.138-.972l11.81-4.554c.547-.198 1.026.133.705.118z"/>
+        </svg>
+        Abrir en Telegram
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────────── -->
+  <section class="hero-glow pt-28 pb-24 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+
+      <!-- Beta badge -->
+      <div class="inline-flex items-center gap-2 bg-gold-500/10 border border-gold-500/25 text-gold-400 text-xs font-semibold px-4 py-2 rounded-full mb-10">
+        <span class="pulse-dot w-2 h-2 bg-gold-500 rounded-full shrink-0"></span>
+        Beta Pública · Venezuela · Gratis para empezar
+      </div>
+
+      <!-- Logo -->
+      <div class="float mb-8">
+        <img src="logo.png" alt="aBOTgado logo"
+             class="w-44 h-44 mx-auto rounded-full object-cover"
+             style="box-shadow: 0 0 80px rgba(201,168,76,0.25), 0 0 0 3px rgba(201,168,76,0.15);" />
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-4xl sm:text-5xl font-black leading-tight mb-5">
+        Tu abogado venezolano,<br/>
+        <span class="text-gold-400">disponible las 24 horas</span>
+      </h1>
+
+      <p class="text-lg text-slate-300 leading-relaxed mb-10 max-w-xl mx-auto">
+        Consulta leyes venezolanas, conoce tus derechos y recibe orientación jurídica al instante —
+        directamente en Telegram, sin cita, sin espera.
+      </p>
+
+      <a href="https://t.me/abotgadoBOT" target="_blank" rel="noopener"
+         class="btn-primary px-8 py-4 rounded-2xl text-lg mb-5">
+        <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-2.04 9.61c-.15.67-.546.834-1.107.518l-3.059-2.254-1.476 1.42c-.163.163-.3.3-.617.3l.22-3.117 5.675-5.127c.247-.22-.054-.34-.382-.122L7.932 13.6l-3.023-.944c-.657-.205-.67-.657.138-.972l11.81-4.554c.547-.198 1.026.133.705.118z"/>
+        </svg>
+        Consultar ahora — es gratis
+      </a>
+      <p class="text-slate-500 text-sm">Sin registro previo · Responde en segundos</p>
+
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── QUÉ RESUELVE ──────────────────────────────────────────────── -->
+  <section class="py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-3">¿Qué puedes consultar?</h2>
+      <p class="text-slate-400 text-center mb-12 text-base">Más de 50 temas legales venezolanos con el artículo de ley exacto</p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">⚖️</div>
+          <div class="text-sm font-semibold">Derechos laborales</div>
+          <div class="text-xs text-slate-400 mt-1">Despidos, liquidaciones, LOTTT</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">🏠</div>
+          <div class="text-sm font-semibold">Arrendamiento</div>
+          <div class="text-xs text-slate-400 mt-1">Inquilinos, depósitos, desalojo</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">👨‍👩‍👧</div>
+          <div class="text-sm font-semibold">Familia y menores</div>
+          <div class="text-xs text-slate-400 mt-1">LOPNA, manutención, custodia</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">🚔</div>
+          <div class="text-sm font-semibold">Penal y seguridad</div>
+          <div class="text-xs text-slate-400 mt-1">Detenciones, derechos, denuncias</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">📋</div>
+          <div class="text-sm font-semibold">Contratos</div>
+          <div class="text-xs text-slate-400 mt-1">Deudas, incumplimientos</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">🚗</div>
+          <div class="text-sm font-semibold">Tránsito</div>
+          <div class="text-xs text-slate-400 mt-1">Accidentes, multas, licencias</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">🏥</div>
+          <div class="text-sm font-semibold">Salud y consumidor</div>
+          <div class="text-xs text-slate-400 mt-1">Derechos del paciente</div>
+        </div>
+        <div class="card rounded-2xl p-4 text-center hover:border-gold-500/35 transition-colors">
+          <div class="text-3xl mb-2">🏢</div>
+          <div class="text-sm font-semibold">Comercial</div>
+          <div class="text-xs text-slate-400 mt-1">Empresas, impuestos, notarías</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── MOCKUP / EJEMPLO VISUAL ───────────────────────────────────── -->
+  <section class="py-20 px-4 bg-navy-950/40">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-3">Míralo en acción</h2>
+      <p class="text-slate-400 text-center mb-12">Una pregunta real, una respuesta con el artículo exacto</p>
+
+      <div class="card rounded-3xl p-6 sm:p-8 max-w-md mx-auto space-y-4">
+        <!-- Header chat -->
+        <div class="flex items-center gap-3 pb-4 border-b border-white/10">
+          <img src="logo.png" alt="aBOTgado" class="w-10 h-10 rounded-full object-cover" />
+          <div>
+            <div class="font-semibold text-sm">aBOTgado</div>
+            <div class="text-xs text-gold-500 flex items-center gap-1">
+              <span class="pulse-dot w-1.5 h-1.5 bg-gold-500 rounded-full"></span>
+              En línea
+            </div>
+          </div>
+        </div>
+
+        <!-- User message -->
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm max-w-[85%]">
+            "Me pararon en una alcabala y el funcionario me pidió el teléfono. ¿Puede revisarlo?"
+          </div>
+        </div>
+
+        <!-- Bot response -->
+        <div class="flex justify-start">
+          <div class="chat-bubble-bot px-4 py-4 text-sm max-w-[90%] space-y-2">
+            <p class="font-semibold text-gold-400">📌 Artículo 48 — Constitución de la República</p>
+            <p class="text-slate-300 text-xs leading-relaxed">
+              "Toda persona tiene derecho al secreto e inviolabilidad de sus comunicaciones privadas... Solo podrán ser allanadas... mediante orden judicial..."
+            </p>
+            <hr class="border-white/10" />
+            <p class="text-xs text-slate-400">
+              <strong class="text-white">Qué significa:</strong> Ningún funcionario puede revisar tu teléfono sin una orden judicial. Tienes derecho a negarte.
+            </p>
+            <p class="text-xs text-slate-400">
+              <strong class="text-white">Qué hacer:</strong> Niégate con calma, pide el número de placa del funcionario y reporta si insisten.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── CÓMO FUNCIONA ─────────────────────────────────────────────── -->
+  <section class="py-20 px-4">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-16">Así de simple</h2>
+
+      <div class="space-y-8">
+        <div class="flex items-start gap-5">
+          <div class="step-number">1</div>
+          <div class="pt-1">
+            <h3 class="font-bold text-lg mb-1">Abre el bot en Telegram</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Busca <span class="text-gold-400 font-mono font-semibold">@abotgadoBOT</span> o haz clic en el botón de esta página. Sin crear cuenta nueva.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-5">
+          <div class="step-number">2</div>
+          <div class="pt-1">
+            <h3 class="font-bold text-lg mb-1">Escribe tu pregunta en español</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Como se la harías a un amigo abogado. Sin tecnicismos, sin formularios. El bot entiende lenguaje natural.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-5">
+          <div class="step-number">3</div>
+          <div class="pt-1">
+            <h3 class="font-bold text-lg mb-1">Recibe los artículos exactos y una guía de qué hacer</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">No solo el artículo de ley — también una explicación clara y los pasos concretos para ejercer tu derecho.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── EJEMPLOS DE PREGUNTAS ─────────────────────────────────────── -->
+  <section class="py-20 px-4 bg-navy-950/40">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-3">Preguntas reales</h2>
+      <p class="text-slate-400 text-center mb-12">Escríbelas tal cual — el bot entiende</p>
+
+      <div class="space-y-3 max-w-lg mx-auto">
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm">"Me despidieron sin causa. ¿Qué me corresponde?"</div>
+        </div>
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm">"Mi arrendador no devuelve el depósito, ¿puedo demandarlo?"</div>
+        </div>
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm">"¿Cuántos días de permiso tengo si fallece un familiar?"</div>
+        </div>
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm">"Llevo 5 años en mi trabajo. ¿Qué prestaciones me tocan?"</div>
+        </div>
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-3 text-sm">"Me detuvieron. ¿Qué derechos tengo ahora mismo?"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── DIRECTORIO DE ABOGADOS ────────────────────────────────────── -->
+  <section class="py-20 px-4">
+    <div class="max-w-3xl mx-auto">
+      <div class="card rounded-3xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
+        <div class="text-6xl shrink-0">👨‍⚖️</div>
+        <div>
+          <div class="inline-block bg-gold-500/20 text-gold-400 text-xs font-bold px-3 py-1 rounded-full mb-3 border border-gold-500/30 uppercase tracking-wide">
+            Directorio de abogados
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold mb-3">¿Necesitas representación formal?</h2>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            aBOTgado orienta, pero a veces necesitas un abogado de verdad. Conecta con
+            <strong class="text-white">abogados venezolanos verificados</strong> — directamente desde el bot,
+            filtrados por especialidad y estado.
+          </p>
+          <a href="https://t.me/abotgadoBOT" target="_blank" rel="noopener"
+             class="btn-primary px-5 py-2.5 rounded-xl text-sm">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-2.04 9.61c-.15.67-.546.834-1.107.518l-3.059-2.254-1.476 1.42c-.163.163-.3.3-.617.3l.22-3.117 5.675-5.127c.247-.22-.054-.34-.382-.122L7.932 13.6l-3.023-.944c-.657-.205-.67-.657.138-.972l11.81-4.554c.547-.198 1.026.133.705.118z"/>
+            </svg>
+            Ver directorio en el bot
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── PRÓXIMAMENTE ──────────────────────────────────────────────── -->
+  <section class="py-20 px-4 bg-navy-950/40">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-3">Lo que viene</h2>
+      <p class="text-slate-400 text-center mb-12">Estamos construyendo el asistente legal más completo de Venezuela</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="card rounded-2xl p-5 flex items-start gap-4 opacity-80">
+          <div class="text-3xl shrink-0">📄</div>
+          <div>
+            <div class="text-xs text-gold-500 font-bold uppercase tracking-wide mb-1">Próximamente</div>
+            <h3 class="font-semibold mb-1">Generación de documentos</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">Cartas de reclamo, contratos básicos, solicitudes formales — listos para imprimir o presentar.</p>
+          </div>
+        </div>
+        <div class="card rounded-2xl p-5 flex items-start gap-4 opacity-80">
+          <div class="text-3xl shrink-0">💎</div>
+          <div>
+            <div class="text-xs text-gold-500 font-bold uppercase tracking-wide mb-1">Próximamente</div>
+            <h3 class="font-semibold mb-1">Plan Premium</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">Consultas ilimitadas, memoria de conversación, generación de documentos y acceso prioritario.</p>
+          </div>
+        </div>
+        <div class="card rounded-2xl p-5 flex items-start gap-4 opacity-80">
+          <div class="text-3xl shrink-0">🔔</div>
+          <div>
+            <div class="text-xs text-gold-500 font-bold uppercase tracking-wide mb-1">Próximamente</div>
+            <h3 class="font-semibold mb-1">Alertas legales</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">Notificaciones sobre cambios en la legislación venezolana que afecten tu área de interés.</p>
+          </div>
+        </div>
+        <div class="card rounded-2xl p-5 flex items-start gap-4 opacity-80">
+          <div class="text-3xl shrink-0">🤝</div>
+          <div>
+            <div class="text-xs text-gold-500 font-bold uppercase tracking-wide mb-1">Próximamente</div>
+            <h3 class="font-semibold mb-1">Consulta con abogado en vivo</h3>
+            <p class="text-slate-400 text-xs leading-relaxed">Agenda una sesión directa con un abogado verificado del directorio, desde el bot.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- ─── BETA CTA ───────────────────────────────────────────────────── -->
+  <section class="py-20 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="card rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-gold-500/5 to-transparent pointer-events-none rounded-3xl"></div>
+
+        <div class="text-5xl mb-5">⚖️</div>
+        <div class="inline-block bg-gold-500/20 text-gold-400 text-xs font-bold px-3 py-1 rounded-full mb-4 border border-gold-500/30 tracking-wide uppercase">
+          Beta Pública
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black mb-4">Sé de los primeros en probarlo</h2>
+        <p class="text-slate-300 mb-3 leading-relaxed">
+          Los primeros <strong class="text-gold-400">50 usuarios</strong> reciben
+          <strong class="text-gold-400">2 semanas del plan Pionero gratis</strong> — más consultas y funciones avanzadas.
+        </p>
+        <p class="text-slate-400 text-sm mb-8 leading-relaxed bg-gold-500/5 border border-gold-500/15 rounded-xl px-4 py-3">
+          ⚠️ <strong class="text-slate-300">Transparencia:</strong> El sistema está en aprendizaje activo.
+          Verifica siempre la información y ayúdanos a mejorar reportando respuestas incorrectas.
+          Tu feedback construye el bot.
+        </p>
+
+        <a href="https://t.me/abotgadoBOT" target="_blank" rel="noopener"
+           class="btn-primary px-8 py-4 rounded-2xl text-lg mb-4">
+          <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-2.04 9.61c-.15.67-.546.834-1.107.518l-3.059-2.254-1.476 1.42c-.163.163-.3.3-.617.3l.22-3.117 5.675-5.127c.247-.22-.054-.34-.382-.122L7.932 13.6l-3.023-.944c-.657-.205-.67-.657.138-.972l11.81-4.554c.547-.198 1.026.133.705.118z"/>
+          </svg>
+          Unirme a la beta — gratis
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────────────── -->
+  <footer class="border-t border-white/5 py-10 px-4">
+    <div class="max-w-3xl mx-auto text-center space-y-4">
+      <p class="font-black text-lg">
+        <span class="text-white/40">aBOT</span><span class="text-gold-500/50">gado</span>
+      </p>
+      <p class="text-slate-500 text-sm">Tu asistente legal en Telegram · Venezuela · 2026</p>
+      <p class="text-slate-600 text-xs leading-relaxed max-w-xl mx-auto">
+        aBOTgado proporciona información legal orientativa basada en la normativa venezolana vigente.
+        Esta herramienta <strong class="text-slate-500">no sustituye la representación ni la asesoría formal
+        de un abogado colegiado.</strong>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
