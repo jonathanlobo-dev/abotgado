@@ -1441,6 +1441,15 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not pregunta or not pregunta.strip():
         return
 
+    # Rechazar mensajes que sean solo URLs
+    import re as _re
+    if _re.match(r'^\s*https?://\S+\s*$', pregunta.strip()):
+        await enviar_respuesta(
+            update.message,
+            "⚖️ Solo proceso consultas legales en texto.\n\nEscríbeme tu pregunta jurídica y te ayudo."
+        )
+        return
+
     db.registrar_usuario(user_id, user.first_name, user.username or "")
 
     # ── Esperando nombre de ley (flujo "explícame artículo X") ───────────
@@ -2095,7 +2104,8 @@ def main():
             "⚖️ Solo proceso consultas de texto. Escríbeme tu pregunta legal."
         )
     app.add_handler(MessageHandler(
-        filters.PHOTO | filters.Sticker.ALL | filters.Document.ALL | filters.VIDEO,
+        filters.PHOTO | filters.Sticker.ALL | filters.Document.ALL | filters.VIDEO |
+        filters.AUDIO | filters.VOICE | filters.VIDEO_NOTE,
         handle_media
     ))
 
