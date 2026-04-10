@@ -63,10 +63,13 @@
       backdrop-filter: blur(8px);
     }
 
-    .hero-glow {
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201, 168, 76, 0.12) 0%, transparent 60%),
-        #0d1b3e;
+    .hero-parallax {
+      background: url('hero.jpg') center center / cover no-repeat fixed;
+    }
+    @media (max-width: 768px) {
+      .hero-parallax {
+        background-attachment: scroll; /* parallax no funciona bien en móvil */
+      }
     }
 
     @keyframes float {
@@ -133,29 +136,32 @@
     </div>
   </nav>
 
-  <!-- ─── HERO ─────────────────────────────────────────────────────── -->
-  <section class="hero-glow pt-28 pb-24 px-4">
-    <div class="max-w-3xl mx-auto text-center">
+  <!-- ─── HERO (parallax) ────────────────────────────────────────────── -->
+  <section class="hero-parallax relative flex items-center justify-center min-h-[90vh] sm:min-h-screen px-4">
+    <!-- Overlay oscuro para legibilidad -->
+    <div class="absolute inset-0 bg-navy-900/70 z-[1]"></div>
+
+    <div class="relative z-[2] max-w-3xl mx-auto text-center py-28">
 
       <!-- Beta badge -->
-      <div class="inline-flex items-center gap-2 bg-gold-500/10 border border-gold-500/25 text-gold-400 text-xs font-semibold px-4 py-2 rounded-full mb-10">
+      <div class="inline-flex items-center gap-2 bg-gold-500/10 border border-gold-500/25 text-gold-400 text-xs font-semibold px-4 py-2 rounded-full mb-10 backdrop-blur-sm">
         <span class="pulse-dot w-2 h-2 bg-gold-500 rounded-full shrink-0"></span>
         Beta Pública · Venezuela · Gratis para empezar
       </div>
 
-      <!-- Logo -->
-      <div class="mb-8 flex justify-center">
+      <!-- Logo pequeño sobre el hero -->
+      <div class="mb-6 flex justify-center">
         <img src="logo.png" alt="aBOTgado logo"
-             class="w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 object-contain" />
+             class="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-lg" />
       </div>
 
       <!-- Headline -->
-      <h1 class="text-3xl sm:text-5xl font-black leading-tight mb-5 px-2">
+      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight mb-5 px-2 drop-shadow-lg">
         Tu abogado venezolano,<br/>
         <span class="text-gold-400">disponible las 24 horas</span>
       </h1>
 
-      <p class="text-lg text-slate-300 leading-relaxed mb-10 max-w-xl mx-auto">
+      <p class="text-lg text-slate-200 leading-relaxed mb-10 max-w-xl mx-auto drop-shadow">
         Consulta leyes venezolanas, conoce tus derechos y recibe orientación jurídica al instante —
         directamente en Telegram, sin cita, sin espera.
       </p>
@@ -167,7 +173,7 @@
         </svg>
         Consultar ahora — es gratis
       </a>
-      <p class="text-slate-500 text-sm">Sin registro previo · Responde en segundos</p>
+      <p class="text-slate-400 text-sm">Sin registro previo · Responde en segundos</p>
 
     </div>
   </section>
