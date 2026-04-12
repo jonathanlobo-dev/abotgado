@@ -102,6 +102,38 @@ def inicializar_db():
         if "consultas_extra" not in columnas:
             con.execute("ALTER TABLE usuarios ADD COLUMN consultas_extra INTEGER DEFAULT 0")
 
+        if "limite_override" not in columnas:
+            con.execute("ALTER TABLE usuarios ADD COLUMN limite_override INTEGER DEFAULT NULL")
+
+        if "periodo_override" not in columnas:
+            con.execute("ALTER TABLE usuarios ADD COLUMN periodo_override TEXT DEFAULT NULL")
+
+        # ── Tabla de configuración de planes (editable en runtime) ───────
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS config_planes (
+                plan_id   INTEGER PRIMARY KEY,
+                consultas INTEGER NOT NULL,
+                periodo   TEXT NOT NULL DEFAULT 'diario'
+            )
+        """)
+        # Sembrar valores por defecto desde config.PLANES si la tabla está vacía
+        for pid, info in config.PLANES.items():
+            con.execute("""
+                INSERT INTO config_planes (plan_id, consultas, periodo)
+                VALUES (?, ?, 'diario')
+                ON CONFLICT(plan_id) DO NOTHING
+            """, (pid, info["consultas"]))
+
+        # ── Tabla de conteo de consultas por período ─────────────────────
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS consultas_periodo (
+                user_id  INTEGER,
+                clave    TEXT,
+                cantidad INTEGER DEFAULT 0,
+                PRIMARY KEY (user_id, clave)
+            )
+        """)
+
         # ── Tablas nuevas ────────────────────────────────────────────────
         con.execute("""
             CREATE TABLE IF NOT EXISTS feedback (
@@ -427,9 +459,9 @@ def obtener_plan(user_id: int) -> int:
 
 
 def info_plan(user_id: int) -> dict:
-    """Retorna info completa del plan del usuario."""
+    """Retorna info completa del plan del usuario (incluye periodo configurado)."""
     plan_id = obtener_plan(user_id)
-    return config.PLANES.get(plan_id, config.PLANES[0])
+    return get_config_plan(plan_id)
 
 
 def es_premium(user_id: int) -> bool:
@@ -642,6 +674,96 @@ def listar_usuarios() -> list[dict]:
                 for r in rows]
 
 
+# ─── CONFIGURACIÓN DE PLANES (editable en runtime) ───────────────────────────
+
+_PERIODOS_VALIDOS = ("diario", "semanal", "mensual")
+
+
+def _periodo_key(periodo: str) -> str:
+    """Devuelve la clave del período actual como string para la tabla consultas_periodo."""
+    hoy = date.today()
+    if periodo == "semanal":
+        iso = hoy.isocalendar()
+        return f"{iso[0]}-W{iso[1]:02d}"
+    if periodo == "mensual":
+        return f"{hoy.year}-{hoy.month:02d}"
+    return hoy.isoformat()  # diario
+
+
+def get_config_plan(plan_id: int) -> dict:
+    """Devuelve la config del plan desde la BD (con fallback a config.PLANES)."""
+    with get_db() as con:
+        row = con.execute(
+            "SELECT consultas, periodo FROM config_planes WHERE plan_id = ?", (plan_id,)
+        ).fetchone()
+    base = config.PLANES.get(plan_id, config.PLANES[0]).copy()
+    if row:
+        base["consultas"] = row[0]
+        base["periodo"] = row[1]
+    else:
+        base["periodo"] = "diario"
+    return base
+
+
+def set_config_plan(plan_id: int, consultas: int, periodo: str):
+    """Cambia límite y período de un plan. Persiste en la BD."""
+    with get_db() as con:
+        con.execute("""
+            INSERT INTO config_planes (plan_id, consultas, periodo)
+            VALUES (?, ?, ?)
+            ON CONFLICT(plan_id) DO UPDATE SET consultas = excluded.consultas,
+                                               periodo   = excluded.periodo
+        """, (plan_id, consultas, periodo))
+
+
+def set_limite_usuario(user_id: int, limite: int, periodo: str):
+    """Override de límite/período para un usuario específico."""
+    with get_db() as con:
+        con.execute(
+            "UPDATE usuarios SET limite_override = ?, periodo_override = ? WHERE user_id = ?",
+            (limite, periodo, user_id)
+        )
+
+
+def quitar_limite_usuario(user_id: int):
+    """Quita el override de un usuario; vuelve a usar la config del plan."""
+    with get_db() as con:
+        con.execute(
+            "UPDATE usuarios SET limite_override = NULL, periodo_override = NULL WHERE user_id = ?",
+            (user_id,)
+        )
+
+
+def _get_limite_y_periodo(user_id: int) -> tuple[int, str]:
+    """Devuelve (limite, periodo) efectivos para un usuario.
+
+    Prioridad:
+      1. Override individual  (limite_override / periodo_override)
+      2. Config del plan      (config_planes)  + consultas_extra
+    """
+    with get_db() as con:
+        row = con.execute(
+            "SELECT limite_override, periodo_override, consultas_extra FROM usuarios WHERE user_id = ?",
+            (user_id,)
+        ).fetchone()
+
+    if row and row[0] is not None:
+        # Override individual activo
+        return (row[0], row[1] or "diario")
+
+    # Config basada en plan
+    plan_id = obtener_plan(user_id)
+    cfg = get_config_plan(plan_id)
+    base = cfg["consultas"]
+    periodo = cfg.get("periodo", "diario")
+
+    if base == -1:
+        return (-1, periodo)
+
+    extra = row[2] if row and row[2] else 0
+    return (base + extra, periodo)
+
+
 # ─── LÍMITES DE CONSULTAS ─────────────────────────────────────────────────────
 
 def consultas_hoy(user_id: int) -> int:
@@ -655,41 +777,56 @@ def consultas_hoy(user_id: int) -> int:
         return fila[0] if fila else 0
 
 
-def limite_diario(user_id: int) -> int:
-    """Retorna el límite de consultas según el plan + consultas extra regaladas."""
-    plan_info = info_plan(user_id)
-    base = plan_info["consultas"]
-    if base == -1:  # ilimitado
-        return -1
+def consultas_periodo_actual(user_id: int) -> int:
+    """Conteo de consultas del usuario en el período activo (diario/semanal/mensual)."""
+    _, periodo = _get_limite_y_periodo(user_id)
+    clave = _periodo_key(periodo)
     with get_db() as con:
-        cur = con.execute("SELECT consultas_extra FROM usuarios WHERE user_id = ?", (user_id,))
-        fila = cur.fetchone()
-        extra = fila[0] if fila and fila[0] else 0
-    return base + extra
+        row = con.execute(
+            "SELECT cantidad FROM consultas_periodo WHERE user_id = ? AND clave = ?",
+            (user_id, clave)
+        ).fetchone()
+    return row[0] if row else 0
+
+
+def limite_diario(user_id: int) -> int:
+    """Retorna el límite efectivo del usuario (alias para compatibilidad)."""
+    limite, _ = _get_limite_y_periodo(user_id)
+    return limite
 
 
 def puede_consultar(user_id: int) -> bool:
-    limite = limite_diario(user_id)
+    limite, _ = _get_limite_y_periodo(user_id)
     if limite == -1:  # ilimitado
         return True
-    return consultas_hoy(user_id) < limite
+    return consultas_periodo_actual(user_id) < limite
 
 
 def registrar_consulta(user_id: int):
     hoy = date.today().isoformat()
+    # Mantener tabla legacy para estadísticas históricas
     with get_db() as con:
         con.execute("""
             INSERT INTO consultas_diarias (user_id, fecha, cantidad)
             VALUES (?, ?, 1)
             ON CONFLICT(user_id, fecha) DO UPDATE SET cantidad = cantidad + 1
         """, (user_id, hoy))
+    # Tabla nueva: conteo por período activo
+    _, periodo = _get_limite_y_periodo(user_id)
+    clave = _periodo_key(periodo)
+    with get_db() as con:
+        con.execute("""
+            INSERT INTO consultas_periodo (user_id, clave, cantidad)
+            VALUES (?, ?, 1)
+            ON CONFLICT(user_id, clave) DO UPDATE SET cantidad = cantidad + 1
+        """, (user_id, clave))
 
 
 def consultas_restantes(user_id: int) -> int:
-    limite = limite_diario(user_id)
+    limite, _ = _get_limite_y_periodo(user_id)
     if limite == -1:
         return -1  # ilimitado
-    return max(0, limite - consultas_hoy(user_id))
+    return max(0, limite - consultas_periodo_actual(user_id))
 
 
 def regalar_consultas(user_id: int, cantidad: int = 5):

@@ -1014,6 +1014,142 @@ async def cmd_regalar_consultas(update: Update, context: ContextTypes.DEFAULT_TY
     await update.message.reply_text("\n".join(resultado))
 
 
+_NOMBRE_PLAN = {"gratis": 0, "pionero": 1, "tester": 1, "premium": 2}
+_LABEL_PLAN  = {0: "Gratis 🆓", 1: "Pionero ⭐", 2: "Premium 💎"}
+_LABEL_PER   = {"diario": "día", "semanal": "semana", "mensual": "mes"}
+
+
+async def cmd_ver_planes(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin: /ver_planes — muestra la configuración actual de los tres planes."""
+    if not es_admin(update.effective_user.id):
+        return
+    lineas = ["⚙️ <b>Configuración de planes</b>\n"]
+    for pid in (0, 1, 2):
+        cfg = db.get_config_plan(pid)
+        nombre = _LABEL_PLAN.get(pid, f"Plan {pid}")
+        lim    = cfg["consultas"]
+        per    = cfg.get("periodo", "diario")
+        if lim == -1:
+            lineas.append(f"• {nombre}: <b>ilimitado</b>")
+        else:
+            lineas.append(f"• {nombre}: <b>{lim} consultas / {_LABEL_PER.get(per, per)}</b>")
+    lineas.append("\n<i>Usa /set_plan para cambiar.</i>")
+    await update.message.reply_text("\n".join(lineas), parse_mode="HTML")
+
+
+async def cmd_set_plan(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin: /set_plan <plan> <cantidad> <diario|semanal|mensual>
+    Ejemplo: /set_plan gratis 3 semanal
+    """
+    if not es_admin(update.effective_user.id):
+        return
+
+    uso = ("Uso: /set_plan &lt;plan&gt; &lt;cantidad&gt; &lt;diario|semanal|mensual&gt;\n"
+           "Planes: gratis, pionero, premium\n"
+           "Cantidad: número entero (-1 = ilimitado)\n"
+           "Ejemplo: /set_plan gratis 3 semanal")
+
+    if len(context.args) != 3:
+        await update.message.reply_text(uso, parse_mode="HTML")
+        return
+
+    nombre_plan, cantidad_str, periodo = context.args[0].lower(), context.args[1], context.args[2].lower()
+
+    if nombre_plan not in _NOMBRE_PLAN:
+        await update.message.reply_text(f"Plan desconocido: <b>{nombre_plan}</b>\n{uso}", parse_mode="HTML")
+        return
+    if periodo not in db._PERIODOS_VALIDOS:
+        await update.message.reply_text(f"Período inválido: <b>{periodo}</b>\nOpciones: diario, semanal, mensual", parse_mode="HTML")
+        return
+    try:
+        cantidad = int(cantidad_str)
+    except ValueError:
+        await update.message.reply_text("La cantidad debe ser un número entero.", parse_mode="HTML")
+        return
+
+    plan_id = _NOMBRE_PLAN[nombre_plan]
+    db.set_config_plan(plan_id, cantidad, periodo)
+
+    nombre_display = _LABEL_PLAN.get(plan_id, nombre_plan)
+    if cantidad == -1:
+        desc = "ilimitado"
+    else:
+        desc = f"{cantidad} consultas / {_LABEL_PER.get(periodo, periodo)}"
+    await update.message.reply_text(
+        f"✅ Plan <b>{nombre_display}</b> actualizado: {desc}",
+        parse_mode="HTML"
+    )
+
+
+async def cmd_set_user_limit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin: /set_user_limit <ID o @user> <cantidad> <diario|semanal|mensual>
+    Override individual. Ejemplo: /set_user_limit 123456 20 mensual
+    """
+    if not es_admin(update.effective_user.id):
+        return
+
+    uso = ("Uso: /set_user_limit &lt;ID o @username&gt; &lt;cantidad&gt; &lt;diario|semanal|mensual&gt;\n"
+           "Ejemplo: /set_user_limit 123456 20 mensual")
+
+    if len(context.args) != 3:
+        await update.message.reply_text(uso, parse_mode="HTML")
+        return
+
+    target_str, cantidad_str, periodo = context.args[0], context.args[1], context.args[2].lower()
+
+    if periodo not in db._PERIODOS_VALIDOS:
+        await update.message.reply_text(f"Período inválido: <b>{periodo}</b>\nOpciones: diario, semanal, mensual", parse_mode="HTML")
+        return
+    try:
+        cantidad = int(cantidad_str)
+    except ValueError:
+        await update.message.reply_text("La cantidad debe ser un número entero.", parse_mode="HTML")
+        return
+
+    target_id = db.resolver_usuario(target_str)
+    if not target_id:
+        await update.message.reply_text(f"No encontré al usuario '{target_str}'.\nDebe haber usado el bot al menos una vez.")
+        return
+
+    db.set_limite_usuario(target_id, cantidad, periodo)
+
+    desc = "ilimitado" if cantidad == -1 else f"{cantidad} / {_LABEL_PER.get(periodo, periodo)}"
+    await update.message.reply_text(
+        f"✅ Override para <b>{target_id}</b>: {desc}",
+        parse_mode="HTML"
+    )
+    try:
+        per_str = {"diario": "hoy", "semanal": "esta semana", "mensual": "este mes"}.get(periodo, periodo)
+        aviso = "ilimitadas" if cantidad == -1 else f"{cantidad} {per_str}"
+        await context.bot.send_message(
+            chat_id=target_id,
+            text=f"🎉 <b>Límite de consultas actualizado</b>\n\nTienes <b>{aviso}</b> consultas disponibles.\nEscribe /estado para ver tu plan.",
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+
+
+async def cmd_quitar_user_limit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin: /quitar_user_limit <ID o @user> — Quita el override y vuelve al plan base."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /quitar_user_limit <ID o @username>")
+        return
+
+    target_id = db.resolver_usuario(context.args[0])
+    if not target_id:
+        await update.message.reply_text(f"No encontré al usuario '{context.args[0]}'.")
+        return
+
+    db.quitar_limite_usuario(target_id)
+    await update.message.reply_text(
+        f"✅ Override eliminado para <b>{target_id}</b>. Ahora usa el límite de su plan.",
+        parse_mode="HTML"
+    )
+
+
 async def cmd_anuncio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not es_admin(update.effective_user.id):
         return
@@ -1701,12 +1837,17 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     logger.info(f"Consulta recibida del usuario ID: {user_id}")
 
     if not db.puede_consultar(user_id):
-        plan_info = db.info_plan(user_id)
-        limite = plan_info["consultas"]
+        limite, periodo = db._get_limite_y_periodo(user_id)
+        _periodo_labels = {
+            "diario":   ("diario",   "hoy"),
+            "semanal":  ("semanal",  "esta semana"),
+            "mensual":  ("mensual",  "este mes"),
+        }
+        titulo_per, cuando = _periodo_labels.get(periodo, ("diario", "hoy"))
         await enviar_respuesta(
             update.message,
-            f"⏰ <b>Limite diario alcanzado</b>\n\n"
-            f"Has usado tus {limite} consultas de hoy.\n\n"
+            f"⏰ <b>Límite {titulo_per} alcanzado</b>\n\n"
+            f"Has usado tus {limite} consultas de {cuando}.\n\n"
             "Escribe /referir para invitar amigos y obtener\n"
             "Plan Pionero gratis por 2 semanas.\n\n"
             "Escribe /estado para ver tu plan."
@@ -2069,6 +2210,10 @@ def main():
     app.add_handler(CommandHandler("regalar_doc",     cmd_regalar_doc))
     app.add_handler(CommandHandler("regalar_memoria", cmd_regalar_memoria))
     app.add_handler(CommandHandler("regalar_consultas", cmd_regalar_consultas))
+    app.add_handler(CommandHandler("ver_planes",       cmd_ver_planes))
+    app.add_handler(CommandHandler("set_plan",         cmd_set_plan))
+    app.add_handler(CommandHandler("set_user_limit",   cmd_set_user_limit))
+    app.add_handler(CommandHandler("quitar_user_limit",cmd_quitar_user_limit))
     app.add_handler(CommandHandler("anuncio",         cmd_anuncio))
     app.add_handler(CommandHandler("stats_admin",     cmd_stats_admin))
     app.add_handler(CommandHandler("feedback",        cmd_feedback_admin))
