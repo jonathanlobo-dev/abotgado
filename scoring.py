@@ -65,68 +65,19 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
     },
 }
 
-# ─── MAPEO LEY → RAMA (resuelve rama por nombre de ley, sin depender del metadata) ─
-# Debe coincidir con CLASIFICACION_LEYES en 1_procesar_leyes.py. Se usa como fuente
-# de verdad para el filtro de rama ya que el metadata indexado puede estar
-# desactualizado o ausente en DBs viejas.
+# ─── MAPEO LEY → RAMA (desde leyes_config.json) ───────────────────────────────
+# Fuente única de verdad: leyes_config.json define nombre canónico → rama.
+import json as _json
+import pathlib as _pathlib
+
+_leyes_cfg = _json.loads(
+    _pathlib.Path(__file__).parent.joinpath("leyes_config.json")
+    .read_text(encoding="utf-8")
+)
 LEY_A_RAMA: dict[str, str] = {
-    # Laboral
-    "Ley Orgánica del Trabajo (LOTTT)": "laboral",
-    "Ley del Seguro Social": "laboral",
-    # Penal
-    "Código Penal": "penal",
-    "Código Orgánico Procesal Penal (COPP)": "penal",
-    "Ley Especial contra los Delitos Informáticos": "penal",
-    "Ley contra la Corrupción": "penal",
-    "Ley Orgánica de Drogas": "penal",
-    "Código Orgánico de Justicia Militar": "penal",
-    "Ley de Registro de Antecedentes Penales": "penal",
-    "Ley Constitucional contra el Odio": "penal",
-    "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)": "penal",
-    "Ley Contra el Secuestro y la Extorsión": "penal",
-    # Civil / Mercantil (tratadas como civil para filtros)
-    "Código Civil venezolano": "civil",
-    "Código de Procedimiento Civil": "civil",
-    "Ley de Registros y Notarías": "civil",
-    "Código de Comercio": "civil",
-    "Ley de Arrendamientos Inmobiliarios": "civil",
-    # Familia
-    "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)": "familia",
-    "Ley para la Protección de las Familias, la Maternidad y la Paternidad": "familia",
-    "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia": "familia",
-    # Tránsito
-    "Ley de Tránsito Terrestre": "transito",
-    # Tributario
-    "Código Orgánico Tributario": "tributario",
-    "Ley de Impuesto Sobre la Renta (ISLR)": "tributario",
-    # Vivienda
-    "Ley de Propiedad Horizontal": "vivienda",
-    "Ley para la Regularización y Control de los Arrendamientos de Vivienda": "vivienda",
-    # Constitucional
-    "Constitución de la República Bolivariana de Venezuela": "constitucional",
-    # Administrativo
-    "Ley Orgánica de la Contraloría General de la República": "administrativo",
-    "Ley Orgánica de Contraloría Social": "administrativo",
-    "Ley Orgánica del Poder Popular": "administrativo",
-    "Ley Orgánica de las Comunas": "administrativo",
-    "Ley Orgánica de los Consejos Comunales": "administrativo",
-    "Ley Orgánica de Gestión Comunitaria": "administrativo",
-    "Ley Orgánica del Sistema Económico Comunal": "administrativo",
-    "Ley Orgánica de Planificación Pública y Popular": "administrativo",
-    "Ley Orgánica de Simplificación de Trámites Administrativos": "administrativo",
-    "Ley para la Promoción y Uso del Lenguaje de Género": "administrativo",
-    "Ley Orgánica de Justicia de Paz Comunal": "administrativo",
-    "Ley de Atención Integral de las Personas Adultas Mayores": "administrativo",
-    "Ley para la Inclusión de Personas con Discapacidad": "administrativo",
-    "Ley Orgánica de las Zonas Económicas Especiales": "administrativo",
-    # Consumidor
-    "Ley Orgánica de Precios Justos": "consumidor",
-    # Animales / Ambiente
-    "Ley de Protección de la Fauna Doméstica": "animales",
-    "Ley de Residuos y Desechos Sólidos": "ambiente",
-    # General
-    "Código de Ética Profesional del Abogado Venezolano": "general",
+    _ley["nombre"]: _ley["rama"] for _ley in _leyes_cfg["leyes"]
 }
+del _leyes_cfg
 
 
 def rama_de_ley(nombre_ley: str) -> str:

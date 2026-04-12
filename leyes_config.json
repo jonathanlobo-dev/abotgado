@@ -1,0 +1,708 @@
+{
+  "leyes": [
+    {
+      "id": "crbv",
+      "nombre": "Constitución de la República Bolivariana de Venezuela",
+      "rama": "constitucional",
+      "archivos_pdf": [
+        "constitucion.pdf",
+        "CONSTITUCIÓN DE LA REPÚBLICA BOLIVARIANA DE VENEZUELA.pdf"
+      ],
+      "aliases": [
+        "constitucion",
+        "constitucion de venezuela",
+        "crbv"
+      ]
+    },
+    {
+      "id": "codigo_civil",
+      "nombre": "Código Civil venezolano",
+      "rama": "civil",
+      "archivos_pdf": [
+        "CÓDIGO_CIVIL.pdf",
+        "CÓDIGO CIVIL.pdf"
+      ],
+      "aliases": [
+        "codigo civil",
+        "cc"
+      ]
+    },
+    {
+      "id": "codigo_penal",
+      "nombre": "Código Penal",
+      "rama": "penal",
+      "archivos_pdf": [
+        "codigo_penal.pdf",
+        "reforma-del-codigo-penal.pdf"
+      ],
+      "aliases": [
+        "codigo penal",
+        "cp",
+        "penal"
+      ]
+    },
+    {
+      "id": "cpc",
+      "nombre": "Código de Procedimiento Civil",
+      "rama": "civil",
+      "archivos_pdf": [
+        "CÓDIGO_PROCEDIMIENTO_CIVIL.pdf",
+        "CÓDIGO PROCEDIMIENTO CIVIL.pdf"
+      ],
+      "aliases": [
+        "codigo de procedimiento civil",
+        "cpc"
+      ]
+    },
+    {
+      "id": "lottt",
+      "nombre": "Ley Orgánica del Trabajo (LOTTT)",
+      "rama": "laboral",
+      "archivos_pdf": [
+        "ley_trabajo.pdf"
+      ],
+      "aliases": [
+        "lottt",
+        "ley del trabajo",
+        "ley organica del trabajo",
+        "ley de trabajo",
+        "trabajo"
+      ]
+    },
+    {
+      "id": "ley_transito_terrestre",
+      "nombre": "Ley de Tránsito Terrestre",
+      "rama": "transito",
+      "archivos_pdf": [
+        "Ley_de_Transporte_Terrestre,_Venezuela,_2008.pdf"
+      ],
+      "aliases": [
+        "ley de transito",
+        "ley de transito terrestre",
+        "ley de transporte terrestre",
+        "ley transporte terrestre",
+        "ley transito",
+        "transito",
+        "transporte terrestre"
+      ]
+    },
+    {
+      "id": "lopna",
+      "nombre": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
+      "rama": "familia",
+      "archivos_pdf": [
+        "lopna.pdf"
+      ],
+      "aliases": [
+        "lopna",
+        "ley de ninos",
+        "lopnna",
+        "ninos",
+        "menores"
+      ]
+    },
+    {
+      "id": "ley_mujeres_violencia",
+      "nombre": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
+      "rama": "familia",
+      "archivos_pdf": [
+        "LEY ORGÁNICA DE REFORMA A LA LEY ORGÁNICA SOBRE EL DERECHO DE LAS MUJERES A UNA VIDA LIBRE DE VIOLENCIA.pdf"
+      ],
+      "aliases": [
+        "ley de violencia",
+        "ley de la mujer",
+        "violencia de genero",
+        "violencia contra la mujer"
+      ]
+    },
+    {
+      "id": "ley_familias_maternidad",
+      "nombre": "Ley para la Protección de las Familias, la Maternidad y la Paternidad",
+      "rama": "familia",
+      "archivos_pdf": [
+        "LEY DE REFORMA DE LA LEY PARA LA PROTECCIÓN DE LAS FAMILIAS, LA MATERNIDAD Y LA PATERNIDAD.pdf"
+      ],
+      "aliases": [
+        "ley de familias",
+        "maternidad"
+      ]
+    },
+    {
+      "id": "ley_contra_odio",
+      "nombre": "Ley Constitucional contra el Odio",
+      "rama": "penal",
+      "archivos_pdf": [
+        "LEY CONSTITUCIONAL CONTRA EL ODIO POR LA CONVIVENCIA PACÍFICA Y LA TOLERANCIA.pdf"
+      ],
+      "aliases": [
+        "ley contra el odio"
+      ]
+    },
+    {
+      "id": "ley_propiedad_horizontal",
+      "nombre": "Ley de Propiedad Horizontal",
+      "rama": "vivienda",
+      "archivos_pdf": [
+        "ley-de-propiedad-horizontal.pdf"
+      ],
+      "aliases": [
+        "ley de propiedad horizontal",
+        "propiedad horizontal"
+      ]
+    },
+    {
+      "id": "ley_discapacidad",
+      "nombre": "Ley para la Inclusión de Personas con Discapacidad",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA PARA LA INCLUSIÓN, IGUALDAD Y DESARROLLO INTEGRAL DE LAS PERSONAS CON DISCAPACIDAD.pdf",
+        "LEY ORGÁNICA PARA LA INCLUSIÓN, IGUALDAD Y DESARROLLO INTEGRAL DE LAS PERSONAS CON DISCAPACIDAD (2).pdf"
+      ],
+      "aliases": [
+        "discapacidad"
+      ]
+    },
+    {
+      "id": "ley_fauna_domestica",
+      "nombre": "Ley de Protección de la Fauna Doméstica",
+      "rama": "animales",
+      "archivos_pdf": [
+        "Ley para la Protección de la Fauna Domóstica Libre y en Cautiverio.pdf"
+      ],
+      "aliases": [
+        "fauna domestica",
+        "ley de fauna",
+        "fauna",
+        "animales",
+        "ley de animales",
+        "proteccion animal",
+        "ley animales"
+      ]
+    },
+    {
+      "id": "ley_corrupcion",
+      "nombre": "Ley contra la Corrupción",
+      "rama": "penal",
+      "archivos_pdf": [
+        "LEY DE REFORMA DEL DECRETO CON RANGO, VALOR Y FUERZA DE LEY CONTRA LA CORRUPCIÓN.pdf"
+      ],
+      "aliases": [
+        "ley contra la corrupcion",
+        "corrupcion"
+      ]
+    },
+    {
+      "id": "ley_contraloria_general",
+      "nombre": "Ley Orgánica de la Contraloría General de la República",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "ley_organica_de_la_contraloria_general_de_la_republica.pdf"
+      ],
+      "aliases": [
+        "contraloria"
+      ]
+    },
+    {
+      "id": "ley_contraloria_social",
+      "nombre": "Ley Orgánica de Contraloría Social",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY DE REFORMA DE LA LEY ORGÁNICA DE CONTRALORÍA SOCIAL.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_registros_notarias",
+      "nombre": "Ley de Registros y Notarías",
+      "rama": "civil",
+      "archivos_pdf": [
+        "LEY DE REGISTROS Y NOTARIAS.pdf"
+      ],
+      "aliases": [
+        "ley de registros y notarias"
+      ]
+    },
+    {
+      "id": "ley_residuos_desechos",
+      "nombre": "Ley de Residuos y Desechos Sólidos",
+      "rama": "ambiente",
+      "archivos_pdf": [
+        "LEY DE RESIDUOS Y DESECHOS SOLIDOS.pdf"
+      ],
+      "aliases": [
+        "ley de residuos"
+      ]
+    },
+    {
+      "id": "ley_gestion_comunitaria",
+      "nombre": "Ley Orgánica de Gestión Comunitaria",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA DE GESTIÓN COMUNITARIA.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_comunas",
+      "nombre": "Ley Orgánica de las Comunas",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA DE LAS COMUNAS.pdf"
+      ],
+      "aliases": [
+        "ley de comunas"
+      ]
+    },
+    {
+      "id": "ley_consejos_comunales",
+      "nombre": "Ley Orgánica de los Consejos Comunales",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA DE REFORMA DE LA LEY ORGÁNICA DE LOS CONSEJOS COMUNALES.pdf"
+      ],
+      "aliases": [
+        "consejos comunales"
+      ]
+    },
+    {
+      "id": "ley_poder_popular",
+      "nombre": "Ley Orgánica del Poder Popular",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA DE REFORMA DE LA LEY ORGÁNICA DEL PODER POPULAR.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_sistema_economico_comunal",
+      "nombre": "Ley Orgánica del Sistema Económico Comunal",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "L.O. SISTEMA ECONÓMICO COMUNAL.pdf",
+        "LEY ORGÁNICA DEL SISTEMA ECONÓMICO COMUNAL.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_planificacion_publica",
+      "nombre": "Ley Orgánica de Planificación Pública y Popular",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "ley_organica_de_planificacion_publica_y_popular.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_lenguaje_genero",
+      "nombre": "Ley para la Promoción y Uso del Lenguaje de Género",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY PARA LA PROMOCIÓN Y USO DEL LENGUAJE DE GÉNERO.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_secuestro_extorsion",
+      "nombre": "Ley Contra el Secuestro y la Extorsión",
+      "rama": "penal",
+      "archivos_pdf": [
+        "ley-contra-el-secuestro-y-la-extorsion.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "lopdoft",
+      "nombre": "Ley Orgánica contra la Delincuencia Organizada y Financiamiento al Terrorismo (LOPDOFT)",
+      "rama": "penal",
+      "archivos_pdf": [
+        "ley contra la delincuencia organizada y financiacion del terrorismo.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_contrabando",
+      "nombre": "Ley sobre el Delito de Contrabando",
+      "rama": "penal",
+      "archivos_pdf": [
+        "ley-sobre-el-delito-de-contrabando.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_justicia_paz_comunal",
+      "nombre": "Ley Orgánica de Justicia de Paz Comunal",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "Ley Orgánica de Justicia de Paz Comunal.pdf"
+      ],
+      "aliases": [
+        "justicia de paz",
+        "ley de justicia de paz",
+        "paz comunal"
+      ]
+    },
+    {
+      "id": "ley_adultos_mayores",
+      "nombre": "Ley de Atención Integral de las Personas Adultas Mayores",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY ORGÁNICA PARA LA ATENCIÓN Y DESARROLLO INTEGRAL DE LAS PERSONAS ADULTAS MAYORES.pdf"
+      ],
+      "aliases": [
+        "adultos mayores"
+      ]
+    },
+    {
+      "id": "codigo_comercio",
+      "nombre": "Código de Comercio",
+      "rama": "civil",
+      "archivos_pdf": [
+        "codigo-de-comercio.pdf"
+      ],
+      "aliases": [
+        "codigo de comercio",
+        "comercio",
+        "ley de comercio"
+      ]
+    },
+    {
+      "id": "cot",
+      "nombre": "Código Orgánico Tributario",
+      "rama": "tributario",
+      "archivos_pdf": [
+        "6-Código Orgánico Tributario 2020.pdf"
+      ],
+      "aliases": [
+        "codigo organico tributario",
+        "cot"
+      ]
+    },
+    {
+      "id": "codigo_justicia_militar",
+      "nombre": "Código Orgánico de Justicia Militar",
+      "rama": "penal",
+      "archivos_pdf": [
+        "codigo-organico-de-justicia-militar.pdf"
+      ],
+      "aliases": [
+        "codigo de justicia militar"
+      ]
+    },
+    {
+      "id": "ley_arrendamientos_vivienda",
+      "nombre": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
+      "rama": "vivienda",
+      "archivos_pdf": [
+        "mietengesetz-venezuela.pdf"
+      ],
+      "aliases": [
+        "ley de arrendamiento",
+        "ley de arrendamientos",
+        "arrendamiento"
+      ]
+    },
+    {
+      "id": "ley_zonas_economicas",
+      "nombre": "Ley Orgánica de las Zonas Económicas Especiales",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "ley-organi-20220801161552.pdf"
+      ],
+      "aliases": [
+        "zonas economicas"
+      ]
+    },
+    {
+      "id": "ley_antecedentes_penales",
+      "nombre": "Ley de Registro de Antecedentes Penales",
+      "rama": "penal",
+      "archivos_pdf": [
+        "ley-regist-20220728163728.pdf"
+      ],
+      "aliases": [
+        "antecedentes penales"
+      ]
+    },
+    {
+      "id": "copp",
+      "nombre": "Código Orgánico Procesal Penal (COPP)",
+      "rama": "penal",
+      "archivos_pdf": [
+        "codigo-organico-procesal-penal.pdf"
+      ],
+      "aliases": [
+        "copp",
+        "codigo organico procesal penal",
+        "procesal penal"
+      ]
+    },
+    {
+      "id": "ley_precios_justos",
+      "nombre": "Ley Orgánica de Precios Justos",
+      "rama": "consumidor",
+      "archivos_pdf": [
+        "Ley-Orgánica-de-Precios-Justos.pdf"
+      ],
+      "aliases": [
+        "indepabis",
+        "precios justos",
+        "ley de precios justos",
+        "sundde",
+        "ley del consumidor",
+        "consumidor",
+        "proteccion al consumidor"
+      ]
+    },
+    {
+      "id": "ley_seguro_social",
+      "nombre": "Ley del Seguro Social",
+      "rama": "laboral",
+      "archivos_pdf": [
+        "ley-del-seguro-social.pdf"
+      ],
+      "aliases": [
+        "seguro social",
+        "ley del seguro social",
+        "ivss"
+      ]
+    },
+    {
+      "id": "islr",
+      "nombre": "Ley de Impuesto Sobre la Renta (ISLR)",
+      "rama": "tributario",
+      "archivos_pdf": [
+        "isrl.pdf"
+      ],
+      "aliases": [
+        "islr",
+        "impuesto sobre la renta",
+        "ley de islr",
+        "renta"
+      ]
+    },
+    {
+      "id": "ley_delitos_informaticos",
+      "nombre": "Ley Especial contra los Delitos Informáticos",
+      "rama": "penal",
+      "archivos_pdf": [
+        "ley-especial-contra-los-delitos-informaticos.pdf"
+      ],
+      "aliases": [
+        "delitos informaticos",
+        "ley de delitos informaticos",
+        "ciberdelitos"
+      ]
+    },
+    {
+      "id": "ley_simplificacion_tramites",
+      "nombre": "Ley Orgánica de Simplificación de Trámites Administrativos",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "Ley-Organica-de-Simplificacion-de-Tramites.pdf"
+      ],
+      "aliases": [
+        "simplificacion de tramites",
+        "ley de tramites",
+        "tramites"
+      ]
+    },
+    {
+      "id": "codigo_etica_abogado",
+      "nombre": "Código de Ética Profesional del Abogado Venezolano",
+      "rama": "general",
+      "archivos_pdf": [
+        "codigo-de-etica-profesional-del-abogado-venezolano.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_arrendamientos_inmobiliarios",
+      "nombre": "Ley de Arrendamientos Inmobiliarios",
+      "rama": "civil",
+      "archivos_pdf": [
+        "ley-de-arrendamientos-inmobiliarios-1999.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_drogas",
+      "nombre": "Ley Orgánica de Drogas",
+      "rama": "penal",
+      "archivos_pdf": [
+        "Ley-Organica-de-Drogas-2010.pdf"
+      ],
+      "aliases": [
+        "drogas",
+        "ley de drogas",
+        "ley antidrogas",
+        "antidrogas"
+      ]
+    },
+    {
+      "id": "ley_salud",
+      "nombre": "Ley Orgánica de Salud",
+      "rama": "salud",
+      "archivos_pdf": [
+        "ley-organica-de-salud.pdf",
+        "ley organica de salud.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "reglamento_general_alimentos",
+      "nombre": "Reglamento General de Alimentos",
+      "rama": "salud",
+      "archivos_pdf": [
+        "reglamento-general-de-alimentos.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "resolucion_permisos_sanitarios",
+      "nombre": "Resolución SG-403-96 Permisos Sanitarios",
+      "rama": "salud",
+      "archivos_pdf": [
+        "Resolucion-SG-403-96.Permisos-Sanitarios-1.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_sector_bancario",
+      "nombre": "Ley de las Instituciones del Sector Bancario",
+      "rama": "bancario",
+      "archivos_pdf": [
+        "Ley-de-las-Instituciones-del-Sector-Bancario.pdf"
+      ],
+      "aliases": [
+        "ley de bancos",
+        "sector bancario",
+        "ley bancaria"
+      ]
+    },
+    {
+      "id": "ley_telecomunicaciones",
+      "nombre": "Ley Orgánica de Telecomunicaciones",
+      "rama": "tecnologia",
+      "archivos_pdf": [
+        "ley-organica-de-telecomunicaciones.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_actividad_aseguradora",
+      "nombre": "Ley de la Actividad Aseguradora",
+      "rama": "seguros",
+      "archivos_pdf": [
+        "LEY-ACTIVIDAD-ASEGURADORA.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "locti",
+      "nombre": "Ley Orgánica de Ciencia, Tecnología e Innovación (LOCTI)",
+      "rama": "tecnologia",
+      "archivos_pdf": [
+        "ley_organica_de_ciencia_tecnologia_e_innovacion.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_infogobierno",
+      "nombre": "Ley de Infogobierno",
+      "rama": "tecnologia",
+      "archivos_pdf": [
+        "ley de infogobierno.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_interoperabilidad",
+      "nombre": "Ley de Interoperabilidad",
+      "rama": "tecnologia",
+      "archivos_pdf": [
+        "Ley_de_Interoperabilidad.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_funcion_publica_estadistica",
+      "nombre": "Ley de la Función Pública Estadística",
+      "rama": "general",
+      "archivos_pdf": [
+        "ley de la funcion publica estadistica.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "codigo_etica_ia",
+      "nombre": "Código de Ética de Inteligencia Artificial",
+      "rama": "tecnologia",
+      "archivos_pdf": [
+        "Codigo_de_Etica_de_Inteligencia_Artificial.pdf"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ley_desalojo_arbitrario",
+      "nombre": "Ley contra el Desalojo Arbitrario de Viviendas",
+      "rama": "vivienda",
+      "archivos_pdf": [],
+      "aliases": [
+        "ley contra el desalojo",
+        "desalojo"
+      ]
+    },
+    {
+      "id": "ley_ambiente",
+      "nombre": "Ley Orgánica del Ambiente",
+      "rama": "ambiente",
+      "archivos_pdf": [],
+      "aliases": [
+        "ley del ambiente",
+        "ley organica del ambiente",
+        "ambiente"
+      ]
+    },
+    {
+      "id": "ley_poder_publico_municipal",
+      "nombre": "Ley Orgánica del Poder Público Municipal",
+      "rama": "administrativo",
+      "archivos_pdf": [],
+      "aliases": [
+        "ley municipal",
+        "poder publico municipal"
+      ]
+    },
+    {
+      "id": "ley_arrendamiento_comercial",
+      "nombre": "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
+      "rama": "civil",
+      "archivos_pdf": [],
+      "aliases": [
+        "arrendamiento comercial",
+        "ley de arrendamiento comercial"
+      ]
+    },
+    {
+      "id": "ley_trabajadores_residenciales",
+      "nombre": "Ley Especial para la Dignificación de Trabajadores Residenciales",
+      "rama": "laboral",
+      "archivos_pdf": [],
+      "aliases": [
+        "trabajadores residenciales"
+      ]
+    },
+    {
+      "id": "ley_procesos_electorales",
+      "nombre": "Ley Orgánica de Procesos Electorales",
+      "rama": "general",
+      "archivos_pdf": [],
+      "aliases": [
+        "procesos electorales",
+        "ley electoral",
+        "elecciones",
+        "voto"
+      ]
+    }
+  ]
+}

@@ -60,160 +60,18 @@ ARTICULOS_CLAVE: dict = _json.loads(
 
 
 
-# ─── ALIAS DE LEYES ──────────────────────────────────────────────────────────
+# ─── ALIAS DE LEYES (desde leyes_config.json) ───────────────────────────────
+# Fuente única de verdad: leyes_config.json define aliases → nombre canónico.
 
-ALIAS_LEYES = {
-    # Constitución
-    "constitucion": "Constitución de la República Bolivariana de Venezuela",
-    "constitucion de venezuela": "Constitución de la República Bolivariana de Venezuela",
-    "crbv": "Constitución de la República Bolivariana de Venezuela",
-    # Código Civil
-    "codigo civil": "Código Civil venezolano",
-    "cc": "Código Civil venezolano",
-    # Código Penal
-    "codigo penal": "Código Penal",
-    "cp": "Código Penal",
-    "penal": "Código Penal",
-    # Código de Procedimiento Civil
-    "codigo de procedimiento civil": "Código de Procedimiento Civil",
-    "cpc": "Código de Procedimiento Civil",
-    # LOTTT
-    "lottt": "Ley Orgánica del Trabajo (LOTTT)",
-    "ley del trabajo": "Ley Orgánica del Trabajo (LOTTT)",
-    "ley organica del trabajo": "Ley Orgánica del Trabajo (LOTTT)",
-    "ley de trabajo": "Ley Orgánica del Trabajo (LOTTT)",
-    "trabajo": "Ley Orgánica del Trabajo (LOTTT)",
-    # Código de Comercio
-    "codigo de comercio": "Código de Comercio",
-    "comercio": "Código de Comercio",
-    "ley de comercio": "Código de Comercio",
-    # Tránsito
-    "ley de transito": "Ley de Tránsito Terrestre",
-    "ley de transito terrestre": "Ley de Tránsito Terrestre",
-    "ley de transporte terrestre": "Ley de Tránsito Terrestre",
-    "ley transporte terrestre": "Ley de Tránsito Terrestre",
-    "ley transito": "Ley de Tránsito Terrestre",
-    "transito": "Ley de Tránsito Terrestre",
-    "transporte terrestre": "Ley de Tránsito Terrestre",
-    # LOPNA
-    "lopna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    "ley de ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    "lopnna": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    "ninos": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    "menores": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
-    # Violencia
-    "ley de violencia": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
-    "ley de la mujer": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
-    "violencia de genero": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
-    "violencia contra la mujer": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
-    # Tributario
-    "codigo organico tributario": "Código Orgánico Tributario",
-    "cot": "Código Orgánico Tributario",
-    # Arrendamiento
-    "ley de arrendamiento": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
-    "ley de arrendamientos": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
-    "arrendamiento": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
-    # Desalojo
-    "ley contra el desalojo": "Ley contra el Desalojo Arbitrario de Viviendas",
-    "desalojo": "Ley contra el Desalojo Arbitrario de Viviendas",
-    # Corrupción
-    "ley contra la corrupcion": "Ley contra la Corrupción",
-    "corrupcion": "Ley contra la Corrupción",
-    # Propiedad Horizontal
-    "ley de propiedad horizontal": "Ley de Propiedad Horizontal",
-    "propiedad horizontal": "Ley de Propiedad Horizontal",
-    # Ambiente
-    "ley del ambiente": "Ley Orgánica del Ambiente",
-    "ley organica del ambiente": "Ley Orgánica del Ambiente",
-    "ambiente": "Ley Orgánica del Ambiente",
-    # Justicia Militar
-    "codigo de justicia militar": "Código Orgánico de Justicia Militar",
-    # Registros
-    "ley de registros y notarias": "Ley de Registros y Notarías",
-    # Familia
-    "ley de familias": "Ley para la Protección de las Familias, la Maternidad y la Paternidad",
-    "maternidad": "Ley para la Protección de las Familias, la Maternidad y la Paternidad",
-    # Arrendamiento Comercial
-    "arrendamiento comercial": "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
-    "ley de arrendamiento comercial": "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
-    # Trabajadores Residenciales
-    "trabajadores residenciales": "Ley Especial para la Dignificación de Trabajadores Residenciales",
-    # Discapacidad
-    "discapacidad": "Ley para la Inclusión de Personas con Discapacidad",
-    # Fauna / Animales
-    "fauna domestica": "Ley de Protección de la Fauna Doméstica",
-    "ley de fauna": "Ley de Protección de la Fauna Doméstica",
-    "fauna": "Ley de Protección de la Fauna Doméstica",
-    "animales": "Ley de Protección de la Fauna Doméstica",
-    "ley de animales": "Ley de Protección de la Fauna Doméstica",
-    "proteccion animal": "Ley de Protección de la Fauna Doméstica",
-    "ley animales": "Ley de Protección de la Fauna Doméstica",
-    # Municipal
-    "ley municipal": "Ley Orgánica del Poder Público Municipal",
-    "poder publico municipal": "Ley Orgánica del Poder Público Municipal",
-    # Justicia de Paz
-    "justicia de paz": "Ley Orgánica de Justicia de Paz Comunal",
-    "ley de justicia de paz": "Ley Orgánica de Justicia de Paz Comunal",
-    "paz comunal": "Ley Orgánica de Justicia de Paz Comunal",
-    # Adultos Mayores
-    "adultos mayores": "Ley de Atención Integral de las Personas Adultas Mayores",
-    # Antecedentes
-    "antecedentes penales": "Ley de Registro de Antecedentes Penales",
-    # Zonas Económicas
-    "zonas economicas": "Ley Orgánica de las Zonas Económicas Especiales",
-    # Comunas
-    "ley de comunas": "Ley Orgánica de las Comunas",
-    "consejos comunales": "Ley Orgánica de los Consejos Comunales",
-    # Contraloría
-    "contraloria": "Ley Orgánica de la Contraloría General de la República",
-    # Residuos
-    "ley de residuos": "Ley de Residuos y Desechos Sólidos",
-    # Odio
-    "ley contra el odio": "Ley Constitucional contra el Odio",
-    # COPP
-    "copp": "Código Orgánico Procesal Penal (COPP)",
-    "codigo organico procesal penal": "Código Orgánico Procesal Penal (COPP)",
-    "procesal penal": "Código Orgánico Procesal Penal (COPP)",
-    # Consumidor / Precios Justos (antes INDEPABIS)
-    "indepabis": "Ley Orgánica de Precios Justos",
-    "precios justos": "Ley Orgánica de Precios Justos",
-    "ley de precios justos": "Ley Orgánica de Precios Justos",
-    "sundde": "Ley Orgánica de Precios Justos",
-    "ley del consumidor": "Ley Orgánica de Precios Justos",
-    "consumidor": "Ley Orgánica de Precios Justos",
-    "proteccion al consumidor": "Ley Orgánica de Precios Justos",
-    # Sector Bancario
-    "ley de bancos": "Ley de Instituciones del Sector Bancario",
-    "sector bancario": "Ley de Instituciones del Sector Bancario",
-    "ley bancaria": "Ley de Instituciones del Sector Bancario",
-    # Seguro Social
-    "seguro social": "Ley del Seguro Social",
-    "ley del seguro social": "Ley del Seguro Social",
-    "ivss": "Ley del Seguro Social",
-    # ISLR
-    "islr": "Ley de Impuesto Sobre la Renta (ISLR)",
-    "impuesto sobre la renta": "Ley de Impuesto Sobre la Renta (ISLR)",
-    "ley de islr": "Ley de Impuesto Sobre la Renta (ISLR)",
-    "renta": "Ley de Impuesto Sobre la Renta (ISLR)",
-    # Delitos Informáticos
-    "delitos informaticos": "Ley Especial contra los Delitos Informáticos",
-    "ley de delitos informaticos": "Ley Especial contra los Delitos Informáticos",
-    "ciberdelitos": "Ley Especial contra los Delitos Informáticos",
-    # Drogas
-    "drogas": "Ley Orgánica de Drogas",
-    "ley de drogas": "Ley Orgánica de Drogas",
-    "ley antidrogas": "Ley Orgánica de Drogas",
-    "antidrogas": "Ley Orgánica de Drogas",
-    # Simplificación de Trámites
-    "simplificacion de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
-    "ley de tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
-    "tramites": "Ley Orgánica de Simplificación de Trámites Administrativos",
-    # Procesos Electorales
-    "procesos electorales": "Ley Orgánica de Procesos Electorales",
-    "ley electoral": "Ley Orgánica de Procesos Electorales",
-    "elecciones": "Ley Orgánica de Procesos Electorales",
-    "voto": "Ley Orgánica de Procesos Electorales",
-}
+_leyes_cfg = _json.loads(
+    _pathlib.Path(__file__).parent.joinpath("leyes_config.json")
+    .read_text(encoding="utf-8")
+)
+ALIAS_LEYES: dict[str, str] = {}
+for _ley in _leyes_cfg["leyes"]:
+    for _alias in _ley["aliases"]:
+        ALIAS_LEYES[_alias] = _ley["nombre"]
+del _leyes_cfg
 
 # ─── PROMPTS Y GUÍAS (importados desde prompts.py) ──────────────────────────
 from prompts import (
