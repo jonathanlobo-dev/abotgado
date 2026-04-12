@@ -15,7 +15,7 @@ from telegram import (
     InlineQueryResultsButton, WebAppInfo, MenuButtonWebApp
 )
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler,
+    Application, CommandHandler, ConversationHandler, MessageHandler,
     CallbackQueryHandler, InlineQueryHandler, filters, ContextTypes
 )
 import hashlib
@@ -83,13 +83,15 @@ async def enviar_respuesta(message, texto: str, reply_markup=None):
 
 # ─── ESTADO TEMPORAL ─────────────────────────────────────────────────────────
 
-feedback_pendiente = set()
-soporte_pendiente  = set()
 ultima_respuesta   = {}  # user_id -> {"pregunta": ..., "respuesta": ...}
 ultima_ley         = {}  # user_id -> ley_real — última ley discutida (para inferir contexto)
-registro_abogado   = {}  # user_id -> {"paso": N, "datos": {...}}
 esperando_ley      = {}  # user_id -> {"num_art": int} — esperando nombre de ley
 debug_mode         = False  # /debug on|off — enviar 🟢 de TODAS las consultas
+
+# Estados para ConversationHandler
+ESPERANDO_FEEDBACK = 0
+ESPERANDO_SOPORTE  = 0
+ABOGADO_PASO       = 0
 
 
 # ─── FILTRO DE SEGURIDAD (PRE-LLM) ─────────────────────────────────────────
@@ -560,14 +562,26 @@ async def cmd_opinion(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Gracias por tu opinion! Nos ayuda a mejorar.")
         await notificar_admins(context,
             f"💬 FEEDBACK de {update.effective_user.first_name} (ID: {user_id}):\n{comentario}")
+        return ConversationHandler.END
     else:
-        feedback_pendiente.add(user_id)
         await enviar_respuesta(
             update.message,
             "<b>Tu opinion nos importa</b>\n\n"
             "Escribe tu comentario, sugerencia o queja.\n"
             "O escribe /cancelar para volver."
         )
+        return ESPERANDO_FEEDBACK
+
+
+async def feedback_recibido(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Recibe el texto del feedback después de /opinion."""
+    user = update.effective_user
+    pregunta = update.message.text
+    db.guardar_feedback(user.id, "comentario", pregunta)
+    await update.message.reply_text("Gracias por tu opinion! Nos ayuda a mejorar.")
+    await notificar_admins(context,
+        f"💬 FEEDBACK de {user.first_name} (ID: {user.id}):\n{pregunta}")
+    return ConversationHandler.END
 
 
 async def cmd_feedback_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -798,14 +812,35 @@ async def cmd_soporte(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Mensaje enviado al equipo de soporte. Te responderemos pronto.")
         await notificar_admins(context,
             f"🆘 SOPORTE de {update.effective_user.first_name} (@{update.effective_user.username or 'N/A'}, ID: {user_id}):\n\n{mensaje}")
+        return ConversationHandler.END
     else:
-        soporte_pendiente.add(user_id)
         await enviar_respuesta(
             update.message,
             "🆘 <b>Soporte</b>\n\n"
             "Escribe tu mensaje y lo recibiremos.\n"
             "O escribe /cancelar para volver."
         )
+        return ESPERANDO_SOPORTE
+
+
+async def soporte_recibido(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Recibe el texto del soporte después de /soporte."""
+    user = update.effective_user
+    pregunta = update.message.text
+    db.guardar_ticket_soporte(user.id, pregunta)
+    await update.message.reply_text("Mensaje enviado al equipo de soporte. Te responderemos pronto.")
+    await notificar_admins(context,
+        f"🆘 SOPORTE de {user.first_name} (@{user.username or 'N/A'}, ID: {user.id}):\n\n{pregunta}")
+    return ConversationHandler.END
+
+
+async def conv_cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Fallback /cancelar para todos los ConversationHandlers."""
+    # Limpiar datos de abogado si existen
+    for key in ("abogado_paso", "abogado_datos", "abogado_esperando_notas"):
+        context.user_data.pop(key, None)
+    await update.message.reply_text("Operacion cancelada.")
+    return ConversationHandler.END
 
 
 async def cmd_responder_soporte(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1351,13 +1386,11 @@ async def cmd_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Cancela flujos que no usan ConversationHandler (esperando_ley, documentos).
+    Los flujos de feedback, soporte y registro de abogado se cancelan
+    via los fallbacks de sus respectivos ConversationHandlers."""
     try:
         user_id = update.effective_user.id
-        # También cancelar feedback/soporte/registro pendiente
-        feedback_pendiente.discard(user_id)
-        soporte_pendiente.discard(user_id)
-        if user_id in registro_abogado:
-            del registro_abogado[user_id]
         if user_id in esperando_ley:
             del esperando_ley[user_id]
         msg = documentos.cancelar_documento(user_id)
@@ -1410,9 +1443,10 @@ async def cmd_add_abogado(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Inicia el flujo conversacional para registrar un abogado."""
     user_id = update.effective_user.id
     if not es_admin(user_id):
-        return
+        return ConversationHandler.END
 
-    registro_abogado[user_id] = {"paso": 0, "datos": {}}
+    context.user_data["abogado_paso"] = 0
+    context.user_data["abogado_datos"] = {}
     _, mensaje = PASOS_ABOGADO[0]
     await enviar_respuesta(
         update.message,
@@ -1420,20 +1454,17 @@ async def cmd_add_abogado(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"{mensaje}\n\n"
         "Escribe /cancelar para salir."
     )
+    return ABOGADO_PASO
 
 
-def procesar_paso_abogado(user_id: int, texto: str) -> tuple[str | None, bool]:
-    """Procesa un paso del registro de abogado.
-    Retorna (mensaje_siguiente, completado)."""
-    if user_id not in registro_abogado:
-        return None, False
-
-    reg = registro_abogado[user_id]
+async def abogado_paso_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Procesa cada paso del registro de abogado via ConversationHandler."""
+    texto = update.message.text
 
     # Si ya preguntamos las notas, este texto son las notas
-    if reg.get("esperando_notas"):
+    if context.user_data.get("abogado_esperando_notas"):
         notas = texto.strip() if texto.strip() != "-" else ""
-        datos = reg["datos"]
+        datos = context.user_data["abogado_datos"]
 
         abogado_id = db.agregar_abogado(
             nombre=datos["nombre"],
@@ -1445,7 +1476,9 @@ def procesar_paso_abogado(user_id: int, texto: str) -> tuple[str | None, bool]:
             notas=notas,
         )
 
-        del registro_abogado[user_id]
+        # Limpiar user_data
+        for key in ("abogado_paso", "abogado_datos", "abogado_esperando_notas"):
+            context.user_data.pop(key, None)
 
         resumen = (
             f"✅ <b>Abogado registrado</b> (ID: {abogado_id})\n\n"
@@ -1459,25 +1492,31 @@ def procesar_paso_abogado(user_id: int, texto: str) -> tuple[str | None, bool]:
         if notas:
             resumen += f"📝 {notas}\n"
 
-        return resumen, True
+        await enviar_respuesta(update.message, resumen)
+        return ConversationHandler.END
 
-    paso_actual = reg["paso"]
+    paso_actual = context.user_data["abogado_paso"]
     campo, _ = PASOS_ABOGADO[paso_actual]
 
     # Guardar dato del paso actual
-    reg["datos"][campo] = texto.strip()
-    reg["paso"] += 1
+    context.user_data["abogado_datos"][campo] = texto.strip()
+    context.user_data["abogado_paso"] += 1
 
     # ¿Hay más pasos?
-    if reg["paso"] < len(PASOS_ABOGADO):
-        _, siguiente_msg = PASOS_ABOGADO[reg["paso"]]
-        return siguiente_msg, False
+    if context.user_data["abogado_paso"] < len(PASOS_ABOGADO):
+        _, siguiente_msg = PASOS_ABOGADO[context.user_data["abogado_paso"]]
+        await enviar_respuesta(update.message, siguiente_msg)
+        return ABOGADO_PASO
 
     # Todos los pasos completados — preguntar por notas
-    reg["esperando_notas"] = True
-    return ("📝 <b>Notas adicionales</b> (opcional):\n\n"
-            "<i>Email, horario, precio de consulta, idiomas, etc.\n"
-            "Escribe \"-\" para omitir.</i>"), False
+    context.user_data["abogado_esperando_notas"] = True
+    await enviar_respuesta(
+        update.message,
+        "📝 <b>Notas adicionales</b> (opcional):\n\n"
+        "<i>Email, horario, precio de consulta, idiomas, etc.\n"
+        "Escribe \"-\" para omitir.</i>"
+    )
+    return ABOGADO_PASO
 
 
 async def cmd_abogados(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1641,31 +1680,6 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
              InlineKeyboardButton("👎", callback_data=f"fb_down_{user_id}")]
         ])
         await enviar_respuesta(update.message, respuesta, reply_markup=kb)
-        return
-
-    # ── Registro de abogado (flujo conversacional admin) ────────────────
-    if user_id in registro_abogado:
-        mensaje, completado = procesar_paso_abogado(user_id, pregunta)
-        if mensaje:
-            await enviar_respuesta(update.message, mensaje)
-        return
-
-    # ── Feedback pendiente ───────────────────────────────────────────────
-    if user_id in feedback_pendiente:
-        feedback_pendiente.discard(user_id)
-        db.guardar_feedback(user_id, "comentario", pregunta)
-        await update.message.reply_text("Gracias por tu opinion! Nos ayuda a mejorar.")
-        await notificar_admins(context,
-            f"💬 FEEDBACK de {user.first_name} (ID: {user_id}):\n{pregunta}")
-        return
-
-    # ── Soporte pendiente ────────────────────────────────────────────────
-    if user_id in soporte_pendiente:
-        soporte_pendiente.discard(user_id)
-        db.guardar_ticket_soporte(user_id, pregunta)
-        await update.message.reply_text("Mensaje enviado al equipo de soporte. Te responderemos pronto.")
-        await notificar_admins(context,
-            f"🆘 SOPORTE de {user.first_name} (@{user.username or 'N/A'}, ID: {user_id}):\n\n{pregunta}")
         return
 
     # ── Selección de menú de documentos ──────────────────────────────────
@@ -2187,6 +2201,36 @@ def main():
 
     app.post_init = post_init
 
+    # ── ConversationHandlers (deben ir antes de los handlers simples) ────
+    _cancelar_fallback = [CommandHandler("cancelar", conv_cancelar)]
+
+    feedback_conv = ConversationHandler(
+        entry_points=[CommandHandler("opinion", cmd_opinion)],
+        states={ESPERANDO_FEEDBACK: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, feedback_recibido)
+        ]},
+        fallbacks=_cancelar_fallback,
+    )
+    app.add_handler(feedback_conv)
+
+    soporte_conv = ConversationHandler(
+        entry_points=[CommandHandler("soporte", cmd_soporte)],
+        states={ESPERANDO_SOPORTE: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, soporte_recibido)
+        ]},
+        fallbacks=_cancelar_fallback,
+    )
+    app.add_handler(soporte_conv)
+
+    abogado_conv = ConversationHandler(
+        entry_points=[CommandHandler("add_abogado", cmd_add_abogado)],
+        states={ABOGADO_PASO: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, abogado_paso_handler)
+        ]},
+        fallbacks=_cancelar_fallback,
+    )
+    app.add_handler(abogado_conv)
+
     # Comandos de usuario
     app.add_handler(CommandHandler("start",           start))
     app.add_handler(CommandHandler("ayuda",           ayuda))
@@ -2199,13 +2243,11 @@ def main():
     app.add_handler(CommandHandler("documento",       cmd_documento))
     app.add_handler(CommandHandler("cancelar",        cmd_cancelar))
     app.add_handler(CommandHandler("stats",           cmd_stats))
-    app.add_handler(CommandHandler("opinion",         cmd_opinion))
     app.add_handler(CommandHandler("guardar",         cmd_guardar))
     app.add_handler(CommandHandler("mis_consultas",   cmd_mis_consultas))
     app.add_handler(CommandHandler("ver_guardado",    cmd_ver_guardado))
     app.add_handler(CommandHandler("borrar_guardados",cmd_borrar_guardados))
     app.add_handler(CommandHandler("referir",         cmd_referir))
-    app.add_handler(CommandHandler("soporte",         cmd_soporte))
     app.add_handler(CommandHandler("app",             cmd_app))
 
     # Comandos de admin
@@ -2230,8 +2272,6 @@ def main():
     app.add_handler(CommandHandler("backup",          cmd_backup))
     app.add_handler(CommandHandler("plan_add",        cmd_plan_add))
     app.add_handler(CommandHandler("plan_del",        cmd_plan_del))
-    app.add_handler(CommandHandler("debug",           cmd_debug))
-    app.add_handler(CommandHandler("add_abogado",     cmd_add_abogado))
     app.add_handler(CommandHandler("abogados",        cmd_abogados))
     app.add_handler(CommandHandler("del_abogado",     cmd_del_abogado))
     app.add_handler(CommandHandler("activar_abogado", cmd_activar_abogado))
