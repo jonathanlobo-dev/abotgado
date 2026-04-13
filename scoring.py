@@ -132,6 +132,9 @@ RAMA_POR_TEMA = {
     "genero_lenguaje": "constitucional",
     "infogobierno": "administrativo",
     "arrendamiento_comercial_ley": "civil",
+    "desalojo_arbitrario": "vivienda",
+    "poder_publico_municipal": "administrativo",
+    "ambiente_ley": "ambiente",
 }
 
 

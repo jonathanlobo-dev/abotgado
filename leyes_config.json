@@ -92,7 +92,8 @@
       "nombre": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
       "rama": "familia",
       "archivos_pdf": [
-        "lopna.pdf"
+        "lopna.pdf",
+        "reforma-lopna.pdf"
       ],
       "aliases": [
         "lopna",
@@ -334,7 +335,8 @@
       "nombre": "Ley Orgánica de Justicia de Paz Comunal",
       "rama": "administrativo",
       "archivos_pdf": [
-        "Ley Orgánica de Justicia de Paz Comunal.pdf"
+        "Ley Orgánica de Justicia de Paz Comunal.pdf",
+        "reforma-justicia-paz-comunal.pdf"
       ],
       "aliases": [
         "justicia de paz",
@@ -652,7 +654,9 @@
       "id": "ley_desalojo_arbitrario",
       "nombre": "Ley contra el Desalojo Arbitrario de Viviendas",
       "rama": "vivienda",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "ley-contra-desalojo-arbitrario-viviendas.pdf"
+      ],
       "aliases": [
         "ley contra el desalojo",
         "desalojo"
@@ -662,7 +666,9 @@
       "id": "ley_ambiente",
       "nombre": "Ley Orgánica del Ambiente",
       "rama": "ambiente",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "ley-organica-del-ambiente.pdf"
+      ],
       "aliases": [
         "ley del ambiente",
         "ley organica del ambiente",
@@ -673,7 +679,9 @@
       "id": "ley_poder_publico_municipal",
       "nombre": "Ley Orgánica del Poder Público Municipal",
       "rama": "administrativo",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "ley-organica-poder-publico-municipal.pdf"
+      ],
       "aliases": [
         "ley municipal",
         "poder publico municipal"
@@ -695,7 +703,9 @@
       "id": "ley_trabajadores_residenciales",
       "nombre": "Ley Especial para la Dignificación de Trabajadores Residenciales",
       "rama": "laboral",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "ley-dignificacion-trabajadores-residenciales.pdf"
+      ],
       "aliases": [
         "trabajadores residenciales"
       ]
@@ -786,6 +796,32 @@
         "marca comercial",
         "patente",
         "lema comercial"
+      ]
+    },
+    {
+      "id": "ley_consejo_federal_gobierno",
+      "nombre": "Ley Orgánica del Consejo Federal de Gobierno",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "ley-organica-consejo-federal-de-gobierno.pdf"
+      ],
+      "aliases": [
+        "consejo federal",
+        "consejo federal de gobierno",
+        "federalismo",
+        "descentralizacion"
+      ]
+    },
+    {
+      "id": "reglamento_consejo_federal",
+      "nombre": "Reglamento de la Ley Orgánica del Consejo Federal de Gobierno",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "reglamento-consejo-federal-de-gobierno.pdf"
+      ],
+      "aliases": [
+        "reglamento consejo federal",
+        "transferencia competencias"
       ]
     }
   ]

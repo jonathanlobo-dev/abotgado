@@ -4600,5 +4600,104 @@
       126,
       127
     ]
+  },
+  "desalojo_arbitrario": {
+    "keywords": [
+      "desalojo arbitrario",
+      "desalojo ilegal",
+      "me quieren sacar de mi casa",
+      "me quieren desalojar",
+      "me van a botar de mi casa",
+      "desahucio",
+      "desalojo sin orden judicial",
+      "desalojo forzoso",
+      "invasor vivienda",
+      "sacar de la vivienda",
+      "lanzamiento vivienda",
+      "desocupar vivienda",
+      "botar de la casa",
+      "echar de la casa"
+    ],
+    "ley": "Ley contra el Desalojo Arbitrario de Viviendas",
+    "articulos": [
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      10,
+      12
+    ]
+  },
+  "poder_publico_municipal": {
+    "keywords": [
+      "patente de industria y comercio",
+      "patente municipal",
+      "licencia de actividades economicas",
+      "licencia de actividades económicas",
+      "permiso municipal",
+      "alcaldia",
+      "alcaldía",
+      "impuesto municipal",
+      "tasa municipal",
+      "ordenanza municipal",
+      "competencia municipal",
+      "hacienda municipal",
+      "actividad economica municipal",
+      "actividad económica municipal"
+    ],
+    "ley": "Ley Orgánica del Poder Público Municipal",
+    "articulos": [
+      54,
+      56,
+      64,
+      137,
+      140,
+      175,
+      176,
+      200,
+      201,
+      204,
+      205,
+      210
+    ]
+  },
+  "ambiente_ley": {
+    "keywords": [
+      "contaminacion",
+      "contaminación",
+      "contaminante",
+      "impacto ambiental",
+      "estudio de impacto ambiental",
+      "daño ambiental",
+      "dano ambiental",
+      "delito ambiental",
+      "vertido",
+      "desecho toxico",
+      "desecho tóxico",
+      "tala ilegal",
+      "deforestacion",
+      "deforestación",
+      "permiso ambiental",
+      "licencia ambiental",
+      "guarderia ambiental",
+      "guardería ambiental"
+    ],
+    "ley": "Ley Orgánica del Ambiente",
+    "articulos": [
+      3,
+      4,
+      12,
+      34,
+      46,
+      80,
+      83,
+      84,
+      108,
+      109,
+      111,
+      112
+    ]
   }
 }
