@@ -25,7 +25,7 @@ def main():
     # Verificar si ChromaDB ya existe
     chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
 
-    # Detectar cambios en PDFs (nombre + tamaño → hash)
+    # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0
@@ -41,6 +41,15 @@ def main():
             except OSError:
                 sz = 0
             partes.append(f"{f}:{sz}")
+        # También incluir leyes_config.json en el fingerprint
+        # para detectar cambios en mapeo de leyes/aliases/ramas
+        config_path = os.path.join(str(config.BASE_DIR), "leyes_config.json")
+        if os.path.exists(config_path):
+            try:
+                cfg_sz = os.path.getsize(config_path)
+                partes.append(f"leyes_config.json:{cfg_sz}")
+            except OSError:
+                pass
         pdf_fingerprint = hashlib.md5("|".join(partes).encode()).hexdigest()
 
     fingerprint_anterior = ""
