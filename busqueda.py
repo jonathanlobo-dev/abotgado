@@ -18,6 +18,10 @@ from rank_bm25 import BM25Okapi
 
 import config
 import embeddings
+from seguridad import (
+    es_prompt_injection, sanitizar_input,
+    _filtrar_telefonos_inventados, _filtrar_montos_inventados,
+)
 
 logger = logging.getLogger(__name__)
 
