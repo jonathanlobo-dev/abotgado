@@ -68,6 +68,24 @@ CATALOGO_LEYES = {
 
 # ─── PROMPTS ─────────────────────────────────────────────────────────────────
 
+PROMPT_DESCOMPONER_CONSULTA = """Eres un abogado venezolano. Analiza si esta consulta legal tiene MÚLTIPLES sub-preguntas independientes que requieren leyes DISTINTAS.
+
+Reglas:
+- Si la consulta toca 2+ ramas legales distintas (ej: sanitario + mercantil + propiedad intelectual), descomponla.
+- Responde SOLO con las sub-consultas, una por línea, numeradas (1. 2. 3.).
+- Cada sub-consulta debe ser autosuficiente (incluir contexto relevante del original).
+- Máximo 4 sub-consultas.
+- Si la consulta es simple (una sola rama legal), responde exactamente: NO
+
+Ejemplos:
+Consulta: "Quiero montar una fábrica de snacks para gatos, que sea de calidad industrial, vender en todo el país y proteger mi marca"
+1. requisitos sanitarios INSAI permiso para fábrica de alimentos para animales snacks para gatos calidad industrial
+2. registro mercantil licencia actividad económica patente industria comercio venta nacional distribución alimentos
+3. registro marca propiedad industrial SAPI protección nombre comercial producto
+
+Consulta: "me despidieron injustificadamente"
+NO"""
+
 PROMPT_REFORMULAR_PROFUNDO = """Eres un abogado venezolano experto. La primera búsqueda en la base de datos de leyes NO encontró artículos relevantes para la consulta del usuario.
 
 Tu tarea: reformula la consulta usando TÉRMINOS JURÍDICOS FORMALES venezolanos que maximicen la probabilidad de encontrar artículos relevantes. Piensa en sinónimos legales, nombres oficiales de instituciones, y ramas del derecho que apliquen.

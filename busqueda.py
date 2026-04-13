@@ -80,7 +80,7 @@ del _leyes_cfg
 # ─── PROMPTS Y GUÍAS (importados desde prompts.py) ──────────────────────────
 from prompts import (
     SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_REFORMULAR_PROFUNDO,
-    PROMPT_EXPLICAR_ARTICULO,
+    PROMPT_DESCOMPONER_CONSULTA, PROMPT_EXPLICAR_ARTICULO,
     GUIAS_INSTITUCIONALES, CATALOGO_LEYES,
 )
 
@@ -211,6 +211,47 @@ def _reformular_juridico_profundo(pregunta: str) -> str | None:
             return query_profunda
     except Exception as e:
         logger.warning(f"  Error en reformulación profunda: {e}")
+    return None
+
+
+def _descomponer_consulta(pregunta: str) -> list[str] | None:
+    """
+    Nivel 3 agéntico: descompone consultas multi-faceta en sub-queries
+    independientes para buscar artículos de distintas ramas del derecho.
+    Costo: 1 llamada a Groq (~100 tokens). Solo se activa cuando la
+    query parece tener múltiples preguntas legales.
+    """
+    try:
+        r = groq_client.chat.completions.create(
+            model=config.LLM_MODEL,
+            messages=[
+                {"role": "system", "content": PROMPT_DESCOMPONER_CONSULTA},
+                {"role": "user",   "content": pregunta}
+            ],
+            max_tokens=300,
+            temperature=0.0,
+        )
+        respuesta = r.choices[0].message.content.strip()
+        if respuesta == "NO" or not respuesta:
+            return None
+
+        # Parsear sub-queries numeradas (1. ... 2. ... 3. ...)
+        sub_queries = []
+        for linea in respuesta.split("\n"):
+            linea = linea.strip()
+            if linea and linea[0].isdigit() and "." in linea[:3]:
+                # Remover el "1. " del inicio
+                sq = linea.split(".", 1)[1].strip()
+                if len(sq) > 10:
+                    sub_queries.append(sq)
+
+        if len(sub_queries) >= 2:
+            logger.info(f"  🔀 Consulta descompuesta en {len(sub_queries)} sub-queries:")
+            for i, sq in enumerate(sub_queries, 1):
+                logger.info(f"     {i}. {sq[:100]}")
+            return sub_queries
+    except Exception as e:
+        logger.warning(f"  Error en descomposición: {e}")
     return None
 
 
@@ -963,12 +1004,50 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        "temas": [], "confianza": "ninguna"}
 
     def _buscar_con_retry(query_inicial: str) -> tuple[list, str, list, float]:
-        """Busca artículos. Si no encuentra, reformula jurídicamente y reintenta."""
+        """Busca artículos con 3 niveles agénticos:
+        - Nivel 1: búsqueda normal (BM25 + embeddings + keywords)
+        - Nivel 2: reformulación profunda (si Nivel 1 falla)
+        - Nivel 3: descomposición de consulta (si la query tiene múltiples facetas)
+        """
+        # ── Nivel 3: descomposición de consulta compleja ──────────────
+        sub_queries = _descomponer_consulta(query_inicial)
+        if sub_queries:
+            logger.info(f"  🔀 Nivel 3 activado — buscando {len(sub_queries)} sub-queries")
+            todos_arts = []
+            todos_temas = []
+            mejor_dist_global = 1.0
+            ids_vistos = set()
+
+            for sq in sub_queries:
+                arts_sq, _, temas_sq, dist_sq = buscar_articulos_nuevos(sq)
+                todos_temas.extend(temas_sq)
+                mejor_dist_global = min(mejor_dist_global, dist_sq)
+                for a in arts_sq:
+                    clave = f"{a['ley']}_{a['articulo']}"
+                    if clave not in ids_vistos:
+                        todos_arts.append(a)
+                        ids_vistos.add(clave)
+
+            if todos_arts:
+                # Re-ordenar por score_final y tomar top MAX_TOTAL
+                todos_arts.sort(key=lambda a: a.get("score_final", 0), reverse=True)
+                finales = todos_arts[:MAX_TOTAL]
+                temas_unicos = list(dict.fromkeys(todos_temas))  # dedup preservando orden
+
+                # Formatear contexto unificado
+                contexto = "LISTA DE ARTÍCULOS DISPONIBLES (SOLO puedes citar de esta lista):\n\n"
+                for idx, art in enumerate(finales, 1):
+                    contexto += f"[{idx}] {art['ley']}, Art. {art['articulo']}:\n{art['texto']}\n\n"
+
+                logger.info(f"  🔀 Nivel 3 resultado: {len(finales)} artículos de {len(sub_queries)} sub-queries")
+                return finales, contexto, temas_unicos, mejor_dist_global
+
+        # ── Nivel 1: búsqueda normal ─────────────────────────────────
         arts, ctx, temas, dist = buscar_articulos_nuevos(query_inicial)
         if arts:
             return arts, ctx, temas, dist
 
-        # Nivel 2: reformulación profunda → segundo intento
+        # ── Nivel 2: reformulación profunda → segundo intento ────────
         query_profunda = _reformular_juridico_profundo(query_inicial)
         if query_profunda:
             logger.info(f"  🔄 Nivel 2 activado — reintentando con query profunda")
