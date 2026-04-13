@@ -47,7 +47,8 @@
       "rama": "civil",
       "archivos_pdf": [
         "CÓDIGO_PROCEDIMIENTO_CIVIL.pdf",
-        "CÓDIGO PROCEDIMIENTO CIVIL.pdf"
+        "CÓDIGO PROCEDIMIENTO CIVIL.pdf",
+        "codigo-de-procedimiento-civil.pdf"
       ],
       "aliases": [
         "codigo de procedimiento civil",
@@ -370,7 +371,8 @@
       "nombre": "Código Orgánico Tributario",
       "rama": "tributario",
       "archivos_pdf": [
-        "6-Código Orgánico Tributario 2020.pdf"
+        "6-Código Orgánico Tributario 2020.pdf",
+        "codigo-organico-tributario.pdf"
       ],
       "aliases": [
         "codigo organico tributario",
@@ -393,7 +395,8 @@
       "nombre": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
       "rama": "vivienda",
       "archivos_pdf": [
-        "mietengesetz-venezuela.pdf"
+        "mietengesetz-venezuela.pdf",
+        "ley de arrendamientos.pdf"
       ],
       "aliases": [
         "ley de arrendamiento",
