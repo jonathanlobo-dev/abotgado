@@ -739,6 +739,54 @@
         "ley del iva",
         "ley iva"
       ]
+    },
+    {
+      "id": "ley_alcohol_especies",
+      "nombre": "Ley de Impuesto sobre Alcohol y Especies Alcohólicas",
+      "rama": "tributario",
+      "archivos_pdf": [
+        "decreto-con-rango-valor-y-fuerza-de-ley-de-impuesto-sobre-alcohol-y-especies-alcoholicas.pdf"
+      ],
+      "aliases": [
+        "ley de alcohol",
+        "ley de licores",
+        "impuesto sobre alcohol",
+        "ley alcoholes",
+        "especies alcoholicas"
+      ]
+    },
+    {
+      "id": "ley_salud_agricola",
+      "nombre": "Ley de Salud Agrícola Integral",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "LEY_DE_SALUD_AGRICOLA_INTEGRAL.pdf"
+      ],
+      "aliases": [
+        "insai",
+        "ley de salud agricola",
+        "salud agricola integral",
+        "ley del insai",
+        "sanidad vegetal",
+        "sanidad animal"
+      ]
+    },
+    {
+      "id": "ley_propiedad_intelectual",
+      "nombre": "Ley de Propiedad Industrial",
+      "rama": "comercial",
+      "archivos_pdf": [
+        "ley_propiedad_intelectual.pdf"
+      ],
+      "aliases": [
+        "sapi",
+        "ley de propiedad industrial",
+        "propiedad intelectual",
+        "registro de marca",
+        "marca comercial",
+        "patente",
+        "lema comercial"
+      ]
     }
   ]
 }

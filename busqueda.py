@@ -524,7 +524,7 @@ def es_fuera_de_dominio(pregunta: str) -> bool:
 
 # ─── SCORING Y RANKING (importado desde scoring.py) ─────────────────────────
 from scoring import (
-    UMBRAL_RECHAZO, LEYES_EXCLUIR_POR_TEMA,
+    UMBRAL_RECHAZO, UMBRAL_MIN_RELEVANCIA_FINAL, LEYES_EXCLUIR_POR_TEMA,
     LEY_A_RAMA, rama_de_ley, RAMA_POR_TEMA,
     _score_embedding, _score_bm25,
     SCORE_ARTICULO_CLAVE, SCORE_DIRECTO,
@@ -676,6 +676,19 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
             break
 
     logger.info(f"  Total al LLM: {len(relevantes_finales)}")
+
+    # ── FILTRO DE RELEVANCIA MÍNIMA ──────────────────────────────────────────
+    # Si el mejor artículo tiene score_final muy bajo, es basura semántica
+    # (ej: "alambiques" para una pregunta sobre fábrica de snacks).
+    # Descartamos todo el contexto → el LLM activa el mensaje "sin artículos".
+    if relevantes_finales:
+        max_score = max(a["score_final"] for a in relevantes_finales)
+        if max_score < UMBRAL_MIN_RELEVANCIA_FINAL:
+            logger.info(
+                f"  ↻ Contexto descartado: max_score={max_score:.3f} "
+                f"< UMBRAL_MIN={UMBRAL_MIN_RELEVANCIA_FINAL}"
+            )
+            relevantes_finales = []
 
     # ── FALLBACK: safety net si el scoring dejó vacío (no debería ocurrir) ──
     if not relevantes_finales:

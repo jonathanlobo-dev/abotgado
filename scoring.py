@@ -132,6 +132,12 @@ def _score_bm25(score: float, max_score: float) -> float:
 SCORE_ARTICULO_CLAVE = 0.95  # Keyword match exacto → alta confianza
 SCORE_DIRECTO = 1.0          # Lookup exacto "Art. X de Ley Y" → confianza máxima
 
+# Umbral mínimo de score_final para pasar artículos al LLM.
+# Si el mejor artículo candidato tiene score_final < este valor,
+# se descarta todo el contexto → LLM activa el mensaje "sin artículos específicos".
+# Valor calibrado: keyword match = 0.95, embedding bueno = 0.4-0.7, basura = 0.10-0.20
+UMBRAL_MIN_RELEVANCIA_FINAL: float = 0.22
+
 # Domain boost: artículos de la rama correcta suben, los de otra rama bajan,
 # la CRBV (constitucional) nunca se penaliza porque aplica a todos los dominios.
 DOMAIN_BOOST   = 1.3

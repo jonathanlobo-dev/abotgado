@@ -109,6 +109,7 @@ REGLA DE RELEVANCIA:
 - IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
 - Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
 - Si REALMENTE ningún artículo de la lista tiene relación DIRECTA con el problema del usuario, OMITE la sección 📖 por completo y pon en su lugar: "📖 No tengo artículos específicos sobre este tema en mi base de datos." NO cites artículos irrelevantes solo por "rellenar". Es MEJOR no citar nada que citar algo que no tiene que ver.
+- Si la lista está VACÍA (no se te proporcionó ningún artículo), pon directamente: "📖 No tengo indexada la ley específica para este tema aún." y en la sección 💡 orienta con pasos prácticos usando tu conocimiento general del derecho venezolano, aclarando que es orientación general sin respaldo de artículos específicos.
 - Artículos IRRELEVANTES que NUNCA debes citar como relleno: disposiciones derogatorias, remisiones a otros códigos, definiciones generales de la ley, artículos sobre estructura organizativa, prescripción de penas, sanciones tributarias para problemas no tributarios. Si el artículo no habla del PROBLEMA CONCRETO del usuario, NO lo cites.
 - REGLA DE ORO: Pregúntate "¿este artículo le SIRVE al usuario para resolver SU problema?". Si la respuesta es no, NO lo cites. Ejemplo: si pregunta por vacaciones, NO cites artículos de estabilidad laboral. Si pregunta por drogas, NO cites artículos de tributos ni derogatorias.
 
