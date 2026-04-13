@@ -86,13 +86,28 @@ leyes/*.pdf
 3. Si cambió (o `REINDEX=1`): borra ChromaDB y ejecuta `--full`
 4. Luego inicia el bot
 
-## Mapeo de nombres de leyes
+## Módulos extraídos de busqueda.py
 
-**Flujo crítico**: El nombre en `NOMBRES_CORRECTOS` (1_procesar_leyes.py) define cómo se guarda en ChromaDB. Luego `ARTICULOS_CLAVE` (busqueda.py) busca por ese mismo nombre. Si no coinciden → 0 resultados.
+| Módulo | Responsabilidad |
+|--------|----------------|
+| `seguridad.py` | Detección de prompt injection (20 patrones), sanitización, filtro de teléfonos/montos inventados |
+| `prompts.py` | SYSTEM_PROMPT, prompts de reformulación/explicación, guías institucionales (44), catálogo de leyes |
+| `scoring.py` | Score embedding/BM25, domain boost/penalty, mapeo ley→rama, constantes de scoring |
+| `busqueda.py` | Orquestación RAG, BM25, ChromaDB, fusión, LLM (importa los 3 módulos anteriores) |
+
+## Fuente única de verdad: leyes_config.json
+
+Todos los nombres canónicos, aliases, ramas y PDFs se definen en `leyes_config.json` (62 leyes). Los módulos derivan sus dicts desde este archivo:
 
 ```
-PDF filename → NOMBRES_CORRECTOS → ChromaDB metadata "ley" → ARTICULOS_CLAVE["ley"]
+leyes_config.json
+    ├─► 1_procesar_leyes.py: NOMBRES_CORRECTOS, CLASIFICACION_LEYES
+    ├─► busqueda.py:          ALIAS_LEYES (110 aliases → nombre canónico)
+    └─► scoring.py:           LEY_A_RAMA (nombre → rama para domain boost)
 ```
 
-## Alias de leyes (ALIAS_LEYES)
-200+ alias normalizados para que el usuario pueda escribir "lottt", "cc", "constitución", etc. y se resuelva al nombre canónico en ChromaDB.
+**Flujo crítico**: El nombre en `leyes_config.json` define cómo se guarda en ChromaDB y cómo se busca. Una sola fuente elimina inconsistencias.
+
+```
+leyes_config.json → NOMBRES_CORRECTOS → ChromaDB metadata "ley" → ARTICULOS_CLAVE["ley"]
+```

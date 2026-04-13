@@ -46,9 +46,15 @@ Bot jurídico venezolano en Telegram con RAG híbrido (keywords + BM25 + embeddi
 - [ ] Tests automatizados para validar respuestas del bot
 - [ ] Dashboard web para estadísticas admin
 
-### Deuda técnica
-- [ ] Unificar sistema de nombres de leyes (NOMBRES_CORRECTOS ↔ ARTICULOS_CLAVE)
-- [ ] Mover ARTICULOS_CLAVE a archivo JSON separado (busqueda.py es muy largo)
+### Deuda técnica (resuelta 2026-04-12)
+- [x] ~~Unificar sistema de nombres de leyes~~ → `leyes_config.json` como fuente única
+- [x] ~~Mover ARTICULOS_CLAVE a archivo JSON separado~~ → `articulos_clave.json`
+- [x] ~~busqueda.py demasiado largo~~ → separado en `seguridad.py`, `prompts.py`, `scoring.py`
+- [x] ~~State machines manuales en 3_bot_telegram.py~~ → ConversationHandler
+- [x] ~~3 temas con 998 artículos (dump inútil)~~ → sub-clasificados a 17-21 arts curados
+- [x] ~~Sin tests automatizados~~ → 234 tests pytest (pipeline, retrieval, edge cases)
+
+### Deuda técnica (pendiente)
 - [ ] Cache de embeddings para queries frecuentes
 - [ ] Rate limiting más granular por plan
 
