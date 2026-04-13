@@ -605,6 +605,23 @@ INSTITUCIONES Y PASOS CONCRETOS PARA VICIOS OCULTOS EN INMUEBLES:
 - Puedes solicitar la resolución del contrato (devolver el inmueble y recuperar el dinero) o la rebaja del precio.
 - La SUNDDE NO interviene en compraventa de inmuebles entre particulares.
 """,
+    "marca_propiedad_industrial": """
+INSTITUCIONES Y PASOS CONCRETOS PARA MARCAS Y PROPIEDAD INDUSTRIAL EN VENEZUELA:
+⚠️ NOMBRE CORRECTO: En Venezuela el ente se llama SAPI (Servicio Autónomo de la Propiedad Intelectual). NUNCA uses "INPI" — eso es Argentina.
+- SAPI (sapi.gob.ve): Registra marcas, modelos industriales, patentes y denominaciones de origen. Requisitos: RIF, cédula, solicitud de registro, descripción del signo/diseño, pago de tasa.
+- Registro de marca: Protege el nombre comercial y logotipo del producto. Tarda 6-18 meses. Es válido por 10 años renovables.
+- Registro de modelo industrial: Protege el diseño del envase o empaque (Art. 26 Ley de Propiedad Industrial). Requiere comprobante de fabricación en Venezuela.
+- OJO: Los productos alimenticios NO son patentables (Art. 15), pero SÍ puedes registrar la MARCA y el DISEÑO del envase.
+- SENCAMER (sencamer.gob.ve): Para vender productos envasados en supermercados o a nivel nacional, SENCAMER asigna el Código de Producto Envasado (CPE) que debe aparecer en la etiqueta. Sin CPE, el producto no puede entrar en cadenas de distribución nacional.
+""",
+    "insai_sanidad": """
+INSTITUCIONES Y PASOS CONCRETOS PARA INSAI Y SANIDAD ANIMAL/VEGETAL:
+- INSAI (insai.gob.ve): Autoriza la fabricación, importación y comercialización de alimentos de origen animal (incluye snacks/croquetas para mascotas). Tramita en la oficina regional más cercana.
+- Registro Único Nacional de Salud Agrícola Integral: Inscribe tu empresa y solicita los permisos de fabricación, certificados sanitarios y autorizaciones especiales.
+- Documentos típicos: RIF, cédula del representante legal, plano del local, descripción del proceso de producción, análisis bromatológicos del producto, certificado BPM (Buenas Prácticas de Manufactura).
+- Inspecciones: INSAI realiza inspecciones periódicas al local de producción. Mantén registros de higiene y trazabilidad.
+- SENCAMER: Para distribución nacional, tramita también el CPE (Código de Producto Envasado) que debe ir en la etiqueta.
+""",
     "animales_via": """
 INSTITUCIONES Y PASOS CONCRETOS PARA ANIMALES EN LA VÍA PÚBLICA:
 - La Ley de Tránsito Terrestre (Art. 169) PROHÍBE dejar animales sueltos en la vía pública sin supervisión.
