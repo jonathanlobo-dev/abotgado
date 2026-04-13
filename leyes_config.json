@@ -372,7 +372,8 @@
       "rama": "tributario",
       "archivos_pdf": [
         "6-Código Orgánico Tributario 2020.pdf",
-        "codigo-organico-tributario.pdf"
+        "codigo-organico-tributario.pdf",
+        "codigo-organico-tributario-reforma-constituyente.pdf"
       ],
       "aliases": [
         "codigo organico tributario",
@@ -409,7 +410,8 @@
       "nombre": "Ley Orgánica de las Zonas Económicas Especiales",
       "rama": "administrativo",
       "archivos_pdf": [
-        "ley-organi-20220801161552.pdf"
+        "ley-organi-20220801161552.pdf",
+        "ley organica zonas economicas especiales.pdf"
       ],
       "aliases": [
         "zonas economicas"
@@ -420,7 +422,8 @@
       "nombre": "Ley de Registro de Antecedentes Penales",
       "rama": "penal",
       "archivos_pdf": [
-        "ley-regist-20220728163728.pdf"
+        "ley-regist-20220728163728.pdf",
+        "ley de registro de antecedentes penales.pdf"
       ],
       "aliases": [
         "antecedentes penales"
@@ -707,6 +710,34 @@
         "ley electoral",
         "elecciones",
         "voto"
+      ]
+    },
+    {
+      "id": "ley_organica_de_aduanas",
+      "nombre": "Ley Orgánica de Aduanas",
+      "rama": "tributario",
+      "archivos_pdf": [
+        "ley-organica-de-aduanas.pdf"
+      ],
+      "aliases": [
+        "ley de aduanas",
+        "ley organica de aduanas",
+        "aduanas",
+        "aduana"
+      ]
+    },
+    {
+      "id": "iva",
+      "nombre": "Ley que Establece el Impuesto al Valor Agregado",
+      "rama": "tributario",
+      "archivos_pdf": [
+        "iva-impuesto-al-valor-agregado.pdf"
+      ],
+      "aliases": [
+        "iva",
+        "impuesto al valor agregado",
+        "ley del iva",
+        "ley iva"
       ]
     }
   ]
