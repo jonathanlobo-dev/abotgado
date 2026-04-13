@@ -26,6 +26,8 @@ def main():
     chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
+    # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
+    REINDEX_VERSION = "2"
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0
@@ -50,6 +52,7 @@ def main():
                 partes.append(f"leyes_config.json:{cfg_sz}")
             except OSError:
                 pass
+        partes.append(f"REINDEX_VERSION:{REINDEX_VERSION}")
         pdf_fingerprint = hashlib.md5("|".join(partes).encode()).hexdigest()
 
     fingerprint_anterior = ""
