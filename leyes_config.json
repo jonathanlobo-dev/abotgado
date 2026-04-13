@@ -680,7 +680,9 @@
       "id": "ley_arrendamiento_comercial",
       "nombre": "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial",
       "rama": "civil",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "decreto-con-rango-valor-y-fuerza-de-ley-de-regulacion-de-arrendamiento-inmobiliario-para-uno-comercial.pdf"
+      ],
       "aliases": [
         "arrendamiento comercial",
         "ley de arrendamiento comercial"
