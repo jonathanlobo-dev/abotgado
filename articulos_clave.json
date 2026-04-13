@@ -57,14 +57,15 @@
   },
   "transito_licencia": {
     "keywords": [
-      "licencia",
       "licencia de conducir",
       "certificado médico",
       "certificado medico",
       "titulo profesional",
       "conducir",
       "renovar licencia",
-      "sacar licencia"
+      "sacar licencia",
+      "licencia para conducir",
+      "licencia para manejar"
     ],
     "ley": "Ley de Tránsito Terrestre",
     "articulos": [
@@ -606,7 +607,9 @@
       "allanar",
       "allanamiento",
       "allanaron",
-      "registro",
+      "registro policial",
+      "registro personal",
+      "registrar la casa",
       "requisar",
       "requisaron",
       "tortura",
@@ -1030,7 +1033,10 @@
       "guarda",
       "manutención",
       "pension alimentaria",
-      "alimentos",
+      "obligación de alimentos",
+      "obligacion de alimentos",
+      "pensión de alimentos",
+      "pension de alimentos",
       "patria potestad",
       "adopción",
       "adopcion",
@@ -1527,11 +1533,6 @@
   },
   "animales": {
     "keywords": [
-      "perro",
-      "gato",
-      "mascota",
-      "animal doméstico",
-      "animal domestico",
       "maltrato animal",
       "maltratando animal",
       "maltratar animal",
@@ -1540,6 +1541,8 @@
       "fauna domestica",
       "abandono animal",
       "abandonar animal",
+      "animal doméstico",
+      "animal domestico",
       "ladra",
       "ladrar",
       "ladrido",
@@ -1558,7 +1561,18 @@
       "matando perros",
       "mató al perro",
       "mato al perro",
-      "le pega al perro"
+      "le pega al perro",
+      "le pega al gato",
+      "maltrata al perro",
+      "maltrata al gato",
+      "golpea al perro",
+      "golpea al gato",
+      "perro abandonado",
+      "gato abandonado",
+      "mascota abandonada",
+      "protección animal",
+      "proteccion animal",
+      "bienestar animal"
     ],
     "excluir": [
       "perros calientes",
@@ -1575,7 +1589,15 @@
       "animales sueltos",
       "vaca en la vía",
       "caballo en la vía",
-      "animal en la carretera"
+      "animal en la carretera",
+      "fábrica",
+      "fabrica",
+      "fabricar",
+      "manufactura",
+      "producción",
+      "produccion",
+      "snack",
+      "alimento para"
     ],
     "ley": "Ley de Protección de la Fauna Doméstica",
     "articulos": [
@@ -2946,7 +2968,21 @@
       "como registrar una venta",
       "notaria",
       "notaría",
-      "notario"
+      "notario",
+      "donación de terreno",
+      "donacion de terreno",
+      "donación de inmueble",
+      "donacion de inmueble",
+      "donar terreno",
+      "donar inmueble",
+      "ir al registro",
+      "registro público",
+      "registro publico",
+      "registro civil",
+      "registrar donación",
+      "registrar donacion",
+      "registro de propiedad",
+      "registro subalterno"
     ],
     "ley": "Ley de Registros y Notarías",
     "articulos": [
