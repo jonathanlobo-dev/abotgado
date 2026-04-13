@@ -68,6 +68,20 @@ CATALOGO_LEYES = {
 
 # ─── PROMPTS ─────────────────────────────────────────────────────────────────
 
+PROMPT_REFORMULAR_PROFUNDO = """Eres un abogado venezolano experto. La primera búsqueda en la base de datos de leyes NO encontró artículos relevantes para la consulta del usuario.
+
+Tu tarea: reformula la consulta usando TÉRMINOS JURÍDICOS FORMALES venezolanos que maximicen la probabilidad de encontrar artículos relevantes. Piensa en sinónimos legales, nombres oficiales de instituciones, y ramas del derecho que apliquen.
+
+Reglas:
+- Responde SOLO con la query reformulada (10-20 términos jurídicos separados por espacios).
+- NO expliques nada. NO pongas prefijos. Solo los términos.
+- Incluye: nombre formal de la ley que probablemente aplica, entidad reguladora, tipo de trámite, rama del derecho.
+- Si el tema involucra varias ramas (ej: fabricar alimentos = sanitario + mercantil + propiedad intelectual), incluye términos de TODAS.
+
+Ejemplo:
+Consulta: "quiero registrar una licorera"
+Reformulación: registro mercantil expendio alcohol especies alcohólicas licencia actividad económica SENIAT autorización municipal patente impuesto licores permiso sanitario"""
+
 PROMPT_REFORMULAR_Y_CLASIFICAR = """Eres un experto en derecho venezolano. Haz DOS tareas con la pregunta del usuario:
 
 1. TEMA: Clasifica la pregunta en exactamente UNO de los temas listados abajo (o "ninguno" si ninguno aplica).

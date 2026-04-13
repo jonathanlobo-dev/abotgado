@@ -79,7 +79,8 @@ del _leyes_cfg
 
 # ─── PROMPTS Y GUÍAS (importados desde prompts.py) ──────────────────────────
 from prompts import (
-    SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_EXPLICAR_ARTICULO,
+    SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_REFORMULAR_PROFUNDO,
+    PROMPT_EXPLICAR_ARTICULO,
     GUIAS_INSTITUCIONALES, CATALOGO_LEYES,
 )
 
@@ -185,6 +186,32 @@ def reformular_y_clasificar(pregunta: str) -> tuple[str, str]:
     except Exception as e:
         logger.warning(f"  Error en reformular_y_clasificar: {e}")
         return (pregunta, "ninguno")
+
+
+def _reformular_juridico_profundo(pregunta: str) -> str | None:
+    """
+    Nivel 2 agéntico: cuando la búsqueda normal falla, el LLM reformula
+    la consulta en términos jurídicos formales para un segundo intento.
+    Costo: 1 llamada extra a Groq (~100 tokens). Solo se activa cuando
+    buscar_articulos_nuevos() devuelve lista vacía.
+    """
+    try:
+        r = groq_client.chat.completions.create(
+            model=config.LLM_MODEL,
+            messages=[
+                {"role": "system", "content": PROMPT_REFORMULAR_PROFUNDO},
+                {"role": "user",   "content": pregunta}
+            ],
+            max_tokens=150,
+            temperature=0.0,
+        )
+        query_profunda = r.choices[0].message.content.strip()
+        if query_profunda and len(query_profunda) > 10:
+            logger.info(f"  🔄 Reformulación profunda: {query_profunda[:120]}")
+            return query_profunda
+    except Exception as e:
+        logger.warning(f"  Error en reformulación profunda: {e}")
+    return None
 
 
 def buscar_bm25(query: str, top_n: int = 10) -> list[dict]:
@@ -930,10 +957,32 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 break
         return f"{tema_previo}. {pregunta_orig}" if tema_previo else pregunta_orig
 
+    # ── Función de retry agéntico (Nivel 2) ────────────────────────────────
+    _SIN_RESULTADOS = {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
+                       "⚠️ Consulta con un abogado.",
+                       "temas": [], "confianza": "ninguna"}
+
+    def _buscar_con_retry(query_inicial: str) -> tuple[list, str, list, float]:
+        """Busca artículos. Si no encuentra, reformula jurídicamente y reintenta."""
+        arts, ctx, temas, dist = buscar_articulos_nuevos(query_inicial)
+        if arts:
+            return arts, ctx, temas, dist
+
+        # Nivel 2: reformulación profunda → segundo intento
+        query_profunda = _reformular_juridico_profundo(query_inicial)
+        if query_profunda:
+            logger.info(f"  🔄 Nivel 2 activado — reintentando con query profunda")
+            arts2, ctx2, temas2, dist2 = buscar_articulos_nuevos(query_profunda)
+            if arts2:
+                return arts2, ctx2, temas2, dist2
+            logger.info(f"  ✗ Nivel 2 también falló — no hay ley indexada para este tema")
+
+        return [], "", temas, dist
+
     if seguimiento_premium:
         logger.info(f"  → Seguimiento premium — búsqueda fresca con query enriquecida")
         pregunta_enriquecida = _enriquecer_query(pregunta)
-        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_enriquecida)
 
         if not relevantes:
             # Fallback: si la query enriquecida no encuentra nada, usar el contexto previo guardado
@@ -942,26 +991,20 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 logger.info(f"  → Sin resultados nuevos — usando contexto previo como fallback")
                 contexto = contexto_previo
             else:
-                return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                        "⚠️ Consulta con un abogado.",
-                        "temas": [], "confianza": "ninguna"}
+                return _SIN_RESULTADOS
 
     elif es_follow_up:
         # Todos los usuarios: enriquecer la query con la pregunta anterior del historial
         logger.info(f"  → Seguimiento detectado — enriqueciendo query con historial")
         pregunta_enriquecida = _enriquecer_query(pregunta)
-        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta_enriquecida)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_enriquecida)
         if not relevantes:
-            return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                    "⚠️ Consulta con un abogado.",
-                    "temas": [], "confianza": "ninguna"}
+            return _SIN_RESULTADOS
 
     else:
-        relevantes, contexto, temas_detectados, mejor_dist = buscar_articulos_nuevos(pregunta)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta)
         if not relevantes:
-            return {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                    "⚠️ Consulta con un abogado.",
-                    "temas": [], "confianza": "ninguna"}
+            return _SIN_RESULTADOS
 
     # Determinar nivel de confianza (keyword + embedding combinados)
     dist = mejor_dist if not seguimiento_premium else 0.0
