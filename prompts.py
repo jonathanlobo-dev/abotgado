@@ -161,7 +161,7 @@ REGLA DE RELEVANCIA:
 
 NOMENCLATURA VENEZOLANA OBLIGATORIA:
 - El ente de propiedad industrial en Venezuela se llama SAPI (Servicio Autónomo de la Propiedad Intelectual). NUNCA uses "INPI" — eso es Argentina. Siempre di "SAPI".
-- El ente de sanidad animal/vegetal se llama INSAI (Instituto Nacional de Salud Agrícola Integral).
+- El ente de sanidad animal/vegetal se llama INSAI (Instituto Nacional de Salud Agrícola Integral). ⚠️ INSAI aplica SOLO a sanidad agrícola/pecuaria PRIMARIA (siembra, cría de animales, alimentos de origen animal para mascotas, fitosanitario). INSAI NO regula alimentos preparados ni servicio de comida humana (restaurantes, carritos, comida en casa, abastos). Para alimentos preparados / expendio / manipulación de comida el ente competente es la Contraloría Sanitaria del MPPS (a nivel estadal o municipal) — NUNCA INSAI.
 - El ente de normalización se llama SENCAMER (Servicio Autónomo Nacional de Normalización, Calidad, Metrología y Reglamentos Técnicos). Si el usuario quiere vender productos envasados a nivel nacional, menciona que SENCAMER exige el Código de Producto Envasado (CPE) en la etiqueta.
 
 - RAMA CORRECTA DEL DERECHO (REGLA CRÍTICA): Antes de citar un artículo, verifica que pertenezca a la RAMA DEL DERECHO que corresponde a la pregunta. Ejemplo: si la pregunta es LABORAL ("despido", "vacaciones", "salario"), NO cites el Código de Comercio, el Código Civil ni leyes mercantiles aunque contengan la palabra "despedir" o "trabajo" — esos artículos hablan del factor mercantil, NO del trabajador. Si la pregunta es LABORAL, solo cita la LOTTT u otras leyes laborales. Si la pregunta es PENAL, solo cita el Código Penal u otras leyes penales. Si en la lista NO hay ningún artículo de la rama correcta, OMITE completamente la sección 📖 y da la respuesta sin citas — es mejor no citar nada que citar un artículo de la rama incorrecta.
@@ -559,12 +559,30 @@ INSTITUCIONES Y PASOS CONCRETOS PARA HERENCIA:
 """,
     "negocio_casa": """
 PASOS OBLIGATORIOS PARA ABRIR UN NEGOCIO / VENDER COMIDA EN CASA O EN LA CALLE:
+
+⚠️ REGLA INSTITUCIONAL CRÍTICA: Para alimentos PREPARADOS (comida, perros calientes, empanadas, arepas, hamburguesas, meriendas, almuerzos, abastos, bodegas) el ente sanitario competente es la CONTRALORÍA SANITARIA del MPPS (estadal o municipal). NO es INSAI — INSAI solo aplica a sanidad agrícola/pecuaria primaria (siembra, ganado, alimentos para mascotas). Si citas INSAI aquí, estás mal.
+
+Paso 0 (SI EL NEGOCIO ES EN CASA / VIVIENDA / GARAJE / APARTAMENTO): Conformidad de Uso o Constancia de Zonificación ante la Dirección de Ingeniería Municipal de la Alcaldía. Las zonas residenciales tienen uso de suelo restringido y sin este permiso la Alcaldía no te otorga la Licencia de Actividades Económicas. Este es el PRIMER paso y bloquea todo lo demás.
 Paso 1 — SENIAT: Saca el RIF como persona natural con actividad comercial (seniat.gob.ve).
-Paso 2 — Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio. Lleva: cédula, RIF, título de propiedad o contrato de arrendamiento del local.
-Paso 3 — SACS (Servicio Autónomo de Contraloría Sanitaria): Para negocios que manejen alimentos (abasto, bodega, comida, carrito) necesitas el Permiso Sanitario de Funcionamiento. Lleva: RIF, cédula, plano del local, descripción de actividad.
+Paso 2 — Alcaldía (Dirección de Hacienda o Actividades Económicas): Solicita la Licencia de Actividades Económicas (LAE), también llamada patente de industria y comercio (Ley Orgánica del Poder Público Municipal, Art. 205+). Lleva: cédula, RIF, conformidad de uso (si aplica), título de propiedad o contrato de arrendamiento del local.
+Paso 3 — Contraloría Sanitaria del MPPS (NO INSAI): Para negocios que manejen alimentos preparados (abasto, bodega, comida, carrito, perros calientes) necesitas el Permiso Sanitario de Funcionamiento regulado por la Resolución SG-403-96 y el Reglamento General de Alimentos. Lleva: RIF, cédula, plano del local, descripción de actividad.
 Paso 4 (si hay manipulación de alimentos): Cada persona que trabaje en el negocio debe tener: (a) Certificado de Salud vigente, (b) Constancia del Curso de Manipulación de Alimentos.
-Paso 5 (si el puesto es en la CALLE o acera): Permiso de Ocupación de Espacios Públicos — Alcaldía (Dirección de Ingeniería Municipal).
+Paso 5 (si el puesto es en la CALLE, acera o vía pública): Permiso de Ocupación de Espacios Públicos — Alcaldía (Dirección de Ingeniería Municipal). Además, revisa la ordenanza municipal de vendedores ambulantes de tu alcaldía (varía por municipio).
+Paso 6 (si usas gas, freidora o fuego): Permiso de Bomberos del municipio correspondiente.
+
 ADVERTENCIA: Operar sin permiso sanitario puede resultar en cierre del local (48 horas a 2 años) y decomiso de productos (Art. 65 Ley Orgánica de Salud).
+
+INSTRUCCIÓN DE CITAS LEGALES (📖): Para preguntas sobre CÓMO ABRIR / QUÉ PERMISO NECESITO, cita preferentemente: Ley Orgánica del Poder Público Municipal (Arts. 205, 207, 209 — impuesto/licencia de actividad económica), Ley Orgánica de Salud (Art. 65 — permiso sanitario y sanciones), Reglamento General de Alimentos (Arts. 1, 11, 22 — higiene y expendio de alimentos). NO cites como respaldo principal los Arts. 50, 57, 100 o 101 de la Ley de Precios Justos: esos son sanciones (multas por productos vencidos / reventa abusiva), NO explican cómo obtener un permiso. Solo cítalos si el usuario pregunta explícitamente por multas o decomiso.
+""",
+    "decomiso_mercancia": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DECOMISO / CONFISCACIÓN DE MERCANCÍA:
+- SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Es el ente que ejecuta decomisos por incumplimiento de Precios Justos (reventa abusiva, productos vencidos, falta de permisos, sobreprecio).
+- Paso 1: Exige el ACTA de decomiso. Debe indicar: funcionarios actuantes, fundamento legal (artículo específico), lista detallada de la mercancía, fecha y lugar. Si no te entregan acta, el decomiso es irregular (viola el Art. 49 CRBV — debido proceso).
+- Paso 2 — Recurso de reconsideración: Dentro de 15 días hábiles siguientes al acto, presenta escrito ante SUNDDE solicitando la revisión. Acompaña: RIF, permisos que sí tengas, facturas de compra de la mercancía, pruebas de precio.
+- Paso 3 — Recurso jerárquico: Si SUNDDE niega o no responde, recurso ante el superior (Ministerio de Comercio Nacional) en 15 días.
+- Paso 4 — Tribunal Contencioso Administrativo: Agotada la vía administrativa, demanda de nulidad del acto.
+- IMPORTANTE: Operar sin permisos (RIF, Licencia de Actividades Económicas, Permiso Sanitario) expone a decomiso legal. Regulariza los permisos en paralelo al recurso para evitar reincidencia.
+- NO confundas SUNDDE con INSAI o Contraloría Sanitaria. SUNDDE es defensa del consumidor y precios; Contraloría Sanitaria cierra locales por higiene; INSAI solo actúa en productos de origen agrícola/pecuario primario.
 """,
     "recurso_multa": """
 INSTITUCIONES Y PASOS CONCRETOS PARA RECURRIR UNA MULTA:
