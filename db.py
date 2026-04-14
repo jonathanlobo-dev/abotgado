@@ -155,6 +155,19 @@ def inicializar_db():
             con.execute("ALTER TABLE feedback ADD COLUMN resuelto_en TEXT")
         if "resuelto_por" not in cols_fb:
             con.execute("ALTER TABLE feedback ADD COLUMN resuelto_por INTEGER")
+        # Contexto de la última consulta al momento del feedback (para debug)
+        if "pregunta_contexto" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN pregunta_contexto TEXT DEFAULT ''")
+        if "temas_contexto" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN temas_contexto TEXT DEFAULT ''")
+        if "leyes_contexto" not in cols_fb:
+            con.execute("ALTER TABLE feedback ADD COLUMN leyes_contexto TEXT DEFAULT ''")
+
+        # Migración soporte: mismos 3 campos de contexto
+        cols_sp = {r[1] for r in con.execute("PRAGMA table_info(soporte)").fetchall()}
+        for col in ("pregunta_contexto", "temas_contexto", "leyes_contexto"):
+            if col not in cols_sp:
+                con.execute(f"ALTER TABLE soporte ADD COLUMN {col} TEXT DEFAULT ''")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS favoritos (
@@ -185,6 +198,24 @@ def inicializar_db():
                 timestamp TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # consultas_log: registro enriquecido de cada consulta (para /stats detallado
+        # y para correlacionar con feedback negativo / soporte). Separado de `metricas`
+        # para no inflar esa tabla que solo guarda conteos de temas.
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS consultas_log (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id   INTEGER,
+                pregunta  TEXT,
+                temas     TEXT DEFAULT '',
+                leyes     TEXT DEFAULT '',
+                confianza TEXT DEFAULT '',
+                fecha     TEXT,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        con.execute("CREATE INDEX IF NOT EXISTS idx_consultas_log_fecha ON consultas_log(fecha)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_consultas_log_user ON consultas_log(user_id, timestamp)")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS abogados (
@@ -966,11 +997,20 @@ def stats_usuario(user_id: int) -> dict:
 
 # ─── FEEDBACK ─────────────────────────────────────────────────────────────────
 
-def guardar_feedback(user_id: int, tipo: str, comentario: str = ""):
+def guardar_feedback(user_id: int, tipo: str, comentario: str = "",
+                     pregunta_ctx: str = "", temas_ctx: str = "",
+                     leyes_ctx: str = ""):
+    """Guarda feedback. Los campos *_ctx son opcionales y capturan el contexto
+    de la última consulta del usuario (para análisis post-mortem de respuestas
+    que generaron feedback negativo).
+    """
     with get_db() as con:
         con.execute(
-            "INSERT INTO feedback (user_id, tipo, comentario) VALUES (?, ?, ?)",
-            (user_id, tipo, comentario)
+            "INSERT INTO feedback (user_id, tipo, comentario, "
+            "pregunta_contexto, temas_contexto, leyes_contexto) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, tipo, comentario,
+             (pregunta_ctx or "")[:500], temas_ctx or "", leyes_ctx or "")
         )
 
 
@@ -1193,11 +1233,19 @@ def fue_referido_por(user_id: int) -> int:
 
 # ─── SOPORTE ──────────────────────────────────────────────────────────────────
 
-def guardar_ticket_soporte(user_id: int, mensaje: str, direccion: str = "user_to_admin"):
+def guardar_ticket_soporte(user_id: int, mensaje: str, direccion: str = "user_to_admin",
+                           pregunta_ctx: str = "", temas_ctx: str = "",
+                           leyes_ctx: str = ""):
+    """Guarda ticket de soporte. Campos *_ctx capturan el contexto de la
+    última consulta del usuario para análisis post-mortem.
+    """
     with get_db() as con:
         con.execute(
-            "INSERT INTO soporte (user_id, mensaje, direccion) VALUES (?, ?, ?)",
-            (user_id, mensaje, direccion)
+            "INSERT INTO soporte (user_id, mensaje, direccion, "
+            "pregunta_contexto, temas_contexto, leyes_contexto) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, mensaje, direccion,
+             (pregunta_ctx or "")[:500], temas_ctx or "", leyes_ctx or "")
         )
 
 
@@ -1685,6 +1733,92 @@ def registrar_consulta_metrica(user_id: int, temas: list[str]):
             "INSERT INTO metricas (user_id, fecha, temas) VALUES (?, ?, ?)",
             (user_id, hoy, temas_str)
         )
+
+
+def registrar_consulta_log(user_id: int, pregunta: str, temas: list[str],
+                           leyes: list[str], confianza: str = "") -> int:
+    """Registra una consulta enriquecida en consultas_log.
+
+    Guarda pregunta (truncada a 500 chars), temas y leyes (coma-separados).
+    Retorna el id de la fila insertada.
+    """
+    pregunta = (pregunta or "").strip()[:500]
+    temas_str = ",".join(temas) if temas else ""
+    leyes_str = " | ".join(leyes) if leyes else ""
+    hoy = date.today().isoformat()
+    with get_db() as con:
+        cur = con.execute(
+            "INSERT INTO consultas_log (user_id, pregunta, temas, leyes, confianza, fecha) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, pregunta, temas_str, leyes_str, confianza, hoy)
+        )
+        return cur.lastrowid
+
+
+def obtener_ultima_consulta_log(user_id: int) -> dict | None:
+    """Devuelve el contexto (pregunta/temas/leyes) de la última consulta del
+    usuario. Usado para enriquecer /opinion y /soporte.
+    """
+    with get_db() as con:
+        row = con.execute(
+            "SELECT pregunta, temas, leyes, confianza FROM consultas_log "
+            "WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            (user_id,)
+        ).fetchone()
+    if not row:
+        return None
+    return {
+        "pregunta": row[0] or "",
+        "temas": row[1] or "",
+        "leyes": row[2] or "",
+        "confianza": row[3] or "",
+    }
+
+
+def obtener_top_preguntas_dia(limit: int = 20, dias: int = 1) -> list[dict]:
+    """Top preguntas de los últimos N días (por defecto hoy).
+
+    Agrupa preguntas idénticas (case-insensitive) y retorna conteo, temas
+    más frecuentes por pregunta, y leyes más frecuentes.
+    """
+    hoy = date.today().isoformat()
+    with get_db() as con:
+        filas = con.execute(
+            "SELECT pregunta, temas, leyes FROM consultas_log "
+            "WHERE fecha >= date(?, ?) AND pregunta != ''",
+            (hoy, f"-{dias - 1} days")
+        ).fetchall()
+
+    # Agrupar por pregunta normalizada (lowercase + strip)
+    agrupado: dict[str, dict] = {}
+    for pregunta, temas, leyes in filas:
+        key = pregunta.lower().strip()
+        if not key:
+            continue
+        if key not in agrupado:
+            agrupado[key] = {
+                "pregunta": pregunta.strip(),
+                "count": 0,
+                "temas": {},
+                "leyes": {},
+            }
+        agrupado[key]["count"] += 1
+        for t in (temas or "").split(","):
+            t = t.strip()
+            if t:
+                agrupado[key]["temas"][t] = agrupado[key]["temas"].get(t, 0) + 1
+        for l in (leyes or "").split("|"):
+            l = l.strip()
+            if l:
+                agrupado[key]["leyes"][l] = agrupado[key]["leyes"].get(l, 0) + 1
+
+    # Ordenar por conteo descendente
+    resultado = sorted(agrupado.values(), key=lambda x: x["count"], reverse=True)[:limit]
+    # Aplanar temas/leyes a lista ordenada
+    for r in resultado:
+        r["temas"] = sorted(r["temas"].items(), key=lambda x: x[1], reverse=True)[:5]
+        r["leyes"] = sorted(r["leyes"].items(), key=lambda x: x[1], reverse=True)[:3]
+    return resultado
 
 
 def obtener_stats() -> dict:

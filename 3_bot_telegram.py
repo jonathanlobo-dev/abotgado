@@ -548,7 +548,52 @@ async def cmd_stats_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         texto += "🔥 <b>Temas más consultados:</b> Sin datos aún\n"
 
+    # Top preguntas del día con temas y leyes (de consultas_log)
+    try:
+        # Permite /stats_admin 3 para ver los últimos 3 días
+        dias = 1
+        if context.args:
+            try:
+                dias = max(1, min(7, int(context.args[0])))
+            except ValueError:
+                pass
+        top_preguntas = db.obtener_top_preguntas_dia(limit=20, dias=dias)
+    except Exception as e:
+        logger.warning(f"obtener_top_preguntas_dia fallo: {e}")
+        top_preguntas = []
+
+    periodo = "hoy" if dias == 1 else f"últimos {dias} días"
+    if top_preguntas:
+        texto += f"\n📋 <b>Top 20 preguntas ({periodo}):</b>\n"
+        for i, p in enumerate(top_preguntas, 1):
+            preg = p["pregunta"][:120] + ("…" if len(p["pregunta"]) > 120 else "")
+            temas_str = ", ".join(t for t, _ in p["temas"][:3]) or "ninguno"
+            leyes_str = ", ".join(l.split(",")[0].strip()[:40] for l, _ in p["leyes"][:2]) or "—"
+            texto += (
+                f"\n<b>{i}.</b> ×{p['count']} <i>{preg}</i>\n"
+                f"   🏷️ {temas_str}\n"
+                f"   📚 {leyes_str}\n"
+            )
+    else:
+        texto += f"\n📋 <b>Top preguntas ({periodo}):</b> Sin datos aún\n"
+
+    # Telegram limita mensajes a 4096 chars — truncar si hace falta
+    if len(texto) > 4000:
+        texto = texto[:3990] + "\n\n[…truncado]"
+
     await enviar_respuesta(update.message, texto)
+
+
+def _contexto_ultima_consulta(user_id: int) -> tuple[str, str, str]:
+    """Retorna (pregunta_ctx, temas_ctx, leyes_ctx) de la última consulta del
+    usuario, leyendo de consultas_log. Si no hay log, cae a ultima_respuesta
+    en memoria solo para la pregunta.
+    """
+    log = db.obtener_ultima_consulta_log(user_id)
+    if log:
+        return log["pregunta"], log["temas"], log["leyes"]
+    data = ultima_respuesta.get(user_id) or {}
+    return (data.get("pregunta") or "")[:500], "", ""
 
 
 # ─── FEEDBACK / OPINIÓN ─────────────────────────────────────────────────────
@@ -558,10 +603,13 @@ async def cmd_opinion(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.args:
         comentario = " ".join(context.args)
-        db.guardar_feedback(user_id, "comentario", comentario)
+        p_ctx, t_ctx, l_ctx = _contexto_ultima_consulta(user_id)
+        db.guardar_feedback(user_id, "comentario", comentario,
+                            pregunta_ctx=p_ctx, temas_ctx=t_ctx, leyes_ctx=l_ctx)
         await update.message.reply_text("Gracias por tu opinion! Nos ayuda a mejorar.")
+        ctx_admin = f"\n📌 Contexto consulta previa: {p_ctx[:150]}\n   Temas: {t_ctx or 'ninguno'}" if p_ctx else ""
         await notificar_admins(context,
-            f"💬 FEEDBACK de {update.effective_user.first_name} (ID: {user_id}):\n{comentario}")
+            f"💬 FEEDBACK de {update.effective_user.first_name} (ID: {user_id}):\n{comentario}{ctx_admin}")
         return ConversationHandler.END
     else:
         await enviar_respuesta(
@@ -577,10 +625,13 @@ async def feedback_recibido(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Recibe el texto del feedback después de /opinion."""
     user = update.effective_user
     pregunta = update.message.text
-    db.guardar_feedback(user.id, "comentario", pregunta)
+    p_ctx, t_ctx, l_ctx = _contexto_ultima_consulta(user.id)
+    db.guardar_feedback(user.id, "comentario", pregunta,
+                        pregunta_ctx=p_ctx, temas_ctx=t_ctx, leyes_ctx=l_ctx)
     await update.message.reply_text("Gracias por tu opinion! Nos ayuda a mejorar.")
+    ctx_admin = f"\n📌 Contexto consulta previa: {p_ctx[:150]}\n   Temas: {t_ctx or 'ninguno'}" if p_ctx else ""
     await notificar_admins(context,
-        f"💬 FEEDBACK de {user.first_name} (ID: {user.id}):\n{pregunta}")
+        f"💬 FEEDBACK de {user.first_name} (ID: {user.id}):\n{pregunta}{ctx_admin}")
     return ConversationHandler.END
 
 
@@ -808,10 +859,13 @@ async def cmd_soporte(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.args:
         mensaje = " ".join(context.args)
-        db.guardar_ticket_soporte(user_id, mensaje)
+        p_ctx, t_ctx, l_ctx = _contexto_ultima_consulta(user_id)
+        db.guardar_ticket_soporte(user_id, mensaje,
+                                  pregunta_ctx=p_ctx, temas_ctx=t_ctx, leyes_ctx=l_ctx)
         await update.message.reply_text("Mensaje enviado al equipo de soporte. Te responderemos pronto.")
+        ctx_admin = f"\n📌 Contexto consulta previa: {p_ctx[:150]}\n   Temas: {t_ctx or 'ninguno'}" if p_ctx else ""
         await notificar_admins(context,
-            f"🆘 SOPORTE de {update.effective_user.first_name} (@{update.effective_user.username or 'N/A'}, ID: {user_id}):\n\n{mensaje}")
+            f"🆘 SOPORTE de {update.effective_user.first_name} (@{update.effective_user.username or 'N/A'}, ID: {user_id}):\n\n{mensaje}{ctx_admin}")
         return ConversationHandler.END
     else:
         await enviar_respuesta(
@@ -827,10 +881,13 @@ async def soporte_recibido(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Recibe el texto del soporte después de /soporte."""
     user = update.effective_user
     pregunta = update.message.text
-    db.guardar_ticket_soporte(user.id, pregunta)
+    p_ctx, t_ctx, l_ctx = _contexto_ultima_consulta(user.id)
+    db.guardar_ticket_soporte(user.id, pregunta,
+                              pregunta_ctx=p_ctx, temas_ctx=t_ctx, leyes_ctx=l_ctx)
     await update.message.reply_text("Mensaje enviado al equipo de soporte. Te responderemos pronto.")
+    ctx_admin = f"\n📌 Contexto consulta previa: {p_ctx[:150]}\n   Temas: {t_ctx or 'ninguno'}" if p_ctx else ""
     await notificar_admins(context,
-        f"🆘 SOPORTE de {user.first_name} (@{user.username or 'N/A'}, ID: {user.id}):\n\n{pregunta}")
+        f"🆘 SOPORTE de {user.first_name} (@{user.username or 'N/A'}, ID: {user.id}):\n\n{pregunta}{ctx_admin}")
     return ConversationHandler.END
 
 
@@ -1913,6 +1970,24 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     ultima_respuesta[user_id] = {"pregunta": pregunta, "respuesta": respuesta}
     db.guardar_ultima_respuesta(user_id, pregunta, respuesta)
+
+    # Log enriquecido para /stats y correlación con feedback/soporte
+    try:
+        leyes_ctx = sorted({
+            busqueda.ARTICULOS_CLAVE[t]["ley"]
+            for t in (temas or [])
+            if t in busqueda.ARTICULOS_CLAVE and "ley" in busqueda.ARTICULOS_CLAVE[t]
+        })
+        db.registrar_consulta_log(
+            user_id=user_id,
+            pregunta=pregunta,
+            temas=temas or [],
+            leyes=leyes_ctx,
+            confianza=str(confianza) if confianza else "",
+        )
+        db.registrar_consulta_metrica(user_id, temas or [])
+    except Exception as _log_err:
+        logger.warning(f"registrar_consulta_log fallo: {_log_err}")
 
     # Alertas al admin
     if not es_admin(user_id):

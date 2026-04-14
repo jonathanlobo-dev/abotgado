@@ -137,3 +137,79 @@ def test_missing_law(pregunta, desc):
     """Ley no indexada: no debe crashear. Puede devolver 0 o algo parcial."""
     arts, temas = buscar_articulos_clave(pregunta)
     assert isinstance(arts, list)
+
+
+# ── TESTS ADVERSARIALES: temas que DEBEN/NO DEBEN detectarse ──────────────
+# Cada caso: (pregunta, {temas_esperados}, {temas_prohibidos})
+# Uso: para detectar regresiones cuando se cambian keywords en
+# articulos_clave.json. Si el ruteo se rompe, estos tests fallan.
+CASOS_ADVERSARIALES = [
+    # Emprendimiento comida en casa → LOPPM + Reglamento Alimentos,
+    # NO Precios Justos (sanciones) ni INSAI (agrícola)
+    (
+        "Qué permisos necesito para vender comida rápida en mi casa?",
+        {"negocio_casa", "negocio_sanidad_alimentos"},
+        {"insai_sanidad", "decomiso_mercancia", "alimentos_regulacion"},
+    ),
+    # Carrito ambulante de perros calientes — "perros calientes" NO debe
+    # disparar insai_sanidad (que tiene keyword "perros" para mascotas)
+    (
+        "qué debo hacer para poner un carro de perros calientes frente a mi casa?",
+        {"negocio_casa", "negocio_sanidad_alimentos"},
+        {"insai_sanidad", "decomiso_mercancia"},
+    ),
+    # Decomiso de mercancía → Precios Justos (sanciones), NO negocio_casa
+    # aunque aparezca "bodega"
+    (
+        "me decomisaron la mercancía de mi bodega, qué hago?",
+        {"decomiso_mercancia"},
+        {"negocio_casa", "negocio_sanidad_alimentos"},
+    ),
+    # Emprender empanadas en casa → ambos temas correctos, sin sanción
+    (
+        "quiero empezar a vender empanadas desde mi casa, qué necesito?",
+        {"negocio_casa", "negocio_sanidad_alimentos"},
+        {"decomiso_mercancia", "insai_sanidad"},
+    ),
+    # Pregunta sobre fábrica de alimento para mascotas → SÍ debe ir a INSAI,
+    # NO a negocio_sanidad_alimentos (que es para comida humana)
+    (
+        "quiero montar una fábrica de snacks para gatos, qué permisos necesito?",
+        {"insai_sanidad"},
+        {"negocio_sanidad_alimentos"},
+    ),
+    # SUNDDE fiscalizó mi negocio → decomiso_mercancia, no emprender
+    (
+        "vinieron de la SUNDDE y me sancionaron con multa, cómo apelo?",
+        {"decomiso_mercancia"},
+        {"negocio_casa"},
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "pregunta,esperados,prohibidos",
+    CASOS_ADVERSARIALES,
+    ids=[c[0][:60] for c in CASOS_ADVERSARIALES],
+)
+def test_adversarial_ruteo_temas(pregunta, esperados, prohibidos):
+    """Verifica que el ruteo de temas en articulos_clave.json es correcto.
+
+    Para cada pregunta, algunos temas DEBEN detectarse (esperados) y otros
+    NO DEBEN (prohibidos). Protege contra regresiones cuando se editan
+    keywords o excluir fields.
+    """
+    _arts, temas = buscar_articulos_clave(pregunta)
+    temas_set = set(temas)
+
+    faltantes = esperados - temas_set
+    contaminacion = prohibidos & temas_set
+
+    assert not faltantes, (
+        f"Temas esperados NO detectados: {faltantes} | "
+        f"Pregunta: «{pregunta}» | Temas detectados: {temas}"
+    )
+    assert not contaminacion, (
+        f"Temas prohibidos SÍ detectados (contaminación): {contaminacion} | "
+        f"Pregunta: «{pregunta}» | Temas detectados: {temas}"
+    )
