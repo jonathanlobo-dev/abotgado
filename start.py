@@ -95,6 +95,18 @@ def main():
     else:
         print(f"\n[OK] ChromaDB encontrada en {config.DB_PATH} ({pdfs_actuales} PDFs)")
 
+    # Aplicar parches puntuales a ChromaDB (chunks mal indexados)
+    # Idempotente: solo actúa si el chunk erróneo sigue presente.
+    try:
+        from db_patches import aplicar_parches
+        n = aplicar_parches(str(config.DATA_DIR), str(config.DB_PATH))
+        if n:
+            print(f"[OK] {n} parche(s) de ChromaDB aplicado(s).")
+        else:
+            print("[OK] ChromaDB — sin parches pendientes.")
+    except Exception as e:
+        print(f"[!] db_patches falló (no crítico): {e}")
+
     # Crear carpeta de documentos generados
     docs_dir = os.path.join(str(config.DATA_DIR), "documentos_generados")
     os.makedirs(docs_dir, exist_ok=True)
