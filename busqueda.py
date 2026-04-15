@@ -826,6 +826,8 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
             "impuesto": "tributario", "seniat": "tributario",
             "droga": "drogas", "narco": "drogas", "trafic": "drogas",
             "estupefaciente": "drogas", "lesa humanidad": "drogas",
+            "demandar": "demanda_civil_general", "libelo": "demanda_civil_general",
+            "demanda": "demanda_civil_general",
         }
         for palabra, tema in mapeo_rapido.items():
             if palabra in pregunta_lower and tema in GUIAS_INSTITUCIONALES:

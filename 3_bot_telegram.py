@@ -577,6 +577,21 @@ async def cmd_stats_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         texto += f"\n📋 <b>Top preguntas ({periodo}):</b> Sin datos aún\n"
 
+    # Consultas sin tema detectado (gaps de ruteo — candidatas a nuevos keywords)
+    try:
+        sin_tema = db.obtener_preguntas_sin_tema(limit=10, dias=7)
+    except Exception as e:
+        logger.warning(f"obtener_preguntas_sin_tema fallo: {e}")
+        sin_tema = []
+
+    if sin_tema:
+        texto += "\n\n🔍 <b>Sin tema detectado (últimos 7 días — gaps de ruteo):</b>\n"
+        for i, p in enumerate(sin_tema, 1):
+            preg = p["pregunta"][:100] + ("…" if len(p["pregunta"]) > 100 else "")
+            texto += f"\n{i}. ×{p['count']} <i>{preg}</i>"
+    else:
+        texto += "\n\n🔍 <b>Sin tema detectado:</b> Sin casos aún ✅\n"
+
     # Telegram limita mensajes a 4096 chars — truncar si hace falta
     if len(texto) > 4000:
         texto = texto[:3990] + "\n\n[…truncado]"

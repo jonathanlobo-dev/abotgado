@@ -1775,6 +1775,33 @@ def obtener_ultima_consulta_log(user_id: int) -> dict | None:
     }
 
 
+def obtener_preguntas_sin_tema(limit: int = 10, dias: int = 7) -> list[dict]:
+    """Preguntas de los últimos N días donde no se detectó ningún tema (temas='').
+
+    Estas son candidatas a generar nuevos temas/keywords en articulos_clave.json.
+    Retorna lista de dicts con pregunta, confianza, count (agrupadas).
+    """
+    hoy = date.today().isoformat()
+    with get_db() as con:
+        filas = con.execute(
+            "SELECT pregunta, confianza FROM consultas_log "
+            "WHERE fecha >= date(?, ?) AND (temas = '' OR temas IS NULL) "
+            "AND pregunta != ''",
+            (hoy, f"-{dias - 1} days")
+        ).fetchall()
+
+    agrupado: dict[str, dict] = {}
+    for pregunta, confianza in filas:
+        key = pregunta.lower().strip()
+        if not key:
+            continue
+        if key not in agrupado:
+            agrupado[key] = {"pregunta": pregunta.strip(), "count": 0, "confianza": confianza or ""}
+        agrupado[key]["count"] += 1
+
+    return sorted(agrupado.values(), key=lambda x: x["count"], reverse=True)[:limit]
+
+
 def obtener_top_preguntas_dia(limit: int = 20, dias: int = 1) -> list[dict]:
     """Top preguntas de los últimos N días (por defecto hoy).
 

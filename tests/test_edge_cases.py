@@ -213,3 +213,62 @@ def test_adversarial_ruteo_temas(pregunta, esperados, prohibidos):
         f"Temas prohibidos SÍ detectados (contaminación): {contaminacion} | "
         f"Pregunta: «{pregunta}» | Temas detectados: {temas}"
     )
+
+
+# ── TESTS ADVERSARIALES — DEMANDA Y CONSULTA GENÉRICA ─────────────────────
+CASOS_ADVERSARIALES_GENERICA = [
+    # Pregunta clásica de René: debe detectar demanda_civil_general, NO Art. 146
+    (
+        "cómo procedo si quiero demandar a alguien?",
+        {"demanda_civil_general"},
+        {"consulta_generica"},
+    ),
+    # Variante directa
+    (
+        "quiero demandar a una persona, cómo lo hago?",
+        {"demanda_civil_general"},
+        set(),
+    ),
+    # Libelo
+    (
+        "qué requisitos tiene el libelo de demanda en Venezuela?",
+        {"demanda_civil_general"},
+        set(),
+    ),
+    # Consulta genérica pura — debe disparar consulta_generica
+    (
+        "necesito ayuda legal con un problema",
+        {"consulta_generica"},
+        {"demanda_civil_general"},
+    ),
+    # Consulta genérica con contexto laboral — NO debe disparar consulta_generica
+    # porque tiene suficiente contexto (excluir contiene "despido")
+    (
+        "me despidieron y necesito ayuda legal",
+        set(),                       # cualquier tema laboral está bien
+        {"consulta_generica"},       # pero NO consulta_generica
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "pregunta,esperados,prohibidos",
+    CASOS_ADVERSARIALES_GENERICA,
+    ids=[c[0][:60] for c in CASOS_ADVERSARIALES_GENERICA],
+)
+def test_adversarial_demanda_y_generica(pregunta, esperados, prohibidos):
+    """Verifica ruteo para preguntas de demanda y consultas genéricas."""
+    _arts, temas = buscar_articulos_clave(pregunta)
+    temas_set = set(temas)
+
+    faltantes = esperados - temas_set
+    contaminacion = prohibidos & temas_set
+
+    assert not faltantes, (
+        f"Temas esperados NO detectados: {faltantes} | "
+        f"Pregunta: «{pregunta}» | Temas detectados: {temas}"
+    )
+    assert not contaminacion, (
+        f"Temas prohibidos SÍ detectados: {contaminacion} | "
+        f"Pregunta: «{pregunta}» | Temas detectados: {temas}"
+    )

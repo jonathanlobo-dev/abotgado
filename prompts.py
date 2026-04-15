@@ -649,4 +649,47 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ANIMALES EN LA VÍA PÚBLICA:
 - Si sufriste un accidente por un animal en la vía: Denuncia en el CICPC y en el INTT. Identifica al dueño del animal si es posible.
 - Guardia Nacional (en carreteras nacionales): Tiene competencia en vías nacionales y autopistas.
 """,
+    "demanda_civil_general": """
+INSTRUCCIÓN ESPECIAL — DEMANDA CIVIL (CÓMO INICIAR UNA DEMANDA):
+REGLA CRÍTICA: El Art. 340 del Código de Procedimiento Civil enumera los REQUISITOS OBLIGATORIOS del libelo de demanda. Ese es el artículo central que debe citarse. El Art. 146 (litisconsorcio) solo aplica cuando son VARIAS personas demandando juntas — NO lo cites para una demanda individual básica.
+
+⚠️ DESAMBIGUACIÓN OBLIGATORIA: En Venezuela "quiero demandar" puede significar cosas muy distintas según el problema. El bot DEBE preguntar de qué tipo es antes de dar pasos específicos.
+
+PASOS PARA INICIAR UNA DEMANDA CIVIL:
+- Paso 1 — Confirmar que es vía CIVIL (no penal): Las demandas civiles son para cobrar dinero, resolver contratos, problemas de propiedad, daños y perjuicios. Si el problema es un delito (robo, estafa, violencia) la vía es PENAL (denuncia ante el CICPC o la Fiscalía), NO una demanda civil.
+- Paso 2 — Contratar un abogado inscrito en el INPREABOGADO: En Venezuela no se puede demandar sin abogado (salvo casos de ínfima cuantía ante Juzgado de Municipio). El libelo debe estar firmado por el abogado.
+- Paso 3 — Redactar el libelo de demanda: Debe cumplir todos los requisitos del Art. 340 CPC: nombres de las partes, domicilios, objeto de la demanda, fundamento legal, cuantía, pruebas, firma.
+- Paso 4 — Determinar el tribunal competente: Según la cuantía (monto en Unidades Tributarias) y la materia (civil, laboral, familia). El Art. 38-42 CPC regula la competencia por cuantía.
+- Paso 5 — Consignar el libelo en la URDD (Unidad de Recepción y Distribución de Documentos): La URDD distribuye el expediente al tribunal asignado. Lleva: original y copia del libelo, poder del abogado, documentos probatorios y comprobante de pago de aranceles.
+
+INSTRUCCIÓN DE CLARIFICACIÓN: Al final de la sección 💡 Qué hacer, SIEMPRE agrega esta pregunta:
+"Para orientarte con mayor precisión, ¿de qué tipo es tu caso? Escríbeme una de estas opciones:
+• 💰 Me deben dinero o incumplieron un contrato
+• 🏠 Problema con una vivienda o inmueble
+• 👨‍👩‍👧 Asunto familiar (divorcio, custodia, herencia)
+• 💼 Problema laboral (despido, prestaciones, salario)
+• 🚨 Me robaron, estafaron o cometieron un delito contra mí"
+""",
+    "consulta_generica": """
+INSTRUCCIÓN ESPECIAL — CONSULTA DEMASIADO GENERAL:
+El usuario hizo una pregunta muy amplia sin especificar el tipo de problema legal. El bot NO debe inventar una respuesta específica ni citar artículos al azar.
+
+REGLA: Si la pregunta es genérica (sin contexto de materia, sin hechos concretos), la respuesta debe:
+1. Reconocer brevemente que el bot puede ayudar.
+2. Hacer la pregunta de desambiguación para dirigir al tema correcto.
+3. NO citar artículos de ley en la sección 📖 — esa sección debe omitirse o decir "depende del tipo de caso".
+
+INSTRUCCIÓN DE RESPUESTA para consulta genérica:
+📌 Respuesta: [Indicar que aBOTgado puede ayudar pero necesita saber el tipo de problema]
+📖 Qué dice la ley: No citar artículos específicos — depende del área legal.
+💡 Qué hacer: Pedir al usuario que especifique cuál de estas situaciones describe mejor su caso:
+"Para orientarte con la ley correcta, cuéntame más. ¿Tu problema es sobre:
+• 💼 Trabajo (despido, salario, prestaciones, acoso laboral)
+• 🏠 Vivienda (arrendamiento, desalojo, condominio)
+• 👨‍👩‍👧 Familia (divorcio, custodia, pensión, herencia)
+• 💰 Dinero (deudas, contratos, estafas, cobros)
+• 🚨 Seguridad (robo, amenazas, violencia, detención)
+• 🏢 Negocio (permisos, emprendimiento, empresa)
+• Otro: descríbeme brevemente qué pasó"
+""",
 }

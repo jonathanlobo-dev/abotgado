@@ -114,6 +114,8 @@ RAMA_POR_TEMA = {
     "negocio_casa": "administrativo",
     "negocio_sanidad_alimentos": "administrativo",
     "decomiso_mercancia": "administrativo",
+    "demanda_civil_general": "civil",
+    "consulta_generica": "civil",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",
     "insai_sanidad": "administrativo",
