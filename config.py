@@ -47,6 +47,15 @@ HF_EMBED_URL    = f"https://router.huggingface.co/hf-inference/models/{EMBEDDING
 # Alternativa más rápida: openai/gpt-oss-20b (1000 tok/s, 20B params)
 LLM_MODEL       = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
 
+# Modelo LLM rápido para tareas auxiliares (verificador de relevancia, clasificador OOD)
+# Debe ser barato y rápido — solo decide "sí/no/lista de números", no genera texto largo.
+LLM_MODEL_FAST  = os.getenv("LLM_MODEL_FAST", "llama-3.1-8b-instant")
+
+# Verificador de relevancia post-retrieval: filtra artículos tangenciales antes
+# de pasarlos al LLM principal. Si False, se omite (útil para tests/debug).
+VERIFICADOR_HABILITADO = os.getenv("VERIFICADOR_HABILITADO", "1") == "1"
+VERIFICADOR_TIMEOUT_S  = float(os.getenv("VERIFICADOR_TIMEOUT_S", "2.5"))
+
 # ─── NIVELES DE PLAN ─────────────────────────────────────────────────────────
 # 0 = Gratis, 1 = Tester/Pionero, 2 = Premium
 

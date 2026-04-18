@@ -465,6 +465,119 @@ def explicar_articulo(texto_articulo: str, ley: str, num: int) -> str:
         return ""
 
 
+# ─── VERIFICADOR DE RELEVANCIA POST-RETRIEVAL ────────────────────────────────
+# Filtra artículos tangenciales antes de pasarlos al LLM principal.
+# Solo evalúa artículos retrievados por embeddings/BM25 (fuzzy).
+# Los artículos de keyword match curado (SCORE_ARTICULO_CLAVE) y lookup directo
+# (SCORE_DIRECTO) están en whitelist y no se cuestionan.
+
+_PROMPT_VERIFICADOR_SYSTEM = (
+    "Eres un verificador de relevancia legal. Recibes una pregunta y una lista "
+    "numerada de artículos candidatos. Tu única tarea: devolver los números de "
+    "los artículos que RESPONDEN o son ÚTILES para la pregunta. Descarta los "
+    "que tratan un tema completamente distinto. Sé moderado: si un artículo "
+    "aporta contexto legal aunque no responda al 100%, mantenlo. "
+    "Responde SOLO con números separados por comas (ej: '1, 3, 5') o 'ninguno'. "
+    "NO expliques, NO uses oraciones, NO uses markdown."
+)
+
+
+def verificar_relevancia_articulos(
+    pregunta: str,
+    articulos: list[dict],
+) -> tuple[list[dict], list[dict]]:
+    """Filtra artículos retrievados por similaridad fuzzy que no aplican a la pregunta.
+
+    Whitelist: artículos con score_final >= SCORE_ARTICULO_CLAVE (0.95) NO se evalúan
+    porque vienen de keyword match curado o lookup directo.
+
+    Conservador ante fallos: si la API falla, parsing falla, o el verificador
+    descarta TODO sin haber whitelist, retorna la lista original (no romper la query).
+
+    Retorna: (articulos_aprobados, articulos_descartados).
+    """
+    if not config.VERIFICADOR_HABILITADO or len(articulos) <= 1:
+        return articulos, []
+
+    # Separar whitelisted (curados/directos = keyword o lookup explícito)
+    # de los que requieren verificación (embeddings/BM25 = match fuzzy).
+    confiables, a_verificar = [], []
+    for art in articulos:
+        if art.get("fuente") in ("curado", "directo"):
+            confiables.append(art)
+        else:
+            a_verificar.append(art)
+
+    if not a_verificar:
+        return articulos, []  # Todos confiables — nada que verificar
+
+    # Construir prompt batch
+    items = []
+    for i, art in enumerate(a_verificar, 1):
+        snippet = art["texto"][:250].replace("\n", " ").strip()
+        items.append(f"[{i}] {art['ley']}, Art. {art['articulo']}: {snippet}")
+    items_str = "\n".join(items)
+
+    prompt_user = (
+        f"PREGUNTA DEL USUARIO: «{pregunta}»\n\n"
+        f"ARTÍCULOS CANDIDATOS:\n{items_str}\n\n"
+        f"Responde SOLO con los números relevantes separados por comas, o 'ninguno'."
+    )
+
+    try:
+        r = groq_client.chat.completions.create(
+            model=config.LLM_MODEL_FAST,
+            messages=[
+                {"role": "system", "content": _PROMPT_VERIFICADOR_SYSTEM},
+                {"role": "user",   "content": prompt_user},
+            ],
+            max_tokens=60,
+            temperature=0.0,
+            timeout=config.VERIFICADOR_TIMEOUT_S,
+        )
+        respuesta = r.choices[0].message.content.strip().lower()
+    except Exception as e:
+        logger.warning(f"  ⚠️ Verificador falló ({type(e).__name__}: {e}) — uso lista original")
+        return articulos, []
+
+    # "ninguno" → mantener confiables si los hay; si no, no filtrar
+    if "ninguno" in respuesta:
+        if confiables:
+            logger.info(
+                f"  ✓ Verificador: 0/{len(a_verificar)} fuzzy aprobados, "
+                f"mantengo {len(confiables)} de keyword match"
+            )
+            return confiables, a_verificar
+        logger.warning("  ⚠️ Verificador rechazó todo y no hay whitelist → no filtro")
+        return articulos, []
+
+    # Parsear índices (1-indexed)
+    indices = set()
+    for m in re.finditer(r"\d+", respuesta):
+        idx = int(m.group(0))
+        if 1 <= idx <= len(a_verificar):
+            indices.add(idx - 1)
+
+    if not indices:
+        logger.warning(f"  ⚠️ Verificador respuesta no parseable: '{respuesta[:60]}' — no filtro")
+        return articulos, []
+
+    aprobados = [a_verificar[i] for i in sorted(indices)]
+    descartados = [a for i, a in enumerate(a_verificar) if i not in indices]
+    resultado = confiables + aprobados
+    resultado.sort(key=lambda a: a.get("score_final", 0), reverse=True)
+
+    logger.info(
+        f"  ✓ Verificador: {len(aprobados)}/{len(a_verificar)} fuzzy aprobados "
+        f"(+{len(confiables)} confiables) — descartados {len(descartados)}"
+    )
+    if descartados:
+        muestra = ", ".join(f"{a['ley'][:25]} Art.{a['articulo']}" for a in descartados[:3])
+        logger.info(f"    Filtrados: {muestra}{'...' if len(descartados) > 3 else ''}")
+
+    return resultado, descartados
+
+
 # ─── SEGUIMIENTO DE CONVERSACIÓN ────────────────────────────────────────────
 
 PALABRAS_SEGUIMIENTO = [
@@ -634,6 +747,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     if directos:
         for d in directos:
             d["relevance_score"] = SCORE_DIRECTO
+            d["fuente"] = "directo"
         agregar(directos)
         logger.info(f"  Búsqueda directa: {len(directos)} artículos")
 
@@ -641,6 +755,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     arts_clave, temas_detectados = buscar_articulos_clave(pregunta)
     for a in arts_clave:
         a["relevance_score"] = SCORE_ARTICULO_CLAVE
+        a["fuente"] = "curado"
     agregar(arts_clave)
 
     # 1b. Fallback: si keywords no detectaron nada pero el LLM sí → usar tema del LLM
@@ -665,6 +780,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
                         "ley":             resultado["metadatas"][0][i]["ley"],
                         "articulo":        resultado["metadatas"][0][i]["articulo"],
                         "relevance_score": _score_embedding(dist),
+                        "fuente":          "curado",
                     }])
             except Exception as e:
                 logger.warning(f"  Embedding fallback para {tema_llm}: {e}")
@@ -682,6 +798,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
                     "ley":             resultado["metadatas"][i]["ley"],
                     "articulo":        resultado["metadatas"][i]["articulo"],
                     "relevance_score": SCORE_ARTICULO_CLAVE,
+                    "fuente":          "curado",
                 }])
 
     # 2. Determinar ramas detectadas (para domain boost — ya no filtro binario)
@@ -763,6 +880,15 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
                 f"< UMBRAL_MIN={UMBRAL_MIN_RELEVANCIA_FINAL}"
             )
             relevantes_finales = []
+
+    # ── VERIFICADOR DE RELEVANCIA POST-RETRIEVAL ─────────────────────────────
+    # Filtra artículos tangenciales que pasaron el scoring pero no aplican al
+    # caso del usuario (ej: tránsito retrievado para query sobre privacidad).
+    # Whitelist: keyword matches curados nunca se descartan.
+    if relevantes_finales and len(relevantes_finales) > 1:
+        relevantes_finales, _descartados_verif = verificar_relevancia_articulos(
+            pregunta, relevantes_finales
+        )
 
     # ── FALLBACK: safety net si el scoring dejó vacío (no debería ocurrir) ──
     if not relevantes_finales:
