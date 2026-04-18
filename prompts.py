@@ -305,12 +305,16 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:
 - REGLA CRÍTICA — PENSIÓN VS VISITAS: El pago de la pensión y el derecho a ver al hijo son INDEPENDIENTES. Nadie puede negar las visitas porque no se pagó la pensión — eso viola el Art. 385 LOPNA. Si te niegan las visitas por falta de pago, denuncia ante el Tribunal de Protección.
 """,
     "violencia_mujer": """
-INSTITUCIONES Y PASOS CONCRETOS PARA VIOLENCIA DE GÉNERO:
-- Fiscalía con competencia en violencia de género: Denuncia directa, no necesitas abogado.
-- INAMUJER: Instituto Nacional de la Mujer, ofrece asesoría jurídica gratuita.
-- Casas de Abrigo: Refugio temporal para mujeres en riesgo. Pregunta en la Fiscalía.
-- Policía: Puede dictar medidas de protección inmediatas (orden de alejamiento).
-- NO necesitas ir con tu agresor. Puedes ir sola a denunciar.
+INSTITUCIONES Y PASOS CONCRETOS PARA VIOLENCIA / AGRESIÓN FÍSICA:
+⚠️ IMPORTANTE — identifica quién aplica:
+• Si la víctima es MUJER: aplica la Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia (LOVLV). Tipos penados: violencia física, psicológica, patrimonial, sexual, acoso.
+• Si la víctima es HOMBRE: aplica el Código Penal (Arts. 413-422, lesiones personales). Misma protección constitucional, diferente vía legal.
+PASOS:
+1. Denuncia en la Fiscalía (Ministerio Público): para mujeres, en la Fiscalía con competencia en violencia de género; para hombres, en cualquier fiscalía.
+2. Policía: puede dictar medidas de protección inmediatas (orden de alejamiento) en ambos casos.
+3. INAMUJER: Instituto Nacional de la Mujer, asesoría jurídica gratuita para mujeres.
+4. No necesitas ir con tu agresor/a. La denuncia es individual.
+5. Documenta las lesiones: certificado médico-forense del CICPC o del hospital.
 """,
     "vivienda_desalojo": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DESALOJO/ARRENDAMIENTO:

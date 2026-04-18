@@ -359,3 +359,85 @@ def test_no_falsos_positivos_intencion_danina(consulta):
     assert not detectar_intencion_danina(consulta), (
         f"Falso positivo en intención dañina: «{consulta}»"
     )
+
+
+# ── TESTS ADVERSARIALES — OOD FALSOS NEGATIVOS ──────────────────────────────
+# Consultas coloquiales que DEBEN pasar el filtro OOD (tienen_tema_legal=True)
+# y enrutarse al tema correcto. Regressions detectadas el 2026-04-18.
+
+from busqueda import _tiene_tema_legal as _ttl
+
+CONSULTAS_OOD_FALSOS_NEGATIVOS = [
+    # Especulación / precio abusivo — coloquial
+    "me están vendiendo dólares más caros",
+    "me están vendiendo dolares mas caros",
+    "me lo vendieron más caro que el precio oficial",
+    "en el negocio me cobran de más por los productos",
+    # Violencia física por pareja — coloquial
+    "mi novia me pega que debo hacer",
+    "mi esposo me golpea qué hago",
+    "mi pareja me pega todos los días",
+    "me está golpeando mi novio qué puedo hacer",
+    "mi esposa me agrede físicamente",
+]
+
+
+@pytest.mark.parametrize("consulta", CONSULTAS_OOD_FALSOS_NEGATIVOS,
+                         ids=[c[:60] for c in CONSULTAS_OOD_FALSOS_NEGATIVOS])
+def test_tiene_tema_legal_coloquial(consulta):
+    """Consultas legítimas en lenguaje coloquial deben pasar el filtro OOD."""
+    assert _ttl(consulta), (
+        f"OOD falso negativo — _tiene_tema_legal devolvió False para: «{consulta}»"
+    )
+
+
+CASOS_ROUTING_COLOQUIAL = [
+    # dólares caros → sobreprecio
+    (
+        "me están vendiendo dólares más caros",
+        {"sobreprecio"},
+        set(),
+    ),
+    (
+        "en la tienda me cobran de más por todo",
+        {"sobreprecio"},
+        set(),
+    ),
+    # me pega → violencia_mujer (cubre ambos géneros con guía actualizada)
+    (
+        "mi novia me pega que debo hacer",
+        {"violencia_mujer"},
+        set(),
+    ),
+    (
+        "mi esposo me golpea qué hago",
+        {"violencia_mujer"},
+        set(),
+    ),
+    (
+        "mi pareja me agrede físicamente",
+        {"violencia_mujer"},
+        set(),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "pregunta,esperados,prohibidos",
+    CASOS_ROUTING_COLOQUIAL,
+    ids=[c[0][:60] for c in CASOS_ROUTING_COLOQUIAL],
+)
+def test_routing_consultas_coloquiales(pregunta, esperados, prohibidos):
+    """Consultas coloquiales deben rutar al tema correcto."""
+    _arts, temas = _bac(pregunta)
+    temas_set = set(temas)
+    faltantes = esperados - temas_set
+    contaminacion = prohibidos & temas_set
+    assert not faltantes, (
+        f"Temas esperados NO detectados: {faltantes} | "
+        f"Pregunta: «{pregunta}» | Temas: {temas}"
+    )
+    assert not contaminacion, (
+        f"Temas prohibidos detectados: {contaminacion} | "
+        f"Pregunta: «{pregunta}» | Temas: {temas}"
+    )

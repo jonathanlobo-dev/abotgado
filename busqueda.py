@@ -523,6 +523,12 @@ def _tiene_tema_legal(texto: str) -> bool:
         "me quitaron", "me robaron", "me estafaron", "me engañaron",
         "permiso", "certificado", "registro", "negocio", "abasto", "bodega",
         "pensión alimentaria", "alimentos hijo", "no me deja ver",
+        # Violencia física coloquial
+        "me pega", "me golpea", "me está pegando", "me está golpeando",
+        "me agrede", "me están agrediendo", "golpea", "me hala el pelo",
+        # Precios abusivos coloquiales
+        "más caro de lo normal", "vendiendo más caro", "vendiendo caro",
+        "dólares más caros", "cobran de más", "me cobran más",
         # Señales genéricas de pregunta jurídica
         "artículo", "articulo", "ley", "código", "codigo", "prohíbe", "prohibe",
         "prohíba", "prohiba", "prohibición", "prohibicion", "ilegal", "legal",
