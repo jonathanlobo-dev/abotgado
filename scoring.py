@@ -117,6 +117,7 @@ RAMA_POR_TEMA = {
     "demanda_civil_general": "civil",
     "consulta_generica": "civil",
     "alcabala_revision": "penal",
+    "lesiones_personales": "penal",
     "maltrato_animal": "administrativo",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",

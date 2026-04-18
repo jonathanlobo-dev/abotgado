@@ -1271,6 +1271,51 @@
       43
     ]
   },
+  "lesiones_personales": {
+    "keywords": [
+      "me pega",
+      "me golpea",
+      "me está pegando",
+      "me esta pegando",
+      "me está golpeando",
+      "me esta golpeando",
+      "novia me pega",
+      "novio me pega",
+      "esposa me pega",
+      "esposo me pega",
+      "pareja me pega",
+      "mi pareja me golpea",
+      "me hala el pelo",
+      "me jala el pelo",
+      "me tira cosas",
+      "me lanza cosas",
+      "agresión física",
+      "agresion fisica",
+      "me agrede",
+      "me están agrediendo",
+      "me estan agrediendo",
+      "me golpearon",
+      "me agredieron",
+      "lesiones personales",
+      "me lesionaron",
+      "me hirieron",
+      "pelea",
+      "golpiza",
+      "riña",
+      "rina"
+    ],
+    "ley": "Código Penal",
+    "articulos": [
+      413,
+      414,
+      415,
+      416,
+      417,
+      420,
+      421,
+      422
+    ]
+  },
   "corrupcion": {
     "keywords": [
       "corrupción",

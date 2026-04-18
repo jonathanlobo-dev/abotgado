@@ -113,7 +113,7 @@ TEMAS DISPONIBLES:
 TRÁNSITO: transito_infracciones (multas, semáforos, velocidad, alcohol), transito_licencia (licencias de conducir), transito_accidente (choques, atropellos, colisiones), transito_vehiculo (seguro, placa, RCV, revisión), transito_general (normas de circulación), transito_estacionamiento (mal estacionado, grúa), libre_transito (derecho a circular), animales_via (animales sueltos en vía pública), robo_vehiculo (robo/hurto de carro)
 LABORAL: laboral_despido (despido, indemnización), laboral_vacaciones (vacaciones, días libres), laboral_prestaciones (prestaciones, liquidación, aguinaldo), laboral_general (derechos laborales), pago_feriados (trabajo en feriados), permiso_medico (reposo médico)
 PENAL: penal (delitos, penas, prisión, acusado, cargo penal, asociación para delinquir, crimen organizado, banda delictiva, pandilla, qué pena tiene, cuántos años de cárcel), drogas (drogas, sustancias), faltas_penales (riñas, escándalo, lesiones leves), amenazas (amenazas, intimidación), detencion_arbitraria (detención ilegal, flagrancia), antecedentes_penales (antecedentes, certificado), procesal_penal (juicios penales, procedimiento), delitos_informaticos (hackeo, estafas online), corrupcion (soborno, peculado)
-FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos maternidad/paternidad, lactancia), despido_maternidad (despedida por embarazo, inamovilidad LOTTT Art.335), violencia_mujer (violencia de género, maltrato)
+FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos maternidad/paternidad, lactancia), despido_maternidad (despedida por embarazo, inamovilidad LOTTT Art.335), violencia_mujer (violencia de género, maltrato a mujer por pareja), lesiones_personales (agresión física sin importar el sexo de la víctima — "me pega", "me golpearon", riña)
 VIVIENDA: vivienda_cc (compra, cláusulas abusivas), vivienda_desalojo (desalojo, desahucio), vivienda_arrendamiento (alquiler, arrendamiento), arrendamiento_comercial (local comercial), propiedad_horizontal (condominio, edificio)
 CIVIL: civil (obligaciones, contratos), propiedad (posesión, invasión, usucapión), testamento (testamento, herencia), herencia (sucesión, herederos), deuda_civil (deudas, cobro, pagaré), vicios_ocultos (defectos ocultos en compraventa)
 COMERCIAL: comercial (empresas, sociedades), negocio_casa (emprendimiento desde casa), bancario (bancos, créditos, tarjetas)
@@ -332,6 +332,16 @@ PASOS:
 3. INAMUJER: Instituto Nacional de la Mujer, asesoría jurídica gratuita para mujeres.
 4. No necesitas ir con tu agresor/a. La denuncia es individual.
 5. Documenta las lesiones: certificado médico-forense del CICPC o del hospital.
+""",
+    "lesiones_personales": """
+INSTITUCIONES Y PASOS CONCRETOS PARA LESIONES PERSONALES (AGRESIÓN FÍSICA GENÉRICA):
+Este régimen aplica cuando hay agresión física y la víctima NO es mujer protegida por la LOVLV (ej: hombre agredido por su pareja mujer, riña entre amigos, agresión vecinal, etc.).
+- Marco legal: Código Penal, Arts. 413-422 (lesiones personales). La pena varía según la gravedad de la lesión (leves, graves, gravísimas).
+- Fiscalía del Ministerio Público: presenta denuncia en CUALQUIER fiscalía (no la especializada en violencia de género — esa es solo para mujeres víctimas).
+- CICPC: para la investigación del delito y recabar el certificado médico-forense.
+- Policía Municipal o Nacional: puede levantar acta de la agresión si es flagrante.
+- Documenta: certificado médico-forense (CICPC), fotos de las lesiones, testigos, mensajes o audios donde el agresor reconozca los hechos.
+- NO necesitas un abogado para la denuncia inicial, pero conviene tenerlo para el proceso judicial posterior.
 """,
     "vivienda_desalojo": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DESALOJO/ARRENDAMIENTO:
