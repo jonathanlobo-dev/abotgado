@@ -139,9 +139,32 @@ def _stems(texto_norm: str) -> frozenset[str]:
     return frozenset(_stem_es(w) for w in texto_norm.split() if len(w) >= 2)
 
 
+_KEYWORDS_BOUNDARY_ESTRICTO: frozenset[str] = frozenset({
+    # Keywords cortos sin derivaciones útiles en español, que generan
+    # demasiados falsos positivos por substring matching:
+    # ron→despidieron/vinieron, vino→vinieron/convino, bar→barrio/embargo,
+    # iva→privacidad/conviva, moto→motor/remoto, humo→humorístico,
+    # tala→instalación/detalladamente, raya→subrayar/rayadísimo,
+    # piso→episodio/postizo, odio→custodio/episodio, gato→agotado.
+    # Para estos exigimos límite estricto de palabra.
+    "ron", "vino", "bar", "iva", "moto", "humo", "tala", "raya", "piso",
+    "mota", "odio", "gato", "gata",
+})
+
+
 def _kw_en_texto(kw_norm: str, texto_norm: str, texto_stems: frozenset[str]) -> bool:
-    """True si el keyword está en el texto: primero exacto, luego por raíces."""
-    if kw_norm in texto_norm:           # 1. substring exacto (rápido, sin falsos positivos)
+    """True si el keyword está en el texto: primero exacto, luego por raíces.
+
+    Caso especial: para keywords en _KEYWORDS_BOUNDARY_ESTRICTO se exige
+    límite de palabra para evitar falsos positivos. Otros keywords cortos
+    como 'pena', 'hijo', 'robo' mantienen substring matching porque tienen
+    derivaciones legítimas (penal, hijos, robos).
+    """
+    if kw_norm in _KEYWORDS_BOUNDARY_ESTRICTO:
+        # Límite de palabra explícito (los acentos ya están normalizados).
+        if re.search(rf"(?:^|[^a-z0-9_]){re.escape(kw_norm)}(?:$|[^a-z0-9_])", texto_norm):
+            return True
+    elif kw_norm in texto_norm:           # 1. substring exacto (rápido)
         return True
     kw_stems = frozenset(_stem_es(w) for w in kw_norm.split() if len(w) >= 2)
     return bool(kw_stems) and kw_stems.issubset(texto_stems)  # 2. stem fallback

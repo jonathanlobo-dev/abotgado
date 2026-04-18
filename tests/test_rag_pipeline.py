@@ -315,3 +315,73 @@ class TestArticulosClave:
         for tema, data in ARTICULOS_CLAVE.items():
             assert "articulos" in data, f"Tema '{tema}' sin articulos"
             assert len(data["articulos"]) > 0, f"Tema '{tema}' con articulos vacío"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# WORD-BOUNDARY MATCHING (keywords cortos sin derivaciones)
+# ═══════════════════════════════════════════════════════════════════════════
+
+from busqueda import _kw_en_texto, _stems
+
+def _match(kw, texto):
+    return _kw_en_texto(normalizar(kw), normalizar(texto), _stems(normalizar(texto)))
+
+
+class TestKeywordsBoundaryEstricto:
+    """Keywords cortos como 'ron', 'vino', 'iva' deben exigir límite de palabra
+    para evitar falsos positivos en 'despidieron', 'vinieron', 'privacidad'."""
+
+    # ── 'ron' (licores_alcohol)
+    def test_ron_no_match_en_despidieron(self):
+        assert not _match("ron", "me despidieron sin causa")
+    def test_ron_match_palabra_real(self):
+        assert _match("ron", "me venden ron de contrabando")
+
+    # ── 'vino' (licores_alcohol)
+    def test_vino_no_match_en_vinieron(self):
+        assert not _match("vino", "ellos vinieron temprano")
+    def test_vino_match_palabra_real(self):
+        assert _match("vino", "me sirvieron vino tinto")
+
+    # ── 'bar' (licores_alcohol)
+    def test_bar_no_match_en_barrio(self):
+        assert not _match("bar", "vivo en este barrio")
+    def test_bar_match_palabra_real(self):
+        assert _match("bar", "abrí un bar en mi casa")
+
+    # ── 'iva' (tributario)
+    def test_iva_no_match_en_privacidad(self):
+        assert not _match("iva", "se viola mi privacidad")
+    def test_iva_match_palabra_real(self):
+        assert _match("iva", "pago el iva mensualmente")
+
+    # ── 'moto' (transito)
+    def test_moto_no_match_en_motor(self):
+        assert not _match("moto", "el motor está dañado")
+    def test_moto_match_palabra_real(self):
+        assert _match("moto", "mi moto se accidentó")
+
+    # ── 'odio' (odio_discriminacion)
+    def test_odio_no_match_en_custodio(self):
+        assert not _match("odio", "tengo custodio de mis hijos")
+    def test_odio_match_palabra_real(self):
+        assert _match("odio", "siento odio por esa persona")
+
+
+class TestKeywordsCortosConDerivacion:
+    """Keywords cortos con derivaciones legítimas ('pena'→penal, 'hijo'→hijos)
+    deben mantener substring matching."""
+
+    def test_pena_match_en_penal(self):
+        # 'pena' debe matchear 'penal' (derivación legítima)
+        assert _match("pena", "cuánto dura la acción penal")
+
+    def test_hijo_match_en_hijos(self):
+        # plural debe seguir matcheando
+        assert _match("hijo", "mis hijos no me dejan ver")
+
+    def test_robo_match_en_robos(self):
+        assert _match("robo", "denunciar varios robos")
+
+    def test_arma_match_en_armas(self):
+        assert _match("arma", "porte de armas")
