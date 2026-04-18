@@ -403,6 +403,17 @@ CASOS_ROUTING_COLOQUIAL = [
         {"sobreprecio"},
         set(),
     ),
+    # alcabala revisar teléfono → CRBV+COPP, NO transito_general (ruido LTT)
+    (
+        "Me pueden revisar el teléfono en una alcabala?",
+        {"alcabala_revision"},
+        {"transito_general"},
+    ),
+    (
+        "qué pueden hacer en una alcabala",
+        {"alcabala_revision"},
+        {"transito_general"},
+    ),
     # me pega → violencia_mujer (cubre ambos géneros con guía actualizada)
     (
         "mi novia me pega que debo hacer",
