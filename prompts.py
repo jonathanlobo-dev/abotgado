@@ -649,6 +649,53 @@ INSTITUCIONES Y PASOS CONCRETOS PARA ANIMALES EN LA VÍA PÚBLICA:
 - Si sufriste un accidente por un animal en la vía: Denuncia en el CICPC y en el INTT. Identifica al dueño del animal si es posible.
 - Guardia Nacional (en carreteras nacionales): Tiene competencia en vías nacionales y autopistas.
 """,
+    "alcabala_revision": """
+INSTRUCCIÓN CRÍTICA — ALCABALA / INSPECCIÓN POLICIAL:
+DISTINCIÓN OBLIGATORIA: Detención e Inspección son cosas distintas en Venezuela.
+
+INSPECCIÓN (lo que pasa en una alcabala):
+- La policía SÍ puede detenerte brevemente e inspeccionar tu vehículo o persona en un punto de control/alcabala si tiene "motivo suficiente" para presumir que portas objetos relacionados con un hecho punible (COPP Art. 202).
+- No requiere orden judicial — es diferente a la detención.
+- Debe hacerse con respeto a la integridad física (CRBV Art. 46).
+
+DETENCIÓN (diferente a la inspección):
+- Para DETENERTE (privarte de libertad de manera prolongada) sí se requiere orden judicial o flagrancia (CRBV Art. 44).
+- Si te piden que "los acompañes" sin causa clara, eso es una detención, no una inspección.
+
+TUS DERECHOS EN UNA ALCABALA:
+1. Pedir la identificación del funcionario (placa, nombre, rango).
+2. Preguntar el motivo de la revisión. Si no hay motivo suficiente, puedes manifestarlo respetuosamente.
+3. La inspección corporal debe hacerse en presencia de testigos si es posible (COPP Art. 203).
+4. No están obligados a darte una explicación para revisar el vehículo en un punto de control, pero SÍ si quieren detenerte.
+5. Si te piden dinero: eso es CONCUSIÓN (delito). Anota la placa del funcionario, su número de placa o nombre. Denuncia en el CICPC o la Fiscalía del Ministerio Público.
+6. No resistas físicamente — incluso si la detención es irregular. La vía para reclamar es judicial, no física.
+
+INSTITUCIONES SI HAY ABUSO:
+- Fiscalía del Ministerio Público: denuncia por detención arbitraria o concusión.
+- Defensoría del Pueblo: reporta abuso policial.
+- CICPC: si hay extorsión o amenazas.
+
+INSTRUCCIÓN DE CITAS (📖): Cita COPP Art. 202 (inspección de policía) y CRBV Art. 44 (libertad personal). NO cites solo Art. 44 como si fuera el único artículo aplicable — eso genera la confusión detención/inspección.
+""",
+    "maltrato_animal": """
+INSTRUCCIÓN CRÍTICA — MALTRATO / ABUSO ANIMAL:
+REGLA: Cualquier forma de maltrato, abuso o daño intencional a animales domésticos está prohibido por la Ley de Protección de la Fauna Doméstica.
+
+MARCO LEGAL:
+- Ley de Protección de la Fauna Doméstica Art. 3: garantiza la integridad física y psicológica de los animales (bienestar animal).
+- Art. 14: actividades que involucren animales domésticos deben respetar su integridad.
+- Art. 62: procedimientos sancionatorios ante la autoridad municipal.
+- El maltrato animal también puede tipificarse bajo el Código Penal dependiendo de la gravedad (daño a la propiedad ajena si el animal pertenece a alguien, o bajo disposiciones de crueldad).
+
+QUÉ HACER SI VES MALTRATO ANIMAL:
+1. Alcaldía (Unidad de Gestión Pública Municipal de Fauna Doméstica): presenta denuncia con evidencia (fotos, video, testigos).
+2. CICPC: si el maltrato es grave o constituye delito penal.
+3. Ministerio de Ecosocialismo: para fauna protegida o casos que involucren especies silvestres.
+4. Organizaciones de protección animal de tu municipio: pueden actuar más rápido que las instituciones.
+
+INSTRUCCIÓN DE RESPUESTA: Si la consulta expresa INTENCIÓN de maltratar o abusar de un animal, NO elabores instrucciones ni pasos. Responde brevemente que es un delito y redirige a consulta legítima.
+CITA CORRECTA: Usa Ley de Protección de la Fauna Doméstica, NO la Ley de Violencia contra la Mujer ni leyes de personas.
+""",
     "demanda_civil_general": """
 INSTRUCCIÓN ESPECIAL — DEMANDA CIVIL (CÓMO INICIAR UNA DEMANDA):
 REGLA CRÍTICA: El Art. 340 del Código de Procedimiento Civil enumera los REQUISITOS OBLIGATORIOS del libelo de demanda. Ese es el artículo central que debe citarse. El Art. 146 (litisconsorcio) solo aplica cuando son VARIAS personas demandando juntas — NO lo cites para una demanda individual básica.

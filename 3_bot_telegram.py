@@ -1800,6 +1800,18 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await update.message.reply_text(RESPUESTA_INYECCION)
         return
 
+    # ── Filtro de intención dañina ────────────────────────────────────────
+    from seguridad import detectar_intencion_danina, respuesta_intencion_danina
+    if detectar_intencion_danina(pregunta):
+        logger.warning(f"Intención dañina bloqueada de user {user_id}: {pregunta[:80]}")
+        if not es_admin(user_id):
+            await notificar_admins(context,
+                f"🚨 INTENCIÓN DAÑINA BLOQUEADA\n"
+                f"Usuario: {user.first_name} (@{user.username or 'N/A'}, ID: {user_id})\n"
+                f"Consulta: {pregunta[:200]}")
+        await enviar_respuesta(update.message, respuesta_intencion_danina())
+        return
+
     # ── Detección de "explícame el artículo X [de Y]" ────────────────────
     import re as _re
     pregunta_lower = busqueda.normalizar(pregunta)

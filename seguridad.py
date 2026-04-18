@@ -115,6 +115,70 @@ def es_prompt_injection(texto: str) -> bool:
     return False
 
 
+# ─── DETECCIÓN DE INTENCIÓN DAÑINA ──────────────────────────────────────────
+# Consultas que expresan intención de cometer un delito (no son preguntas
+# jurídicas legítimas). Distinto a prompt injection: acá el usuario pregunta
+# "¿puedo hacer X?" donde X es un crimen. No elaboramos respuesta legal —
+# respondemos brevemente que es un delito y cerramos.
+
+_PATRONES_INTENCION_DANINA = [
+    # Violación / agresión sexual en 1ra persona
+    r"\bpuedo\s+violar\b",
+    r"\bquiero\s+violar\b",
+    r"\bvoy\s+a\s+violar\b",
+    r"\bc[oó]mo\s+(puedo\s+)?violar\b",
+    r"\bpuedo\s+abusar\s+(sexualmente\s+)?(de\s+)?(una|un|mi|el|la)\b",
+    r"\bquiero\s+abusar\s+(sexualmente\s+)?(de\s+)?\b",
+    # Homicidio / lesiones en 1ra persona
+    r"\bc[oó]mo\s+(puedo\s+)?matar\s+(a\s+)?(mi|una|un|el|la|su)\b",
+    r"\bpuedo\s+matar\s+(a\s+)?(mi|una|un|el|la|su)\b",
+    r"\bquiero\s+matar\s+(a\s+)?(mi|una|un|el|la|su)\b",
+    r"\bc[oó]mo\s+(le\s+)?doy\s+un\s+golpe\s+sin\s+que\b",
+    r"\bc[oó]mo\s+(puedo\s+)?golpear\s+(a\s+)?(mi|una|un|el|la)\b",
+    # Robo / extorsión activos en 1ra persona
+    r"\bc[oó]mo\s+(puedo\s+)?robar\s+(a\s+)?(mi|una|un|el|la|su)\b",
+    r"\bquiero\s+robar\s+(a\s+)?(mi|una|un|el|la|su)\b",
+    r"\bc[oó]mo\s+(puedo\s+)?extorsionar\b",
+    r"\bquiero\s+extorsionar\b",
+    # Drogas: producir / traficar (no consumir — eso sí es consulta legítima)
+    r"\bc[oó]mo\s+(puedo\s+)?fabricar\s+(drogas?|cocain|marihuana|crack|sustancias?\s+ilegales?)\b",
+    r"\bc[oó]mo\s+(puedo\s+)?traficar\s+(drogas?|sustancias?)\b",
+    # Maltrato / abuso animal activo en 1ra persona
+    r"\bpuedo\s+(golpear|matar|abusar|violar|torturar)\s+(a\s+)?(mi\s+)?(mascota|perro|gato|animal|peludito)\b",
+    r"\bquiero\s+(golpear|matar|abusar|violar|torturar)\s+(a\s+)?(mi\s+)?(mascota|perro|gato|animal|peludito)\b",
+    # Secuestro activo
+    r"\bc[oó]mo\s+(puedo\s+)?secuestrar\b",
+    r"\bquiero\s+secuestrar\b",
+]
+
+_REGEX_INTENCION_DANINA = re.compile(
+    "|".join(_PATRONES_INTENCION_DANINA), re.IGNORECASE
+)
+
+_RESPUESTA_INTENCION_DANINA = (
+    "⚠️ <b>Consulta no procesable</b>\n\n"
+    "Lo que describes constituye un delito en Venezuela.\n\n"
+    "aBOTgado está diseñado para orientar legalmente a personas que "
+    "buscan defender sus derechos o entender la ley — no para asistir "
+    "en conductas que puedan dañar a otros.\n\n"
+    "Si tienes una consulta legal legítima, escríbela y te ayudo."
+)
+
+
+def detectar_intencion_danina(texto: str) -> bool:
+    """Retorna True si la consulta expresa intención explícita de cometer un delito.
+
+    Distinto a prompt injection: no es un ataque al sistema, es una pregunta
+    que el bot no debe responder con información legal detallada.
+    """
+    return bool(_REGEX_INTENCION_DANINA.search(texto))
+
+
+def respuesta_intencion_danina() -> str:
+    """Mensaje de rechazo para consultas con intención dañina."""
+    return _RESPUESTA_INTENCION_DANINA
+
+
 # ─── POST-FILTRO DE TELÉFONOS INVENTADOS ────────────────────────────────────
 
 # Teléfonos REALES de las guías institucionales (whitelist)

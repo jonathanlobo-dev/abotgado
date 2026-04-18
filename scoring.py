@@ -116,6 +116,8 @@ RAMA_POR_TEMA = {
     "decomiso_mercancia": "administrativo",
     "demanda_civil_general": "civil",
     "consulta_generica": "civil",
+    "alcabala_revision": "penal",
+    "maltrato_animal": "administrativo",
     "detencion_arbitraria": "constitucional", "sobreprecio": "consumidor",
     "vicios_ocultos": "civil",
     "insai_sanidad": "administrativo",
