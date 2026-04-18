@@ -308,10 +308,24 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:
 """,
     "violencia_mujer": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLENCIA / AGRESIÓN FÍSICA:
-⚠️ IMPORTANTE — identifica quién aplica y cita ARTÍCULOS DE AMBAS LEYES cuando estén en la lista:
-• Si la víctima es MUJER: aplica la LOVLV (violencia física, psicológica, patrimonial, sexual, acoso). Cita Arts. 14, 15 (formas de violencia), 39, 40 si están disponibles.
-• Si la víctima es HOMBRE: aplica el Código Penal, Arts. 413-422 (lesiones personales). Cita alguno de esos si está en la lista.
-• Siempre que haya agresión física, también aplica el Código Penal (lesiones) COMPLEMENTARIO a la LOVLV. NO cites solo 1 artículo: combina LOVLV + CP cuando ambas leyes estén en la lista.
+⚠️ REGLA DE SUJETO — DETECTA EL SEXO DE LA VÍCTIMA ANTES DE CITAR:
+La LOVLV (Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia) protege EXCLUSIVAMENTE a la mujer. Si la víctima es hombre, esa ley NO le aplica y la Fiscalía rechazará la denuncia.
+
+Señales de que el USUARIO ES HOMBRE Y LA AGRESORA ES MUJER (víctima hombre):
+- "mi novia me pega/me golpea/me agrede"
+- "mi esposa me pega/me golpea"
+- "mi pareja (femenina) me agrede"
+- "mi mujer me maltrata"
+→ En estos casos: PROHIBIDO citar la LOVLV. Aplica el Código Penal (lesiones personales, Arts. 413-422). Si en la lista NO hay artículos del Código Penal sobre lesiones, OMITE la sección 📖 antes que citar la LOVLV equivocadamente.
+→ En "Qué hacer" indica: denuncia en cualquier Fiscalía del Ministerio Público (NO en la Fiscalía especializada en violencia de género — esa es solo para mujeres). El delito es lesiones personales del Código Penal, no violencia de género.
+
+Señales de que LA VÍCTIMA ES MUJER:
+- "mi novio/esposo/marido me pega/me agrede"
+- "mi pareja (masculina) me maltrata"
+- "soy mujer y me golpean"
+→ En estos casos: aplica la LOVLV. Cita Arts. 14, 15 (formas de violencia), 39, 40 si están disponibles. Complementa con Código Penal lesiones (Arts. 413-422) si también están en la lista.
+
+Si el sexo de la víctima no es claro, asume el escenario más frecuente (víctima mujer) PERO aclara en la respuesta que si el usuario es hombre, debe leer la siguiente nota: "Si eres hombre víctima de tu pareja mujer, la LOVLV no te aplica — el delito es lesiones personales (Código Penal)."
 PASOS:
 1. Denuncia en la Fiscalía (Ministerio Público): para mujeres, en la Fiscalía con competencia en violencia de género; para hombres, en cualquier fiscalía.
 2. Policía: puede dictar medidas de protección inmediatas (orden de alejamiento) en ambos casos.
@@ -621,6 +635,14 @@ INSTITUCIONES Y PASOS CONCRETOS PARA COBRO EXCESIVO:
 - SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos): Denuncia el cobro excesivo. Puedes denunciar por su página web sundde.gob.ve o presencialmente.
 - Lleva: factura, ticket de pago, fotos de la lista de precios del establecimiento.
 - Los comercios están obligados a exhibir los precios de sus productos y servicios.
+
+⚠️ CASO ESPECIAL — DÓLARES / DIVISAS / TASA DE CAMBIO:
+Si la consulta es sobre venta de DÓLARES, DIVISAS o cobro por encima de la TASA OFICIAL DEL BCV:
+- El régimen aplicable es el Convenio Cambiario del Banco Central de Venezuela (BCV), NO los artículos de la Ley de Precios Justos sobre alteración de "calidad, peso o medida" (esos son para mercancías físicas, no para divisas).
+- La conducta se denomina ESPECULACIÓN CAMBIARIA u operaciones cambiarias por fuera de la tasa oficial. El BCV es la autoridad reguladora del mercado cambiario.
+- Cita preferentemente el Convenio Cambiario del BCV (si está en la lista) y, complementariamente, los artículos de la Ley de Precios Justos sobre especulación o publicidad engañosa — NUNCA los de "calidad/peso/medida".
+- Instituciones a denunciar: SUDEBAN (operaciones cambiarias bancarias), SUNDDE (precios al consumidor), BCV (tasa oficial), Fiscalía del Ministerio Público (delito cambiario).
+- En "Qué hacer" menciona la "tasa de cambio oficial del BCV" como referencia, no precios fijos en bolívares.
 """,
     "vicios_ocultos": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VICIOS OCULTOS EN INMUEBLES:
@@ -682,7 +704,13 @@ INSTITUCIONES SI HAY ABUSO:
 - Defensoría del Pueblo: reporta abuso policial.
 - CICPC: si hay extorsión o amenazas.
 
-INSTRUCCIÓN DE CITAS (📖): Cita COPP Art. 202 (inspección de policía) y CRBV Art. 44 (libertad personal). NO cites solo Art. 44 como si fuera el único artículo aplicable — eso genera la confusión detención/inspección.
+INSTRUCCIÓN DE CITAS (📖): Cita COPP Art. 202 (inspección de policía), CRBV Art. 44 (libertad personal) y, si la pregunta es sobre revisión del TELÉFONO, también CRBV Art. 48 (inviolabilidad de las comunicaciones).
+
+⚠️ PROHIBICIÓN — ESCENARIO ALCABALA / VÍA PÚBLICA:
+- NUNCA cites el Art. 47 CRBV (inviolabilidad del HOGAR/recinto privado) en escenarios de alcabala, calle, carretera, autopista o tránsito. Una alcabala NO es un hogar. El Art. 47 protege la vivienda; en vía pública no aplica.
+- NUNCA menciones "allanamiento", "acta de allanamiento", "orden de allanamiento" ni "domicilio" en estos escenarios. El allanamiento es una figura específica para entrar a viviendas.
+- Si el usuario pregunta por revisión del teléfono en alcabala, el derecho aplicable es Art. 48 CRBV (inviolabilidad de comunicaciones), NO Art. 47.
+- En "Qué hacer" NO pidas "el acta de allanamiento" como evidencia — no existe en este escenario.
 """,
     "maltrato_animal": """
 INSTRUCCIÓN CRÍTICA — MALTRATO / ABUSO ANIMAL:

@@ -823,6 +823,26 @@
         "reglamento consejo federal",
         "transferencia competencias"
       ]
+    },
+    {
+      "id": "convenio_cambiario",
+      "nombre": "Convenio Cambiario del Banco Central de Venezuela",
+      "rama": "bancario",
+      "archivos_pdf": [
+        "convenio cambiario.pdf"
+      ],
+      "aliases": [
+        "convenio cambiario",
+        "convenio cambiario bcv",
+        "regimen cambiario",
+        "tasa bcv",
+        "tasa oficial bcv",
+        "divisas",
+        "control cambiario",
+        "mercado cambiario",
+        "especulacion cambiaria",
+        "bcv"
+      ]
     }
   ]
 }
