@@ -31,6 +31,48 @@ logger = logging.getLogger(__name__)
 
 PARCHES: list[dict] = [
     {
+        "id": "lovlv_15_formas_violencia_v1",
+        "ley": "Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia",
+        "articulo": 15,
+        "detectar": "quedando la redacción en los términos siguientes",
+        "texto": (
+            "Artículo 15. Formas de violencia. Se consideran formas de violencia de género "
+            "en contra de las mujeres, las siguientes:\n"
+            "1. Violencia psicológica: toda conducta activa u omisiva ejercida en deshonra, "
+            "descrédito o menosprecio al valor o dignidad personal, tratos humillantes y "
+            "vejatorios, vigilancia constante, aislamiento, marginalización, negligencia, "
+            "abandono, celotipia, comparaciones destructivas, amenazas y actos que conllevan "
+            "a la víctima a disminuir su autoestima, perjudicar o perturbar su sano desarrollo.\n"
+            "2. Acoso u hostigamiento: toda conducta abusiva y especialmente los comportamientos, "
+            "palabras, actos, gestos, escritos o mensajes electrónicos dirigidos a perseguir, "
+            "intimidar, chantajear, apremiar, importunar y vigilar a una mujer que pueda atentar "
+            "contra su estabilidad emocional, dignidad, prestigio, integridad física o psíquica.\n"
+            "3. Amenaza: el anuncio verbal o con actos de la ejecución de un daño físico, "
+            "psicológico, sexual, laboral o patrimonial con el fin de intimidar a la mujer.\n"
+            "4. Violencia física: toda acción u omisión que directa o indirectamente está "
+            "dirigida a ocasionar un daño o sufrimiento físico a la mujer, tales como: "
+            "lesiones internas o externas, heridas, hematomas, quemaduras, empujones o "
+            "cualquier otro maltrato que afecte su integridad física.\n"
+            "5. Violencia doméstica: toda conducta activa u omisiva, constante o no, de "
+            "empleo de fuerza física o violencia psicológica, intimidación, persecución o "
+            "amenaza contra la mujer por parte del cónyuge, el concubino, ex cónyuge, ex "
+            "concubino, persona con quien mantiene o mantuvo relación de afectividad, "
+            "ascendientes, descendientes, parientes colaterales, consanguíneos y afines.\n"
+            "6. Violencia sexual: toda conducta que amenace o vulnere el derecho de la mujer "
+            "a decidir voluntaria y libremente su sexualidad, comprendiendo ésta no sólo el "
+            "acto sexual sino toda forma de contacto o acceso sexual, genital o no genital.\n"
+            "7. Acceso carnal violento: forma de violencia sexual en la cual el hombre mediante "
+            "violencias o amenazas, constriñe a la cónyuge, concubina, persona con quien hace "
+            "vida marital o mantenga unión estable de hecho o no, a un acto carnal por vía "
+            "vaginal, anal u oral, o introduzca objetos por alguna de las dos primeras vías.\n"
+            "8. Prostitución forzada, 9. Esclavitud sexual, 10. Acoso sexual, 11. Violencia laboral, "
+            "12. Violencia patrimonial y económica, 13. Violencia obstétrica, 14. Esterilización "
+            "forzada, 15. Violencia mediática, 16. Violencia institucional, 17. Violencia simbólica, "
+            "18. Tráfico de mujeres, niñas y adolescentes, 19. Trata de mujeres, niñas y "
+            "adolescentes, 20. Femicidio, 21. Inducción o ayuda al suicidio."
+        ),
+    },
+    {
         "id": "cpc_340_libelo_v1",
         "ley": "Código de Procedimiento Civil",
         "articulo": 340,

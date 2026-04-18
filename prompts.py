@@ -135,8 +135,10 @@ REGLA DE RELEVANCIA:
   → Ley de Justicia de Paz para conflictos vecinales (ruido, música, gimnasio, etc.)
   → Código Penal (faltas/perturbaciones) para ruido excesivo
   → LOTTT para cualquier problema laboral
-- Máximo 3-4 artículos citados. Los MÁS relevantes al caso.
+- Cita ENTRE 2 y 4 artículos. 1 solo artículo es insuficiente si la lista tiene más relevantes; 5+ es ruido.
 - Si la lista tiene artículos de VARIAS leyes distintas, CITA al menos 1 artículo de cada ley relevante. NO cites solo de una ley cuando hay varias que aplican. Ejemplo: si hay artículos de Fauna Doméstica Y Justicia de Paz, cita al menos 1 de cada una.
+- JERARQUÍA DE FUENTES: si la lista contiene artículos de la Constitución (CRBV) que reconocen un DERECHO del usuario en su situación (ej: Art. 44 libertad personal, Art. 47 inviolabilidad del hogar, Art. 48 inviolabilidad de comunicaciones, Art. 49 debido proceso), cítalos PRIMERO, antes que artículos procedimentales (COPP, CPC) que solo regulen el trámite. El usuario pregunta "¿qué derechos tengo?"; la respuesta sustantiva va en la CRBV, no en el artículo procesal. Solo cita procedimentales si complementan (no si reemplazan) el derecho constitucional.
+- MÚLTIPLES VÍAS LEGALES: si la guía institucional menciona EXPLÍCITAMENTE varias leyes aplicables según el caso (ej: LOVLV para mujeres + Código Penal para hombres), y hay artículos de ambas en la lista, cita al menos uno de cada una. NUNCA ignores una vía legal que la guía declaró aplicable.
 - NUNCA cites Art. 1 o Art. 2 de una ley si hay artículos con sanciones, procedimientos u obligaciones concretas en la lista. Los artículos 1-5 suelen ser definiciones genéricas. Busca artículos con CONTENIDO PRÁCTICO: multas, penas, plazos, requisitos, derechos específicos. Ejemplo: si la lista tiene Art. 1 ("esta ley tiene por objeto...") y Art. 66 ("actos de crueldad serán sancionados..."), CITA el Art. 66, NO el Art. 1.
 - IGNORA artículos que solo digan "Se modifica el título" o "Se reforma el artículo X" sin contenido sustantivo.
 - Prefiere artículos que describan: competencias, procedimientos, sanciones, derechos o deberes concretos.
@@ -306,9 +308,10 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE FAMILIA:
 """,
     "violencia_mujer": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLENCIA / AGRESIÓN FÍSICA:
-⚠️ IMPORTANTE — identifica quién aplica:
-• Si la víctima es MUJER: aplica la Ley Orgánica sobre el Derecho de las Mujeres a una Vida Libre de Violencia (LOVLV). Tipos penados: violencia física, psicológica, patrimonial, sexual, acoso.
-• Si la víctima es HOMBRE: aplica el Código Penal (Arts. 413-422, lesiones personales). Misma protección constitucional, diferente vía legal.
+⚠️ IMPORTANTE — identifica quién aplica y cita ARTÍCULOS DE AMBAS LEYES cuando estén en la lista:
+• Si la víctima es MUJER: aplica la LOVLV (violencia física, psicológica, patrimonial, sexual, acoso). Cita Arts. 14, 15 (formas de violencia), 39, 40 si están disponibles.
+• Si la víctima es HOMBRE: aplica el Código Penal, Arts. 413-422 (lesiones personales). Cita alguno de esos si está en la lista.
+• Siempre que haya agresión física, también aplica el Código Penal (lesiones) COMPLEMENTARIO a la LOVLV. NO cites solo 1 artículo: combina LOVLV + CP cuando ambas leyes estén en la lista.
 PASOS:
 1. Denuncia en la Fiscalía (Ministerio Público): para mujeres, en la Fiscalía con competencia en violencia de género; para hombres, en cualquier fiscalía.
 2. Policía: puede dictar medidas de protección inmediatas (orden de alejamiento) en ambos casos.
