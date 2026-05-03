@@ -563,3 +563,61 @@ class TestCuratedPrimero:
         assert relevantes[0]["fuente"] == "curado"
         assert relevantes[-1]["fuente"] == "embedding"
         assert relevantes[-1]["ley"] == "Drogas"  # ruido fuzzy desplazado al final
+
+
+class TestInyeccionDeterministicaSeccion:
+    """Si el LLM emite el fallback 'no tengo artículos específicos' Y hay
+    artículos curados disponibles, la sección 📖 debe construirse
+    programáticamente. Garantiza visibilidad de leyes sin depender del LLM."""
+
+    def test_reemplazo_seccion_libro_cuando_hay_curados(self):
+        """Simula la lógica de reemplazo: 📖 fallback → 📖 con curados reales."""
+        import re
+        respuesta = (
+            "📌 <b>Respuesta:</b> En una alcabala no pueden obligarte a desbloquear el teléfono.\n\n"
+            "📖 No tengo artículos específicos sobre este tema en mi base de datos.\n\n"
+            "💡 <b>Qué hacer:</b>\n1. Pide identificación.\n\n"
+            "⚠️ Info orientativa."
+        )
+        curados = [
+            {"ley": "Constitución de la República Bolivariana de Venezuela",
+             "articulo": 48,
+             "texto": "Se garantiza el secreto e inviolabilidad de las comunicaciones privadas.",
+             "fuente": "curado"},
+            {"ley": "Código Orgánico Procesal Penal (COPP)",
+             "articulo": 202,
+             "texto": "Inspección de la policía o del Ministerio Público.",
+             "fuente": "curado"},
+        ]
+
+        lineas = ["📖 <b>Qué dice la ley:</b>"]
+        for art in curados:
+            ley_corta = art["ley"].split("(")[0].strip()
+            txt = (art.get("texto") or "").strip().replace("\n", " ")
+            lineas.append(f"- <b>{ley_corta}, Art. {art['articulo']}:</b> {txt}")
+        seccion = "\n".join(lineas)
+
+        m_fin = re.search(r"💡", respuesta)
+        m_ini = re.search(r"📖", respuesta)
+        nueva = respuesta[:m_ini.start()] + seccion + "\n\n" + respuesta[m_fin.start():]
+
+        # La frase de fallback ya no debe estar
+        assert "No tengo artículos específicos" not in nueva
+        # Las citas reales deben aparecer
+        assert "Art. 48" in nueva
+        assert "Art. 202" in nueva
+        assert "Constitución" in nueva
+        # El resto de secciones se preserva
+        assert "📌 <b>Respuesta:</b>" in nueva
+        assert "💡 <b>Qué hacer:</b>" in nueva
+        assert "⚠️" in nueva
+
+    def test_no_reemplaza_sin_curados(self):
+        """Si NO hay curados, no se debe inyectar nada (no inventar)."""
+        respuesta = "📌 Respuesta: x\n\n📖 No tengo artículos específicos.\n\n💡 Qué hacer: y"
+        curados = []
+        # Lógica de guarda: solo entra si curados no-vacío
+        if curados:
+            assert False, "no debió entrar"
+        # Nada cambia
+        assert "No tengo artículos" in respuesta

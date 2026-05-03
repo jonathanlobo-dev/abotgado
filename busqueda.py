@@ -1481,6 +1481,58 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         respuesta = _filtrar_telefonos_inventados(respuesta)
         respuesta = _filtrar_montos_inventados(respuesta)
 
+        # ── INYECCIÓN DETERMINÍSTICA DE LA SECCIÓN 📖 ─────────────────────────
+        # Si pese a la auto-corrección el LLM SIGUE emitiendo el fallback
+        # "📖 No tengo artículos específicos..." y hay curados/directos en la
+        # lista, construimos la sección 📖 programáticamente con los top 2-3
+        # artículos curados. Esto garantiza que el usuario vea las leyes
+        # cuando retrieval las encontró, sin depender de la obediencia del LLM.
+        rl_check = respuesta.lower()
+        _fallback_phrases = ("no tengo artículos específicos", "no tengo articulos especificos")
+        if any(p in rl_check for p in _fallback_phrases) and relevantes:
+            curados_top = [a for a in relevantes
+                           if a.get("fuente") in ("curado", "directo")][:3]
+            if curados_top:
+                logger.info(
+                    f"  ⚙️ Inyección determinística de 📖 — LLM aún emitía fallback, "
+                    f"reemplazando con {len(curados_top)} curados"
+                )
+                lineas = ["📖 <b>Qué dice la ley:</b>"]
+                for art in curados_top:
+                    ley_corta = art["ley"].split("(")[0].strip()
+                    txt = (art.get("texto") or "").strip().replace("\n", " ")
+                    if len(txt) > 220:
+                        # Cortar en una frase cercana al límite
+                        recorte = txt[:220]
+                        if "." in recorte:
+                            recorte = recorte.rsplit(".", 1)[0] + "."
+                        txt = recorte + ("..." if not txt.endswith(".") else "")
+                    lineas.append(f"- <b>{ley_corta}, Art. {art['articulo']}:</b> {txt}")
+                seccion_nueva = "\n".join(lineas)
+
+                # Reemplazar bloque 📖 ... hasta antes del 💡 (o final si no hay 💡)
+                m_fin = re.search(r"💡", respuesta)
+                m_ini = re.search(r"📖", respuesta)
+                if m_ini:
+                    fin_pos = m_fin.start() if m_fin else len(respuesta)
+                    respuesta = (
+                        respuesta[: m_ini.start()]
+                        + seccion_nueva
+                        + "\n\n"
+                        + respuesta[fin_pos:]
+                    )
+                else:
+                    # No había 📖 — insertar antes de 💡 si existe, si no al final
+                    if m_fin:
+                        respuesta = (
+                            respuesta[: m_fin.start()]
+                            + seccion_nueva
+                            + "\n\n"
+                            + respuesta[m_fin.start():]
+                        )
+                    else:
+                        respuesta = respuesta + "\n\n" + seccion_nueva
+
         # ── Post-análisis de confianza basado en la respuesta real ──
         # Si el LLM admite que no encontró artículos, bajar confianza
         resp_lower = respuesta.lower()
