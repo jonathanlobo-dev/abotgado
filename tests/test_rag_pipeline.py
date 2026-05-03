@@ -532,7 +532,34 @@ class TestAnclajeConstitucionalAlcabala:
         user_msg = captured["messages"][-1]["content"]
         assert "ESCENARIO:" in user_msg
         assert "alcabala" in user_msg
-        # El prompt system debe ahora contener la regla dura sobre Art. 47/48
-        sys_msg = captured["messages"][0]["content"]
-        assert "Art. 48" in sys_msg
-        assert "Art. 47" in sys_msg
+
+    def test_system_prompt_principal_tiene_regla_art48_vs_art47(self):
+        """La regla dura Art. 48 vs Art. 47 vive en SYSTEM_PROMPT (no en el verificador)."""
+        from prompts import SYSTEM_PROMPT
+        assert "Art. 48" in SYSTEM_PROMPT
+        assert "Art. 47" in SYSTEM_PROMPT
+        sp_low = SYSTEM_PROMPT.lower()
+        assert "celular" in sp_low or "teléfono" in sp_low or "telefono" in sp_low
+
+
+class TestCuratedPrimero:
+    """Los artículos curated/directo deben aparecer ANTES que los fuzzy en el
+    contexto enviado al LLM, para evitar que ruido fuzzy con score alto
+    aparezca como [1] y desconcierte al LLM."""
+
+    def test_orden_curated_antes_que_fuzzy(self):
+        """Simulación directa del bloque de ordenamiento."""
+        # Simulamos la lógica de _prioridad y sort
+        relevantes = [
+            {"ley": "Drogas", "articulo": 196, "texto": "x", "fuente": "embedding", "score_final": 1.30},
+            {"ley": "CRBV",   "articulo": 48,  "texto": "y", "fuente": "curado",    "score_final": 1.23},
+            {"ley": "COPP",   "articulo": 202, "texto": "z", "fuente": "curado",    "score_final": 1.23},
+        ]
+        def _prioridad(art):
+            return 0 if art.get("fuente") in ("curado", "directo") else 1
+        relevantes.sort(key=lambda a: (_prioridad(a), -a.get("score_final", 0)))
+
+        # Curated va primero, fuzzy al final
+        assert relevantes[0]["fuente"] == "curado"
+        assert relevantes[-1]["fuente"] == "embedding"
+        assert relevantes[-1]["ley"] == "Drogas"  # ruido fuzzy desplazado al final

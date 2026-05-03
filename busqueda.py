@@ -587,16 +587,9 @@ _PROMPT_VERIFICADOR_SYSTEM = (
     "Eres un verificador de relevancia legal. Recibes una pregunta (y opcionalmente "
     "un ESCENARIO situacional consolidado de la conversación) y una lista numerada "
     "de artículos candidatos. Tu única tarea: devolver los números de los artículos "
-    "que RESPONDEN o son ÚTILES para la pregunta en ese escenario. "
-    "Descarta los que tratan un tema completamente distinto. Sé moderado: si un "
-    "artículo aporta contexto legal aunque no responda al 100%, mantenlo. "
-    "REGLA DURA DE ANCLAJE CONSTITUCIONAL: cuando la pregunta es sobre revisión, "
-    "interceptación, lectura o inspección de teléfonos, celulares, mensajes, "
-    "chats, correos o llamadas, el ancla constitucional correcta es el Art. 48 "
-    "CRBV (inviolabilidad de las comunicaciones privadas), NO el Art. 47 "
-    "(inviolabilidad del hogar doméstico/recinto privado — la casa). En estos "
-    "casos descarta el Art. 47 CRBV salvo que la pregunta también involucre "
-    "allanamiento de vivienda. "
+    "que RESPONDEN o son ÚTILES para la pregunta en ese escenario. Descarta los "
+    "que tratan un tema completamente distinto. Sé moderado: si un artículo "
+    "aporta contexto legal aunque no responda al 100%, mantenlo. "
     "Responde SOLO con números separados por comas (ej: '1, 3, 5') o 'ninguno'. "
     "NO expliques, NO uses oraciones, NO uses markdown."
 )
@@ -1041,6 +1034,14 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "") -> tuple[list[di
 
     if not relevantes_finales:
         return [], "", temas_detectados, mejor_distancia
+
+    # Reordenar: curados/directos PRIMERO (por score desc), luego fuzzy (por score desc).
+    # Evita que ruido fuzzy con score alto aparezca como [1] y desconcierte al LLM,
+    # que tiende a interpretar el primer artículo como el más relevante para el caso.
+    def _prioridad(art):
+        # 0 = curado/directo (siempre arriba), 1 = fuzzy
+        return 0 if art.get("fuente") in ("curado", "directo") else 1
+    relevantes_finales.sort(key=lambda a: (_prioridad(a), -a.get("score_final", 0)))
 
     # Formato numerado
     contexto = "LISTA DE ARTÍCULOS DISPONIBLES (SOLO puedes citar de esta lista):\n\n"
