@@ -1431,6 +1431,52 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             temperature=0.05,
         )
         respuesta = response.choices[0].message.content
+
+        # ── AUTO-CORRECCIÓN: si el LLM emitió el fallback "no tengo artículos"
+        # PERO sí había curados relevantes en la lista, regenerar con override
+        # explícito. Patrón estándar de self-correction sin agregar agente full.
+        _frase_fallback = "no tengo artículos específicos"
+        _frase_fallback_alt = "no tengo articulos especificos"
+        rl = respuesta.lower()
+        if (_frase_fallback in rl or _frase_fallback_alt in rl) and relevantes:
+            curados_disp = [a for a in relevantes
+                            if a.get("fuente") in ("curado", "directo")]
+            if curados_disp:
+                citables = ", ".join(
+                    f"{a['ley'].split('(')[0].strip()[:40]} Art. {a['articulo']}"
+                    for a in curados_disp[:5]
+                )
+                logger.info(
+                    f"  ⚠️ Auto-corrección: LLM emitió fallback pero hay {len(curados_disp)} "
+                    f"curados disponibles ({citables}) — regenerando"
+                )
+                override_msg = {
+                    "role": "user",
+                    "content": (
+                        f"Tu respuesta anterior dijo «No tengo artículos específicos» "
+                        f"pero la lista de contexto SÍ contiene artículos directamente "
+                        f"relevantes para esta pregunta:\n{citables}\n\n"
+                        f"Vuelve a responder citando al menos 2 de esos artículos en la "
+                        f"sección 📖 Qué dice la ley. Mantén el resto del formato HTML "
+                        f"con 📌 Respuesta, 📖 Qué dice la ley, 💡 Qué hacer y ⚠️ disclaimer. "
+                        f"NO vuelvas a decir «no tengo artículos»."
+                    ),
+                }
+                try:
+                    response2 = groq_client.chat.completions.create(
+                        model=config.LLM_MODEL,
+                        messages=messages + [
+                            {"role": "assistant", "content": respuesta},
+                            override_msg,
+                        ],
+                        max_tokens=1800,
+                        temperature=0.05,
+                    )
+                    respuesta = response2.choices[0].message.content
+                    logger.info(f"  ✓ Auto-corrección regenerada")
+                except Exception as e_corr:
+                    logger.warning(f"  Auto-corrección falló: {e_corr} — uso respuesta original")
+
         # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
         respuesta = _filtrar_montos_inventados(respuesta)
