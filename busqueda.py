@@ -79,9 +79,20 @@ del _leyes_cfg
 
 # ─── PROMPTS Y GUÍAS (importados desde prompts.py) ──────────────────────────
 from prompts import (
-    SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_REFORMULAR_PROFUNDO,
+    SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_REFORMULAR_CON_CONTEXTO,
+    PROMPT_REFORMULAR_PROFUNDO,
     PROMPT_DESCOMPONER_CONSULTA, PROMPT_EXPLICAR_ARTICULO,
     GUIAS_INSTITUCIONALES, CATALOGO_LEYES,
+)
+
+# El prompt con contexto reusa la lista de TEMAS del clasificador estándar
+# para mantener una sola fuente de verdad de los temas disponibles.
+_TEMAS_BLOQUE = PROMPT_REFORMULAR_Y_CLASIFICAR.split("TEMAS DISPONIBLES:", 1)[-1]
+_PROMPT_REFORMULAR_CON_CTX_FULL = (
+    PROMPT_REFORMULAR_CON_CONTEXTO.replace(
+        "TEMAS DISPONIBLES (mismos que el clasificador estándar — ver lista en el otro prompt).",
+        "TEMAS DISPONIBLES:" + _TEMAS_BLOQUE,
+    )
 )
 
 
@@ -209,6 +220,84 @@ def reformular_y_clasificar(pregunta: str) -> tuple[str, str]:
     except Exception as e:
         logger.warning(f"  Error en reformular_y_clasificar: {e}")
         return (pregunta, "ninguno")
+
+
+def _resumir_historial_para_rewriter(historial: list[dict], max_turnos: int = 3) -> str:
+    """Comprime los últimos N turnos en texto plano para el rewriter.
+    Trunca cada mensaje a 280 chars para no inflar el prompt."""
+    if not historial:
+        return ""
+    ultimos = historial[-(max_turnos * 2):]  # max_turnos pares user/assistant
+    lineas = []
+    for msg in ultimos:
+        rol = "USUARIO" if msg.get("role") == "user" else "BOT"
+        contenido = (msg.get("content") or "").strip().replace("\n", " ")
+        if len(contenido) > 280:
+            contenido = contenido[:277] + "..."
+        if contenido:
+            lineas.append(f"{rol}: {contenido}")
+    return "\n".join(lineas)
+
+
+def reformular_con_contexto(pregunta: str, historial: list[dict] | None = None
+                            ) -> tuple[str, str, str]:
+    """Rewriter consciente del historial para usuarios con memoria activa.
+
+    Produce una query AUTO-CONTENIDA resolviendo referencias deícticas
+    (ej: '¿y si insiste?' → 'qué hacer si funcionario insiste en revisar
+    teléfono después de negarse en alcabala').
+
+    Coste: 1 llamada LLM (igual que reformular_y_clasificar).
+    Si no hay historial, hace fallback al rewriter estándar.
+
+    Retorna: (query_reformulada, tema_clasificado, escenario)
+    """
+    historial_txt = _resumir_historial_para_rewriter(historial or [])
+    if not historial_txt:
+        # Sin historial → mismo coste y comportamiento que el rewriter estándar
+        q, t = reformular_y_clasificar(pregunta)
+        return (q, t, "")
+
+    user_msg = f"HISTORIAL:\n{historial_txt}\n\nPREGUNTA ACTUAL:\n{pregunta}"
+    try:
+        r = groq_client.chat.completions.create(
+            model=config.LLM_MODEL,
+            messages=[
+                {"role": "system", "content": _PROMPT_REFORMULAR_CON_CTX_FULL},
+                {"role": "user",   "content": user_msg},
+            ],
+            max_tokens=180,
+            temperature=0.0,
+        )
+        texto = r.choices[0].message.content.strip()
+
+        escenario = ""
+        tema = "ninguno"
+        query = pregunta
+        for linea in texto.split("\n"):
+            linea = linea.strip()
+            up = linea.upper()
+            if up.startswith("ESCENARIO:"):
+                escenario = linea.split(":", 1)[1].strip().lower()
+            elif up.startswith("TEMA:"):
+                tema = linea.split(":", 1)[1].strip().lower()
+            elif up.startswith("QUERY:"):
+                query = linea.split(":", 1)[1].strip()
+
+        if tema not in ARTICULOS_CLAVE and tema != "ninguno":
+            logger.info(f"  Rewriter-ctx: tema '{tema}' no reconocido, descartando")
+            tema = "ninguno"
+
+        if escenario in ("ninguno", "n/a", ""):
+            escenario = ""
+
+        logger.info(f"  Rewriter-ctx: tema={tema} | escenario={escenario[:60]!r} | query={query[:80]!r}")
+        return (query or pregunta, tema, escenario)
+
+    except Exception as e:
+        logger.warning(f"  Error en reformular_con_contexto: {e} — fallback a rewriter estándar")
+        q, t = reformular_y_clasificar(pregunta)
+        return (q, t, "")
 
 
 def _reformular_juridico_profundo(pregunta: str) -> str | None:
@@ -495,11 +584,19 @@ def explicar_articulo(texto_articulo: str, ley: str, num: int) -> str:
 # (SCORE_DIRECTO) están en whitelist y no se cuestionan.
 
 _PROMPT_VERIFICADOR_SYSTEM = (
-    "Eres un verificador de relevancia legal. Recibes una pregunta y una lista "
-    "numerada de artículos candidatos. Tu única tarea: devolver los números de "
-    "los artículos que RESPONDEN o son ÚTILES para la pregunta. Descarta los "
-    "que tratan un tema completamente distinto. Sé moderado: si un artículo "
-    "aporta contexto legal aunque no responda al 100%, mantenlo. "
+    "Eres un verificador de relevancia legal. Recibes una pregunta (y opcionalmente "
+    "un ESCENARIO situacional consolidado de la conversación) y una lista numerada "
+    "de artículos candidatos. Tu única tarea: devolver los números de los artículos "
+    "que RESPONDEN o son ÚTILES para la pregunta en ese escenario. "
+    "Descarta los que tratan un tema completamente distinto. Sé moderado: si un "
+    "artículo aporta contexto legal aunque no responda al 100%, mantenlo. "
+    "REGLA DURA DE ANCLAJE CONSTITUCIONAL: cuando la pregunta es sobre revisión, "
+    "interceptación, lectura o inspección de teléfonos, celulares, mensajes, "
+    "chats, correos o llamadas, el ancla constitucional correcta es el Art. 48 "
+    "CRBV (inviolabilidad de las comunicaciones privadas), NO el Art. 47 "
+    "(inviolabilidad del hogar doméstico/recinto privado — la casa). En estos "
+    "casos descarta el Art. 47 CRBV salvo que la pregunta también involucre "
+    "allanamiento de vivienda. "
     "Responde SOLO con números separados por comas (ej: '1, 3, 5') o 'ninguno'. "
     "NO expliques, NO uses oraciones, NO uses markdown."
 )
@@ -508,11 +605,15 @@ _PROMPT_VERIFICADOR_SYSTEM = (
 def verificar_relevancia_articulos(
     pregunta: str,
     articulos: list[dict],
+    escenario: str = "",
 ) -> tuple[list[dict], list[dict]]:
     """Filtra artículos retrievados por similaridad fuzzy que no aplican a la pregunta.
 
     Whitelist: artículos con score_final >= SCORE_ARTICULO_CLAVE (0.95) NO se evalúan
     porque vienen de keyword match curado o lookup directo.
+
+    Si se provee `escenario` (consolidado por el rewriter conversacional), se inyecta
+    en el prompt del verificador para mejor discriminación en seguimientos.
 
     Conservador ante fallos: si la API falla, parsing falla, o el verificador
     descarta TODO sin haber whitelist, retorna la lista original (no romper la query).
@@ -541,7 +642,9 @@ def verificar_relevancia_articulos(
         items.append(f"[{i}] {art['ley']}, Art. {art['articulo']}: {snippet}")
     items_str = "\n".join(items)
 
+    bloque_escenario = f"ESCENARIO: {escenario}\n\n" if escenario else ""
     prompt_user = (
+        f"{bloque_escenario}"
         f"PREGUNTA DEL USUARIO: «{pregunta}»\n\n"
         f"ARTÍCULOS CANDIDATOS:\n{items_str}\n\n"
         f"Responde SOLO con los números relevantes separados por comas, o 'ninguno'."
@@ -746,7 +849,7 @@ from scoring import (
 
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
-def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], float]:
+def buscar_articulos_nuevos(pregunta: str, escenario: str = "") -> tuple[list[dict], str, list[str], float]:
     """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados, mejor_distancia)."""
 
     pregunta_juridica, tema_llm = reformular_y_clasificar(pregunta)
@@ -910,7 +1013,7 @@ def buscar_articulos_nuevos(pregunta: str) -> tuple[list[dict], str, list[str], 
     # Whitelist: keyword matches curados nunca se descartan.
     if relevantes_finales and len(relevantes_finales) > 1:
         relevantes_finales, _descartados_verif = verificar_relevancia_articulos(
-            pregunta, relevantes_finales
+            pregunta, relevantes_finales, escenario=escenario
         )
 
     # ── FALLBACK: safety net si el scoring dejó vacío (no debería ocurrir) ──
@@ -1160,11 +1263,12 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        "⚠️ Consulta con un abogado.",
                        "temas": [], "confianza": "ninguna"}
 
-    def _buscar_con_retry(query_inicial: str) -> tuple[list, str, list, float]:
+    def _buscar_con_retry(query_inicial: str, escenario: str = "") -> tuple[list, str, list, float]:
         """Busca artículos con 3 niveles agénticos:
         - Nivel 1: búsqueda normal (BM25 + embeddings + keywords)
         - Nivel 2: reformulación profunda (si Nivel 1 falla)
         - Nivel 3: descomposición de consulta (si la query tiene múltiples facetas)
+        El escenario (si se provee) se pasa al verificador post-retrieval.
         """
         # ── Nivel 3: descomposición de consulta compleja ──────────────
         sub_queries = _descomponer_consulta(query_inicial)
@@ -1176,7 +1280,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             ids_vistos = set()
 
             for sq in sub_queries:
-                arts_sq, _, temas_sq, dist_sq = buscar_articulos_nuevos(sq)
+                arts_sq, _, temas_sq, dist_sq = buscar_articulos_nuevos(sq, escenario=escenario)
                 todos_temas.extend(temas_sq)
                 mejor_dist_global = min(mejor_dist_global, dist_sq)
                 for a in arts_sq:
@@ -1200,7 +1304,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 return finales, contexto, temas_unicos, mejor_dist_global
 
         # ── Nivel 1: búsqueda normal ─────────────────────────────────
-        arts, ctx, temas, dist = buscar_articulos_nuevos(query_inicial)
+        arts, ctx, temas, dist = buscar_articulos_nuevos(query_inicial, escenario=escenario)
         if arts:
             return arts, ctx, temas, dist
 
@@ -1208,20 +1312,38 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         query_profunda = _reformular_juridico_profundo(query_inicial)
         if query_profunda:
             logger.info(f"  🔄 Nivel 2 activado — reintentando con query profunda")
-            arts2, ctx2, temas2, dist2 = buscar_articulos_nuevos(query_profunda)
+            arts2, ctx2, temas2, dist2 = buscar_articulos_nuevos(query_profunda, escenario=escenario)
             if arts2:
                 return arts2, ctx2, temas2, dist2
             logger.info(f"  ✗ Nivel 2 también falló — no hay ley indexada para este tema")
 
         return [], "", temas, dist
 
+    # Si hay historial (usuario con memoria activa) Y es seguimiento, usar el
+    # rewriter consciente del contexto para producir una query auto-contenida.
+    # Esto reemplaza el hack _enriquecer_query (que solo concatenaba la última
+    # pregunta) por una reformulación real que resuelve referencias deícticas.
+    pregunta_para_buscar = pregunta
+    escenario_consolidado = ""
+    if es_follow_up and historial:
+        logger.info(f"  → Seguimiento con memoria — rewriter consciente del contexto")
+        try:
+            query_ctx, _tema_ctx, escenario_ctx = reformular_con_contexto(pregunta, historial)
+            if query_ctx and len(query_ctx) >= 5:
+                pregunta_para_buscar = query_ctx
+                if escenario_ctx:
+                    escenario_consolidado = escenario_ctx
+                    logger.info(f"  Escenario consolidado: {escenario_ctx[:80]}")
+        except Exception as e:
+            logger.warning(f"  Rewriter-ctx falló, fallback a _enriquecer_query: {e}")
+            pregunta_para_buscar = _enriquecer_query(pregunta)
+
     if seguimiento_premium:
-        logger.info(f"  → Seguimiento premium — búsqueda fresca con query enriquecida")
-        pregunta_enriquecida = _enriquecer_query(pregunta)
-        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_enriquecida)
+        logger.info(f"  → Seguimiento premium — búsqueda fresca")
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_para_buscar, escenario_consolidado)
 
         if not relevantes:
-            # Fallback: si la query enriquecida no encuentra nada, usar el contexto previo guardado
+            # Fallback: si la query reformulada no encuentra nada, usar el contexto previo guardado
             contexto_previo = db.cargar_contexto(user_id)
             if contexto_previo:
                 logger.info(f"  → Sin resultados nuevos — usando contexto previo como fallback")
@@ -1230,10 +1352,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 return _SIN_RESULTADOS
 
     elif es_follow_up:
-        # Todos los usuarios: enriquecer la query con la pregunta anterior del historial
-        logger.info(f"  → Seguimiento detectado — enriqueciendo query con historial")
-        pregunta_enriquecida = _enriquecer_query(pregunta)
-        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_enriquecida)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_para_buscar, escenario_consolidado)
         if not relevantes:
             return _SIN_RESULTADOS
 

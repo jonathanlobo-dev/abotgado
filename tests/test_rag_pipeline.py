@@ -385,3 +385,154 @@ class TestKeywordsCortosConDerivacion:
 
     def test_arma_match_en_armas(self):
         assert _match("arma", "porte de armas")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# REWRITER CON CONTEXTO (memoria conversacional Pionero/Premium)
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestReformularConContexto:
+    """El rewriter consciente del historial debe resolver referencias
+    deícticas ('y si insiste?') usando el escenario de los turnos previos."""
+
+    def test_sin_historial_es_idempotente(self, monkeypatch):
+        """Sin historial, debe delegar al rewriter estándar (1 sola call)."""
+        import busqueda
+        calls = {"n": 0}
+        def fake_clas(p):
+            calls["n"] += 1
+            return ("derechos alcabala revision telefono", "comunicaciones")
+        monkeypatch.setattr(busqueda, "reformular_y_clasificar", fake_clas)
+
+        q, t, esc = busqueda.reformular_con_contexto(
+            "me pueden revisar el celular en una alcabala?", historial=None
+        )
+        assert calls["n"] == 1
+        assert t == "comunicaciones"
+        assert esc == ""
+
+    def test_resumir_historial_trunca_y_etiqueta(self):
+        from busqueda import _resumir_historial_para_rewriter
+        hist = [
+            {"role": "user", "content": "me pueden revisar el celular en una alcabala?"},
+            {"role": "assistant", "content": "x" * 500},
+            {"role": "user", "content": "y si insiste?"},
+        ]
+        out = _resumir_historial_para_rewriter(hist, max_turnos=2)
+        assert "USUARIO:" in out
+        assert "BOT:" in out
+        # Truncamiento a 280 chars + "..."
+        assert "..." in out
+        # Mensaje más reciente debe estar
+        assert "y si insiste" in out
+
+    def test_resumir_historial_vacio(self):
+        from busqueda import _resumir_historial_para_rewriter
+        assert _resumir_historial_para_rewriter([]) == ""
+        assert _resumir_historial_para_rewriter(None or []) == ""
+
+    def test_con_historial_llama_llm_con_contexto(self, monkeypatch):
+        """Con historial real, debe pasar el bloque HISTORIAL+PREGUNTA al LLM."""
+        import busqueda
+        captured = {}
+
+        class FakeMsg:
+            content = "ESCENARIO: control vehicular alcabala revision telefono\nTEMA: comunicaciones\nQUERY: inviolabilidad comunicaciones privadas alcabala revision telefono orden judicial"
+        class FakeChoice:
+            message = FakeMsg()
+        class FakeResp:
+            choices = [FakeChoice()]
+
+        class FakeChat:
+            class completions:
+                @staticmethod
+                def create(**kwargs):
+                    captured["messages"] = kwargs["messages"]
+                    return FakeResp()
+
+        class FakeClient:
+            chat = FakeChat()
+
+        monkeypatch.setattr(busqueda, "groq_client", FakeClient())
+
+        hist = [
+            {"role": "user", "content": "me pueden revisar el celular en una alcabala?"},
+            {"role": "assistant", "content": "En una alcabala la autoridad solo puede revisar el contenido del telefono con orden judicial..."},
+        ]
+        q, t, esc = busqueda.reformular_con_contexto("y si insiste?", historial=hist)
+
+        # El user message enviado al LLM debe contener el historial Y la pregunta actual
+        user_msg = captured["messages"][-1]["content"]
+        assert "HISTORIAL:" in user_msg
+        assert "alcabala" in user_msg.lower()
+        assert "y si insiste" in user_msg
+
+        # Salida parseada
+        assert t == "comunicaciones"
+        assert "alcabala" in esc
+        assert "alcabala" in q.lower() or "telefono" in q.lower()
+
+
+class TestAnclajeConstitucionalAlcabala:
+    """Regresión del bug: para 'revisar celular en alcabala' el anclaje
+    correcto es CRBV Art. 48 (comunicaciones), NO Art. 47 (hogar doméstico)."""
+
+    def test_tema_comunicaciones_no_incluye_art_47(self):
+        """Art. 47 (hogar) ya NO debe estar en el tema 'comunicaciones'."""
+        from busqueda import ARTICULOS_CLAVE
+        arts = ARTICULOS_CLAVE["comunicaciones"]["articulos"]
+        assert 47 not in arts, f"Art. 47 (hogar) no debe anclar 'comunicaciones', actual: {arts}"
+        assert 48 in arts, "Art. 48 (comunicaciones privadas) debe ser el ancla principal"
+
+    def test_keyword_revisar_celular_dispara_comunicaciones(self):
+        """La keyword 'revisar el celular' debe disparar el tema comunicaciones."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("me pueden revisar el celular en una alcabala?")
+        assert "comunicaciones" in temas
+
+    def test_verificador_acepta_escenario(self, monkeypatch):
+        """El verificador debe aceptar escenario opcional sin romper firma vieja."""
+        import busqueda
+        # Llamada sin escenario sigue funcionando
+        out_a, _ = busqueda.verificar_relevancia_articulos("test", [{"ley":"X","articulo":1,"texto":"y","fuente":"curado"}])
+        assert len(out_a) == 1
+        # Llamada con escenario también funciona
+        out_b, _ = busqueda.verificar_relevancia_articulos(
+            "test", [{"ley":"X","articulo":1,"texto":"y","fuente":"curado"}],
+            escenario="control vehicular alcabala"
+        )
+        assert len(out_b) == 1
+
+    def test_verificador_inyecta_escenario_en_prompt(self, monkeypatch):
+        """Si hay escenario, debe aparecer en el prompt user enviado al LLM."""
+        import busqueda, config
+        monkeypatch.setattr(config, "VERIFICADOR_HABILITADO", True)
+
+        captured = {}
+        class FakeMsg: content = "1"
+        class FakeChoice: message = FakeMsg()
+        class FakeResp: choices = [FakeChoice()]
+        class FakeChat:
+            class completions:
+                @staticmethod
+                def create(**kwargs):
+                    captured["messages"] = kwargs["messages"]
+                    return FakeResp()
+        class FakeClient: chat = FakeChat()
+        monkeypatch.setattr(busqueda, "groq_client", FakeClient())
+
+        arts = [
+            {"ley": "CRBV", "articulo": 47, "texto": "Hogar inviolable...", "fuente": "embedding"},
+            {"ley": "CRBV", "articulo": 48, "texto": "Comunicaciones inviolables...", "fuente": "embedding"},
+        ]
+        busqueda.verificar_relevancia_articulos(
+            "y si insiste?", arts,
+            escenario="control vehicular alcabala revision telefono"
+        )
+        user_msg = captured["messages"][-1]["content"]
+        assert "ESCENARIO:" in user_msg
+        assert "alcabala" in user_msg
+        # El prompt system debe ahora contener la regla dura sobre Art. 47/48
+        sys_msg = captured["messages"][0]["content"]
+        assert "Art. 48" in sys_msg
+        assert "Art. 47" in sys_msg

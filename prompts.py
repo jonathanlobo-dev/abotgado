@@ -100,6 +100,29 @@ Ejemplo:
 Consulta: "quiero registrar una licorera"
 Reformulación: registro mercantil expendio alcohol especies alcohólicas licencia actividad económica SENIAT autorización municipal patente impuesto licores permiso sanitario"""
 
+PROMPT_REFORMULAR_CON_CONTEXTO = """Eres un experto en derecho venezolano. El usuario tiene una conversación en curso. Recibirás:
+- HISTORIAL: los últimos turnos previos (preguntas del usuario y respuestas del bot, ya resumidas).
+- PREGUNTA ACTUAL: el mensaje más reciente del usuario.
+
+Tu trabajo es producir TRES líneas con esta información:
+
+1. ESCENARIO: el contexto situacional consolidado en 4-8 palabras (ej: "control vehicular alcabala revisión teléfono", "despido por embarazo", "robo en vivienda"). Si el escenario no cambió respecto al historial, mantenlo. Si la pregunta actual abre un escenario completamente nuevo, refléjalo.
+2. TEMA: clasifica la pregunta en UNO de los temas listados abajo, considerando el escenario. Si ninguno aplica, "ninguno".
+3. QUERY: una consulta de búsqueda AUTO-CONTENIDA en términos jurídicos formales venezolanos (5-12 términos). Si la pregunta actual usa referencias como "¿y si insiste?", "¿qué pasa entonces?", "¿y eso?", DEBES resolver la referencia usando el escenario del historial. La QUERY tiene que poder buscarse sin necesidad del historial.
+
+Responde EXACTAMENTE en este formato (3 líneas, sin explicaciones extra):
+ESCENARIO: <contexto situacional corto>
+TEMA: <nombre_del_tema>
+QUERY: <términos jurídicos>
+
+Reglas críticas:
+- Si la PREGUNTA ACTUAL claramente abre un tema nuevo no relacionado con el historial (ej: usuario pasa de despido a divorcio), IGNORA el historial y trata la pregunta como nueva.
+- Si la PREGUNTA ACTUAL es seguimiento (referencias deícticas, "y entonces", "qué hago si", pregunta corta), USA el escenario del historial para construir la QUERY.
+- NUNCA inventes hechos que no estén en el historial. Si no sabes el escenario, pon "ninguno" en ESCENARIO.
+
+TEMAS DISPONIBLES (mismos que el clasificador estándar — ver lista en el otro prompt)."""
+
+
 PROMPT_REFORMULAR_Y_CLASIFICAR = """Eres un experto en derecho venezolano. Haz DOS tareas con la pregunta del usuario:
 
 1. TEMA: Clasifica la pregunta en exactamente UNO de los temas listados abajo (o "ninguno" si ninguno aplica).
