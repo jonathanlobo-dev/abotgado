@@ -87,11 +87,34 @@ def main():
         indexador = import_module("1_procesar_leyes")
         indexador.main()
 
-        # Guardar fingerprint de PDFs para próxima vez
+        # ── VALIDACIÓN POST-INDEXADO ──────────────────────────────────────────
+        # Evita que el bot arranque con DB corrupta si el indexado fue
+        # interrumpido (OOM/timeout en Railway → ChromaDB queda con menos
+        # artículos de lo esperado y el bug es silencioso).
+        UMBRAL_MIN_ARTICULOS = 14000  # actual: ~15.018; margen de seguridad
+        try:
+            import chromadb
+            _chroma = chromadb.PersistentClient(path=str(config.DB_PATH))
+            _col = _chroma.get_collection("leyes_venezolanas")
+            n_arts = _col.count()
+        except Exception as e:
+            print(f"\n[X] No se pudo verificar ChromaDB tras indexar: {e}")
+            print("    Abortando arranque para evitar bot con DB corrupta.")
+            sys.exit(1)
+
+        if n_arts < UMBRAL_MIN_ARTICULOS:
+            print(f"\n[X] INDEXACIÓN INCOMPLETA: solo {n_arts} artículos "
+                  f"(esperado >= {UMBRAL_MIN_ARTICULOS}).")
+            print("    Probable causa: el contenedor fue matado a mitad (OOM/timeout).")
+            print("    NO se guarda el fingerprint — el próximo deploy reintentará.")
+            print("    Revisa los logs de memoria/tiempo y considera subir el plan de Railway.")
+            sys.exit(1)
+
+        # Solo guardar fingerprint si la indexación llegó al umbral mínimo.
         with open(pdf_hash_file, "w") as f:
             f.write(pdf_fingerprint)
 
-        print("\n[OK] Indexación completada.\n")
+        print(f"\n[OK] Indexación completada — {n_arts} artículos en ChromaDB.\n")
     else:
         print(f"\n[OK] ChromaDB encontrada en {config.DB_PATH} ({pdfs_actuales} PDFs)")
 
