@@ -1017,12 +1017,25 @@ from scoring import (
 
 # ─── PIPELINE PRINCIPAL ─────────────────────────────────────────────────────
 
-def buscar_articulos_nuevos(pregunta: str, escenario: str = "") -> tuple[list[dict], str, list[str], float]:
-    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados, mejor_distancia)."""
+def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
+                            pregunta_original: str = None
+                            ) -> tuple[list[dict], str, list[str], float]:
+    """Pipeline de búsqueda híbrida. Retorna (artículos_finales, contexto_formateado, temas_detectados, mejor_distancia).
+
+    `pregunta` puede venir reformulada (jurídica formal) por el router LLM.
+    `pregunta_original` (si se provee) es el texto exacto del usuario y se usa
+    para keyword matching contra ARTICULOS_CLAVE — las keywords están en
+    lenguaje coloquial ("revisar el teléfono") y NO matchean contra
+    reformulaciones jurídicas formales. CRÍTICO para no perder los curados.
+    """
 
     pregunta_juridica, tema_llm = reformular_y_clasificar(pregunta)
-    logger.info(f"  Original:    {pregunta}")
+    logger.info(f"  Original:    {pregunta_original or pregunta}")
     logger.info(f"  Reformulada: {pregunta_juridica}")
+
+    # Para keyword match curado y búsqueda directa, preferir el texto coloquial
+    # del usuario; las keywords están escritas para ese registro.
+    pregunta_para_keywords = pregunta_original or pregunta
 
     ids_vistos = set()
     relevantes = []
@@ -1037,7 +1050,7 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "") -> tuple[list[di
                 ids_vistos.add(clave)
 
     # 0. Búsqueda directa por artículo (si pide uno específico)
-    directos = buscar_articulo_directo(pregunta)
+    directos = buscar_articulo_directo(pregunta_para_keywords)
     if directos:
         for d in directos:
             d["relevance_score"] = SCORE_DIRECTO
@@ -1046,7 +1059,7 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "") -> tuple[list[di
         logger.info(f"  Búsqueda directa: {len(directos)} artículos")
 
     # 1. Artículos Clave (más precisos — keywords)
-    arts_clave, temas_detectados = buscar_articulos_clave(pregunta)
+    arts_clave, temas_detectados = buscar_articulos_clave(pregunta_para_keywords)
     for a in arts_clave:
         a["relevance_score"] = SCORE_ARTICULO_CLAVE
         a["fuente"] = "curado"
@@ -1447,7 +1460,8 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        "temas": [], "confianza": "ninguna"}
 
     def _buscar_con_retry(query_inicial: str, escenario: str = "",
-                          sub_queries_pre: list[str] | None = None
+                          sub_queries_pre: list[str] | None = None,
+                          pregunta_original: str | None = None
                           ) -> tuple[list, str, list, float]:
         """Busca artículos con 3 niveles agénticos:
         - Nivel 1: búsqueda normal (BM25 + embeddings + keywords)
@@ -1456,6 +1470,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         El escenario (si se provee) se pasa al verificador post-retrieval.
         Si sub_queries_pre es provisto (por el router), se usa directamente y
         se evita la llamada extra a _descomponer_consulta.
+        pregunta_original: texto coloquial del usuario para keyword match curado.
         """
         # ── Nivel 3: descomposición de consulta compleja ──────────────
         # Prioridad: las sub_queries del router (si las dio) > _descomponer_consulta
@@ -1472,7 +1487,9 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             ids_vistos = set()
 
             for sq in sub_queries:
-                arts_sq, _, temas_sq, dist_sq = buscar_articulos_nuevos(sq, escenario=escenario)
+                arts_sq, _, temas_sq, dist_sq = buscar_articulos_nuevos(
+                    sq, escenario=escenario, pregunta_original=pregunta_original
+                )
                 todos_temas.extend(temas_sq)
                 mejor_dist_global = min(mejor_dist_global, dist_sq)
                 for a in arts_sq:
@@ -1496,7 +1513,9 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 return finales, contexto, temas_unicos, mejor_dist_global
 
         # ── Nivel 1: búsqueda normal ─────────────────────────────────
-        arts, ctx, temas, dist = buscar_articulos_nuevos(query_inicial, escenario=escenario)
+        arts, ctx, temas, dist = buscar_articulos_nuevos(
+            query_inicial, escenario=escenario, pregunta_original=pregunta_original
+        )
         if arts:
             return arts, ctx, temas, dist
 
@@ -1504,7 +1523,9 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         query_profunda = _reformular_juridico_profundo(query_inicial)
         if query_profunda:
             logger.info(f"  🔄 Nivel 2 activado — reintentando con query profunda")
-            arts2, ctx2, temas2, dist2 = buscar_articulos_nuevos(query_profunda, escenario=escenario)
+            arts2, ctx2, temas2, dist2 = buscar_articulos_nuevos(
+                query_profunda, escenario=escenario, pregunta_original=pregunta_original
+            )
             if arts2:
                 return arts2, ctx2, temas2, dist2
             logger.info(f"  ✗ Nivel 2 también falló — no hay ley indexada para este tema")
@@ -1537,7 +1558,8 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
     if seguimiento_premium:
         logger.info(f"  → Seguimiento premium — búsqueda fresca con query del router")
         relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
-            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router,
+            pregunta_original=pregunta,
         )
 
         if not relevantes:
@@ -1551,14 +1573,16 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
     elif es_follow_up:
         relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
-            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router,
+            pregunta_original=pregunta,
         )
         if not relevantes:
             return _SIN_RESULTADOS
 
     else:
         relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
-            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router,
+            pregunta_original=pregunta,
         )
         if not relevantes:
             return _SIN_RESULTADOS

@@ -4940,6 +4940,73 @@
       112
     ]
   },
+  "aguas_dominio_publico": {
+    "keywords": [
+      "pozo de agua",
+      "pozo",
+      "dique",
+      "manantial",
+      "rio",
+      "río",
+      "laguna",
+      "embalse",
+      "acueducto",
+      "concesion de agua",
+      "concesión de agua",
+      "uso del agua",
+      "aprovechamiento de agua",
+      "adueñarse del agua",
+      "adueñarme del agua",
+      "propiedad del agua",
+      "agua subterranea",
+      "agua subterránea",
+      "agua potable",
+      "saneamiento",
+      "minaguas",
+      "dominio publico",
+      "dominio público",
+      "bienes de la nacion",
+      "bienes de la nación",
+      "perforar pozo",
+      "perforacion",
+      "perforación",
+      "captacion de agua",
+      "captación de agua"
+    ],
+    "ley": "Constitución de la República Bolivariana de Venezuela",
+    "articulos": [
+      127,
+      304
+    ]
+  },
+  "aguas_ley_especial": {
+    "keywords": [
+      "ley de aguas",
+      "concesion de aguas",
+      "concesión de aguas",
+      "uso de las aguas",
+      "aguas residuales",
+      "vertimiento",
+      "cuenca hidrografica",
+      "cuenca hidrográfica",
+      "permiso de agua",
+      "permiso de aguas",
+      "instancia del agua",
+      "autoridad del agua"
+    ],
+    "ley": "Ley de Aguas",
+    "articulos": [
+      1,
+      4,
+      6,
+      7,
+      8,
+      14,
+      48,
+      72,
+      80
+    ]
+  },
   "demanda_civil_general": {
     "keywords": [
       "quiero demandar",

@@ -777,3 +777,34 @@ class TestRouterLLM:
         out = busqueda.router_llm("hola")
         assert out["_fuente"] == "fallback_keywords"
         assert out["tipo"] == "saludo"
+
+
+class TestKeywordMatchUsaPreguntaOriginal:
+    """Bug reportado: el router LLM reformula la pregunta a términos jurídicos
+    formales ('inviolabilidad comunicaciones privadas') y eso ROMPE el keyword
+    match curado, cuyas keywords están en lenguaje coloquial ('revisar el
+    teléfono'). Fix: pasar la pregunta ORIGINAL del usuario a
+    buscar_articulos_clave, no la reformulada."""
+
+    def test_query_coloquial_dispara_tema_comunicaciones(self):
+        """La pregunta original del usuario SÍ matchea las keywords curadas."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("Me pueden revisar el teléfono en una alcabala?")
+        assert "comunicaciones" in temas
+        assert "alcabala_revision" in temas
+
+    def test_buscar_articulos_nuevos_acepta_pregunta_original(self):
+        """La firma de buscar_articulos_nuevos debe aceptar pregunta_original
+        como kwarg para que el keyword matcher reciba el texto coloquial."""
+        from busqueda import buscar_articulos_nuevos
+        import inspect
+        sig = inspect.signature(buscar_articulos_nuevos)
+        assert "pregunta_original" in sig.parameters
+
+    def test_aguas_dominio_publico_dispara_para_pozo(self):
+        """Tema curado nuevo: 'pozo de agua' debe disparar aguas_dominio_publico."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave(
+            "alguien puede adueñarse de un pozo de agua o un dique en Venezuela?"
+        )
+        assert "aguas_dominio_publico" in temas

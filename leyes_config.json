@@ -676,6 +676,32 @@
       ]
     },
     {
+      "id": "ley_aguas",
+      "nombre": "Ley de Aguas",
+      "rama": "ambiente",
+      "archivos_pdf": [
+        "Ley de Aguas.pdf"
+      ],
+      "aliases": [
+        "ley de aguas",
+        "ley aguas"
+      ]
+    },
+    {
+      "id": "ley_servicios_agua_saneamiento",
+      "nombre": "Ley Orgánica para la Prestación de los Servicios de Agua Potable y de Saneamiento",
+      "rama": "ambiente",
+      "archivos_pdf": [
+        "ley-organica-para-la-prestacion-de-los-servicios-de-agua-potable-y-de-saneamiento.pdf"
+      ],
+      "aliases": [
+        "ley de servicios de agua",
+        "ley agua potable",
+        "ley saneamiento",
+        "lopsaps"
+      ]
+    },
+    {
       "id": "ley_poder_publico_municipal",
       "nombre": "Ley Orgánica del Poder Público Municipal",
       "rama": "administrativo",
