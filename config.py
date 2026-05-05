@@ -51,6 +51,15 @@ LLM_MODEL       = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
 # Debe ser barato y rápido — solo decide "sí/no/lista de números", no genera texto largo.
 LLM_MODEL_FAST  = os.getenv("LLM_MODEL_FAST", "llama-3.1-8b-instant")
 
+# Modelo LLM para el router unificado de routing/clasificación.
+# Reemplaza 6 funciones hardcoded (es_consulta_no_legal, es_fuera_de_dominio,
+# _tiene_tema_legal, es_seguimiento, reformular_y_clasificar, _descomponer_consulta).
+# Salida: JSON estructurado. Necesita razonamiento + adherencia a JSON estricto.
+# Posición intermedia entre LLM_MODEL_FAST (8B, falla JSON) y LLM_MODEL (120B, overkill).
+LLM_MODEL_ROUTER = os.getenv("LLM_MODEL_ROUTER", "llama-3.3-70b-versatile")
+ROUTER_TIMEOUT_S = float(os.getenv("ROUTER_TIMEOUT_S", "4.0"))
+ROUTER_HABILITADO = os.getenv("ROUTER_HABILITADO", "1") == "1"
+
 # Verificador de relevancia post-retrieval: filtra artículos tangenciales antes
 # de pasarlos al LLM principal. Si False, se omite (útil para tests/debug).
 VERIFICADOR_HABILITADO = os.getenv("VERIFICADOR_HABILITADO", "1") == "1"

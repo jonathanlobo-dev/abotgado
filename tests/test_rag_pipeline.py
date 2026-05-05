@@ -621,3 +621,159 @@ class TestInyeccionDeterministicaSeccion:
             assert False, "no debió entrar"
         # Nada cambia
         assert "No tengo artículos" in respuesta
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ROUTER LLM UNIFICADO
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestRouterLLM:
+    """Router unificado que reemplaza 6 funciones hardcoded.
+    Soft-fail: si LLM falla, cae al fallback determinístico."""
+
+    def _mock_groq_router(self, monkeypatch, json_str: str):
+        """Helper: mockea groq_client para devolver json_str como respuesta."""
+        import busqueda
+        captured = {}
+        class FakeMsg: content = json_str
+        class FakeChoice: message = FakeMsg()
+        class FakeResp: choices = [FakeChoice()]
+        class FakeChat:
+            class completions:
+                @staticmethod
+                def create(**kwargs):
+                    captured["kwargs"] = kwargs
+                    return FakeResp()
+        class FakeClient: chat = FakeChat()
+        monkeypatch.setattr(busqueda, "groq_client", FakeClient())
+        return captured
+
+    def test_parser_json_directo(self):
+        from busqueda import _parsear_json_router
+        d = _parsear_json_router('{"tipo":"saludo","es_legal_venezolano":false}')
+        assert d == {"tipo": "saludo", "es_legal_venezolano": False}
+
+    def test_parser_json_con_markdown_fence(self):
+        from busqueda import _parsear_json_router
+        s = '```json\n{"tipo":"nueva"}\n```'
+        d = _parsear_json_router(s)
+        assert d == {"tipo": "nueva"}
+
+    def test_parser_json_con_texto_envolvente(self):
+        from busqueda import _parsear_json_router
+        s = 'Aquí está el JSON: {"tipo":"nueva","tema":"laboral_despido"} listo!'
+        d = _parsear_json_router(s)
+        assert d["tipo"] == "nueva"
+
+    def test_parser_json_invalido_retorna_none(self):
+        from busqueda import _parsear_json_router
+        assert _parsear_json_router("texto sin json") is None
+        assert _parsear_json_router("") is None
+        assert _parsear_json_router("{ malformed") is None
+
+    def test_validacion_tipo_invalido_retorna_none(self):
+        from busqueda import _validar_y_normalizar_router
+        d = {"tipo": "tipo_inexistente", "query": "x"}
+        assert _validar_y_normalizar_router(d, "x") is None
+
+    def test_validacion_tema_inventado_se_degrada(self):
+        from busqueda import _validar_y_normalizar_router
+        d = {"tipo": "nueva", "tema": "tema_que_no_existe", "query": "x"}
+        out = _validar_y_normalizar_router(d, "x")
+        assert out["tema"] == "ninguno"
+
+    def test_validacion_completa_ok(self):
+        from busqueda import _validar_y_normalizar_router
+        d = {
+            "tipo": "nueva",
+            "es_legal_venezolano": True,
+            "tema": "laboral_despido",
+            "escenario": "despido injustificado",
+            "query": "despido injustificado LOTTT",
+            "sub_queries": [],
+        }
+        out = _validar_y_normalizar_router(d, "me despidieron")
+        assert out["tipo"] == "nueva"
+        assert out["tema"] == "laboral_despido"
+        assert out["_fuente"] == "router_llm"
+
+    def test_router_soft_fail_a_fallback_cuando_llm_falla(self, monkeypatch):
+        """Si groq_client lanza, debe caer a _resultado_router_default."""
+        import busqueda
+        class FakeChat:
+            class completions:
+                @staticmethod
+                def create(**kwargs):
+                    raise RuntimeError("simulated groq down")
+        class FakeClient: chat = FakeChat()
+        monkeypatch.setattr(busqueda, "groq_client", FakeClient())
+
+        out = busqueda.router_llm("me despidieron sin causa")
+        assert out["_fuente"] == "fallback_keywords"
+        assert out["es_legal_venezolano"] is True
+
+    def test_router_soft_fail_cuando_json_malformado(self, monkeypatch):
+        """JSON inválido → fallback."""
+        self._mock_groq_router(monkeypatch, "esto no es json")
+        import busqueda
+        out = busqueda.router_llm("hola")
+        assert out["_fuente"] == "fallback_keywords"
+        assert out["tipo"] == "saludo"
+
+    def test_router_clasifica_saludo_correctamente(self, monkeypatch):
+        self._mock_groq_router(monkeypatch,
+            '{"tipo":"saludo","es_legal_venezolano":false,"tema":"ninguno",'
+            '"escenario":"ninguno","query":"hola","sub_queries":[]}')
+        import busqueda
+        out = busqueda.router_llm("hola buenos días")
+        assert out["tipo"] == "saludo"
+        assert out["_fuente"] == "router_llm"
+
+    def test_router_clasifica_pregunta_legal_inusual(self, monkeypatch):
+        """Pregunta legal sobre tema NO en lista (aguas/recursos naturales)
+        debe ser 'nueva' + es_legal_venezolano=True + tema='ninguno'.
+        Bug original: _tiene_tema_legal lo rechazaba como fuera de dominio."""
+        self._mock_groq_router(monkeypatch,
+            '{"tipo":"nueva","es_legal_venezolano":true,"tema":"ninguno",'
+            '"escenario":"propiedad pozos agua dominio público",'
+            '"query":"dominio público aguas concesión uso particular",'
+            '"sub_queries":[]}')
+        import busqueda
+        out = busqueda.router_llm(
+            "alguien puede adueñarse de un pozo de agua o un dique en Venezuela?"
+        )
+        assert out["tipo"] == "nueva"
+        assert out["es_legal_venezolano"] is True
+        assert out["tema"] == "ninguno"  # no hay tema curado pero igual es legal
+
+    def test_router_seguimiento_sin_historial_se_degrada(self, monkeypatch):
+        """LLM puede confundirse y devolver 'seguimiento' sin historial.
+        Coherencia: degradar a 'nueva'."""
+        self._mock_groq_router(monkeypatch,
+            '{"tipo":"seguimiento","es_legal_venezolano":true,"tema":"ninguno",'
+            '"escenario":"x","query":"y","sub_queries":[]}')
+        import busqueda
+        out = busqueda.router_llm("¿y si insiste?", historial=None)
+        assert out["tipo"] == "nueva"  # degradado
+
+    def test_router_sub_queries_se_propagan(self, monkeypatch):
+        self._mock_groq_router(monkeypatch,
+            '{"tipo":"nueva","es_legal_venezolano":true,"tema":"ninguno",'
+            '"escenario":"despido + arrendamiento",'
+            '"query":"despido y arrendamiento",'
+            '"sub_queries":["despido por embarazo LOTTT","devolución depósito arrendamiento"]}')
+        import busqueda
+        out = busqueda.router_llm(
+            "me despidieron embarazada y mi arrendador no me devuelve el depósito"
+        )
+        assert len(out["sub_queries"]) == 2
+        assert "despido" in out["sub_queries"][0].lower()
+
+    def test_router_deshabilitado_via_env(self, monkeypatch):
+        """Si ROUTER_HABILITADO=False, retorna fallback sin llamar al LLM."""
+        import busqueda, config
+        monkeypatch.setattr(config, "ROUTER_HABILITADO", False)
+        # No mockeamos groq_client — si lo llamara, fallaría en tests
+        out = busqueda.router_llm("hola")
+        assert out["_fuente"] == "fallback_keywords"
+        assert out["tipo"] == "saludo"

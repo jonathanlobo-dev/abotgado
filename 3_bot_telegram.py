@@ -1923,18 +1923,11 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return
 
-    # ── Filtro: preguntas fuera del área legal ───────────────────────────
-    # Solo aplicar si la pregunta es larga (>4 palabras) y no tiene tema legal
-    palabras = texto_limpio.split()
-    if len(palabras) >= 3 and not busqueda._tiene_tema_legal(texto_limpio):
-        await enviar_respuesta(
-            update.message,
-            "⚖️ Soy <b>aBOTgado</b>, asistente jurídico venezolano.\n\n"
-            "Solo puedo ayudarte con consultas legales: trabajo, vivienda, "
-            "familia, tránsito, penal, comercial, entre otros.\n\n"
-            "¿Tienes alguna duda legal? Escríbela y te oriento."
-        )
-        return
+    # ── Filtro pre-RAG removido: el router LLM dentro de buscar_y_responder
+    # decide si la pregunta es legal venezolana, fuera de dominio o saludo.
+    # Antes este lugar tenía un guardrail keyword-based (_tiene_tema_legal)
+    # que rechazaba consultas legales legítimas sin keyword reconocida (ej:
+    # "alguien puede adueñarse de un pozo de agua"). El router lo reemplaza.
 
     # ── Consulta jurídica normal ─────────────────────────────────────────
     logger.info(f"Consulta recibida del usuario ID: {user_id}")

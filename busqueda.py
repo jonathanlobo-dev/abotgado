@@ -81,7 +81,7 @@ del _leyes_cfg
 from prompts import (
     SYSTEM_PROMPT, PROMPT_REFORMULAR_Y_CLASIFICAR, PROMPT_REFORMULAR_CON_CONTEXTO,
     PROMPT_REFORMULAR_PROFUNDO,
-    PROMPT_DESCOMPONER_CONSULTA, PROMPT_EXPLICAR_ARTICULO,
+    PROMPT_DESCOMPONER_CONSULTA, PROMPT_EXPLICAR_ARTICULO, PROMPT_ROUTER,
     GUIAS_INSTITUCIONALES, CATALOGO_LEYES,
 )
 
@@ -93,6 +93,11 @@ _PROMPT_REFORMULAR_CON_CTX_FULL = (
         "TEMAS DISPONIBLES (mismos que el clasificador estándar — ver lista en el otro prompt).",
         "TEMAS DISPONIBLES:" + _TEMAS_BLOQUE,
     )
+)
+# El router también reusa la lista de TEMAS — fuente única de verdad.
+_PROMPT_ROUTER_FULL = PROMPT_ROUTER.replace(
+    "TEMAS DISPONIBLES (mismos que el clasificador estándar — ver lista en el otro prompt).",
+    "TEMAS DISPONIBLES:" + _TEMAS_BLOQUE,
 )
 
 
@@ -298,6 +303,176 @@ def reformular_con_contexto(pregunta: str, historial: list[dict] | None = None
         logger.warning(f"  Error en reformular_con_contexto: {e} — fallback a rewriter estándar")
         q, t = reformular_y_clasificar(pregunta)
         return (q, t, "")
+
+
+# ─── ROUTER UNIFICADO LLM ─────────────────────────────────────────────────────
+# Una sola call que reemplaza 6 funciones hardcoded. Salida JSON estructurada.
+# Soft-fail con fallback a las funciones viejas si falla parsing/timeout.
+
+import json as _json_router
+
+
+_ROUTER_TIPOS_VALIDOS = {"nueva", "seguimiento", "saludo", "fuera_dominio"}
+
+
+def _resultado_router_default(pregunta: str) -> dict:
+    """Fallback determinístico: usa las funciones viejas para reconstruir el
+    contrato del router cuando la llamada al LLM falla."""
+    if es_consulta_no_legal(pregunta):
+        return {
+            "tipo": "saludo",
+            "es_legal_venezolano": False,
+            "tema": "ninguno",
+            "escenario": "ninguno",
+            "query": pregunta,
+            "sub_queries": [],
+            "_fuente": "fallback_keywords",
+        }
+    if es_fuera_de_dominio(pregunta):
+        return {
+            "tipo": "fuera_dominio",
+            "es_legal_venezolano": False,
+            "tema": "ninguno",
+            "escenario": "ninguno",
+            "query": pregunta,
+            "sub_queries": [],
+            "_fuente": "fallback_keywords",
+        }
+    # Default a "nueva" + clasificador estándar
+    query, tema = reformular_y_clasificar(pregunta)
+    return {
+        "tipo": "nueva",
+        "es_legal_venezolano": True,
+        "tema": tema if tema in ARTICULOS_CLAVE else "ninguno",
+        "escenario": "",
+        "query": query,
+        "sub_queries": [],
+        "_fuente": "fallback_keywords",
+    }
+
+
+def _parsear_json_router(texto: str) -> dict | None:
+    """Parsea la salida JSON del router de forma robusta.
+    Acepta JSON puro o con markdown fence/texto envolvente. None si no parsea."""
+    if not texto:
+        return None
+    s = texto.strip()
+    # Quitar fence de markdown si vino: ```json ... ```
+    if s.startswith("```"):
+        s = re.sub(r"^```(?:json)?\s*", "", s)
+        s = re.sub(r"\s*```\s*$", "", s)
+    # Aislar el primer objeto JSON en el texto
+    inicio = s.find("{")
+    fin = s.rfind("}")
+    if inicio == -1 or fin == -1 or fin <= inicio:
+        return None
+    candidato = s[inicio : fin + 1]
+    try:
+        return _json_router.loads(candidato)
+    except Exception:
+        return None
+
+
+def _validar_y_normalizar_router(d: dict, pregunta_original: str) -> dict | None:
+    """Valida campos del router. Si faltan campos críticos o son inválidos,
+    retorna None (soft-fail). Si faltan campos opcionales, los rellena."""
+    if not isinstance(d, dict):
+        return None
+    tipo = str(d.get("tipo", "")).strip().lower()
+    if tipo not in _ROUTER_TIPOS_VALIDOS:
+        return None
+    tema = str(d.get("tema", "ninguno")).strip().lower()
+    if tema and tema not in ARTICULOS_CLAVE and tema != "ninguno":
+        # Tema inventado por el LLM → degradar a "ninguno", no fallar
+        logger.info(f"  Router: tema '{tema}' no reconocido, degradando a 'ninguno'")
+        tema = "ninguno"
+    es_legal = bool(d.get("es_legal_venezolano", tipo == "nueva" or tipo == "seguimiento"))
+    escenario = str(d.get("escenario", "") or "").strip()
+    if escenario.lower() in ("ninguno", "n/a"):
+        escenario = ""
+    query_raw = d.get("query", "") or ""
+    query = str(query_raw).strip() or pregunta_original
+    sub_queries_raw = d.get("sub_queries", []) or []
+    if not isinstance(sub_queries_raw, list):
+        sub_queries_raw = []
+    sub_queries = [str(x).strip() for x in sub_queries_raw if isinstance(x, (str, int, float)) and str(x).strip()]
+    sub_queries = [sq for sq in sub_queries if len(sq) >= 8][:5]  # cap 5
+    return {
+        "tipo": tipo,
+        "es_legal_venezolano": es_legal,
+        "tema": tema,
+        "escenario": escenario,
+        "query": query,
+        "sub_queries": sub_queries,
+        "_fuente": "router_llm",
+    }
+
+
+def router_llm(pregunta: str, historial: list[dict] | None = None) -> dict:
+    """Router unificado: 1 sola llamada LLM que decide tipo/tema/escenario/query/sub_queries.
+
+    Reemplaza la combinación de:
+      - es_consulta_no_legal (saludo)
+      - es_fuera_de_dominio (recetas, etc.)
+      - es_seguimiento (referencias deícticas)
+      - reformular_y_clasificar (query + tema)
+      - _descomponer_consulta (sub_queries)
+      - _tiene_tema_legal (es_legal_venezolano)
+
+    Soft-fail: si el router LLM falla (timeout, JSON inválido, validación),
+    cae al fallback determinístico con las funciones hardcoded viejas.
+
+    Si config.ROUTER_HABILITADO == False, retorna directamente el fallback.
+
+    Retorna dict con campos: tipo, es_legal_venezolano, tema, escenario,
+    query, sub_queries, _fuente ("router_llm" | "fallback_keywords").
+    """
+    if not config.ROUTER_HABILITADO:
+        return _resultado_router_default(pregunta)
+
+    historial_txt = _resumir_historial_para_rewriter(historial or [], max_turnos=3)
+    user_msg = (
+        f"HISTORIAL:\n{historial_txt}\n\n" if historial_txt else "HISTORIAL: (vacío)\n\n"
+    ) + f"PREGUNTA ACTUAL:\n{pregunta}"
+
+    try:
+        r = groq_client.chat.completions.create(
+            model=config.LLM_MODEL_ROUTER,
+            messages=[
+                {"role": "system", "content": _PROMPT_ROUTER_FULL},
+                {"role": "user",   "content": user_msg},
+            ],
+            max_tokens=400,
+            temperature=0.0,
+            timeout=config.ROUTER_TIMEOUT_S,
+            response_format={"type": "json_object"},
+        )
+        raw = r.choices[0].message.content
+    except Exception as e:
+        logger.warning(f"  Router LLM falló ({type(e).__name__}: {e}) — fallback a keywords")
+        return _resultado_router_default(pregunta)
+
+    parsed = _parsear_json_router(raw)
+    if parsed is None:
+        logger.warning(f"  Router: JSON no parseable: {(raw or '')[:150]!r} — fallback")
+        return _resultado_router_default(pregunta)
+
+    validado = _validar_y_normalizar_router(parsed, pregunta)
+    if validado is None:
+        logger.warning(f"  Router: validación falló: {parsed} — fallback")
+        return _resultado_router_default(pregunta)
+
+    # Coherencia: si historial vacío, NUNCA seguimiento (el LLM a veces lo confunde)
+    if validado["tipo"] == "seguimiento" and not historial_txt:
+        logger.info(f"  Router: degradando 'seguimiento' a 'nueva' (sin historial)")
+        validado["tipo"] = "nueva"
+
+    logger.info(
+        f"  🧭 Router: tipo={validado['tipo']} | legal={validado['es_legal_venezolano']} "
+        f"| tema={validado['tema']} | sub={len(validado['sub_queries'])} "
+        f"| escenario={validado['escenario'][:50]!r}"
+    )
+    return validado
 
 
 def _reformular_juridico_profundo(pregunta: str) -> str | None:
@@ -1217,9 +1392,16 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
     pregunta = sanitizar_input(pregunta)
 
-    # Si es un saludo o pregunta no legal, responder sin búsqueda RAG
-    if es_consulta_no_legal(pregunta):
-        logger.info(f"  → Consulta no legal, respondiendo sin RAG")
+    # ── ROUTER UNIFICADO ─────────────────────────────────────────────────────
+    # 1 sola llamada LLM que decide tipo (nueva/seguimiento/saludo/fuera_dominio),
+    # tema, escenario, query reformulada y sub_queries. Reemplaza 6 funciones
+    # hardcoded. Soft-fail a fallback determinístico si el router falla.
+    routing = router_llm(pregunta, historial)
+    tipo_routing = routing["tipo"]
+
+    # Saludo / small talk: respuesta breve sin RAG
+    if tipo_routing == "saludo":
+        logger.info(f"  → Router: saludo, respondiendo sin RAG")
         try:
             response = groq_client.chat.completions.create(
                 model=config.LLM_MODEL,
@@ -1238,14 +1420,14 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             return {"respuesta": "¡Hola! Soy aBOTgado, tu asistente jurídico. ¿En qué te puedo ayudar?",
                     "temas": [], "confianza": "n/a"}
 
-    # Temas claramente fuera de dominio (recetas, poemas, código, etc.)
-    if es_fuera_de_dominio(pregunta):
-        logger.info(f"  → Fuera de dominio, rechazo sin RAG")
+    # Fuera de dominio o pregunta no legal: rechazo amable
+    if tipo_routing == "fuera_dominio" or not routing.get("es_legal_venezolano", True):
+        logger.info(f"  → Router: fuera de dominio (legal_ve={routing.get('es_legal_venezolano')})")
         return {"respuesta": "Solo puedo ayudarte con consultas sobre leyes venezolanas. Escribe tu pregunta legal y te ayudo.",
                 "temas": [], "confianza": "n/a"}
 
     es_premium = user_id and db.es_premium(user_id)
-    es_follow_up = bool(historial and es_seguimiento(pregunta))
+    es_follow_up = bool(historial) and tipo_routing == "seguimiento"
     seguimiento_premium = es_premium and es_follow_up
     temas_detectados = []
     mejor_dist = 0.0  # default; se actualiza en buscar_articulos_nuevos
@@ -1264,15 +1446,24 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        "⚠️ Consulta con un abogado.",
                        "temas": [], "confianza": "ninguna"}
 
-    def _buscar_con_retry(query_inicial: str, escenario: str = "") -> tuple[list, str, list, float]:
+    def _buscar_con_retry(query_inicial: str, escenario: str = "",
+                          sub_queries_pre: list[str] | None = None
+                          ) -> tuple[list, str, list, float]:
         """Busca artículos con 3 niveles agénticos:
         - Nivel 1: búsqueda normal (BM25 + embeddings + keywords)
         - Nivel 2: reformulación profunda (si Nivel 1 falla)
         - Nivel 3: descomposición de consulta (si la query tiene múltiples facetas)
         El escenario (si se provee) se pasa al verificador post-retrieval.
+        Si sub_queries_pre es provisto (por el router), se usa directamente y
+        se evita la llamada extra a _descomponer_consulta.
         """
         # ── Nivel 3: descomposición de consulta compleja ──────────────
-        sub_queries = _descomponer_consulta(query_inicial)
+        # Prioridad: las sub_queries del router (si las dio) > _descomponer_consulta
+        if sub_queries_pre:
+            sub_queries = sub_queries_pre
+            logger.info(f"  🔀 Sub-queries del router ({len(sub_queries)}) — saltando _descomponer_consulta")
+        else:
+            sub_queries = _descomponer_consulta(query_inicial)
         if sub_queries:
             logger.info(f"  🔀 Nivel 3 activado — buscando {len(sub_queries)} sub-queries")
             todos_arts = []
@@ -1320,28 +1511,34 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
 
         return [], "", temas, dist
 
-    # Si hay historial (usuario con memoria activa) Y es seguimiento, usar el
-    # rewriter consciente del contexto para producir una query auto-contenida.
-    # Esto reemplaza el hack _enriquecer_query (que solo concatenaba la última
-    # pregunta) por una reformulación real que resuelve referencias deícticas.
-    pregunta_para_buscar = pregunta
-    escenario_consolidado = ""
-    if es_follow_up and historial:
-        logger.info(f"  → Seguimiento con memoria — rewriter consciente del contexto")
+    # ── Query reformulada por el router (auto-contenida si fue seguimiento)
+    # Cuando el router fue exitoso, su `query` ya resuelve referencias deícticas
+    # y no necesitamos reformular_con_contexto adicional. Si el router cayó al
+    # fallback determinístico Y es seguimiento, usar reformular_con_contexto
+    # como rescate (mantiene el comportamiento previo en caso de soft-fail).
+    pregunta_para_buscar = routing.get("query") or pregunta
+    escenario_consolidado = routing.get("escenario") or ""
+    sub_queries_router = routing.get("sub_queries") or []
+    fuente_routing = routing.get("_fuente", "router_llm")
+
+    if es_follow_up and historial and fuente_routing == "fallback_keywords":
+        # Router falló y es seguimiento — usar el rewriter de contexto antiguo
+        logger.info(f"  → Router cayó al fallback en seguimiento — usando reformular_con_contexto")
         try:
             query_ctx, _tema_ctx, escenario_ctx = reformular_con_contexto(pregunta, historial)
             if query_ctx and len(query_ctx) >= 5:
                 pregunta_para_buscar = query_ctx
                 if escenario_ctx:
                     escenario_consolidado = escenario_ctx
-                    logger.info(f"  Escenario consolidado: {escenario_ctx[:80]}")
         except Exception as e:
-            logger.warning(f"  Rewriter-ctx falló, fallback a _enriquecer_query: {e}")
+            logger.warning(f"  reformular_con_contexto también falló: {e} — usando _enriquecer_query")
             pregunta_para_buscar = _enriquecer_query(pregunta)
 
     if seguimiento_premium:
-        logger.info(f"  → Seguimiento premium — búsqueda fresca")
-        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_para_buscar, escenario_consolidado)
+        logger.info(f"  → Seguimiento premium — búsqueda fresca con query del router")
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+        )
 
         if not relevantes:
             # Fallback: si la query reformulada no encuentra nada, usar el contexto previo guardado
@@ -1353,12 +1550,16 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 return _SIN_RESULTADOS
 
     elif es_follow_up:
-        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta_para_buscar, escenario_consolidado)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+        )
         if not relevantes:
             return _SIN_RESULTADOS
 
     else:
-        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(pregunta)
+        relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
+            pregunta_para_buscar, escenario_consolidado, sub_queries_router
+        )
         if not relevantes:
             return _SIN_RESULTADOS
 
