@@ -92,14 +92,30 @@ def detectar_nombre_ley(texto: str, nombre_archivo: str) -> str:
 
 
 def extraer_articulos(texto, nombre_ley, nombre_pdf):
+    r"""
+    Divide el texto del PDF en artículos individuales.
+
+    BUG HISTÓRICO (corregido): el patrón antiguo r'(?i)(Art[íi]culo\s+(\d+)...)'
+    matcheaba TAMBIÉN referencias intratexto del tipo "...previsto en el
+    artículo 414..." y las trataba como nueva cabecera, cortando el cuerpo del
+    artículo real en mitad de oración (terminado en preposición tipo "en el",
+    "a que se refiere el", etc.). Causó ~80 artículos mutilados en la corpus
+    (CP 413, CC 135/494/497, Ley contra la Corrupción 38, etc.).
+
+    FIX: anclar el patrón a INICIO DE LÍNEA con re.MULTILINE. Las cabeceras
+    reales aparecen al inicio de línea; las referencias intratexto van en medio
+    de oraciones (después de "el", "del", "al"...) y nunca al inicio de línea.
+    """
     articulos      = []
-    patron         = r'(?i)(Art[íi]culo\s+(\d+)[°º\.]?\.?)'
+    # ^\s* + MULTILINE: solo matchea "Artículo N" al INICIO de línea (con
+    # indentación opcional). Bloquea referencias intratexto.
+    patron         = r'(?im)^\s*(Art[íi]culo\s+(\d+)[°º\.]?\.?)'
     partes         = re.split(patron, texto)
     numeros_vistos = set()
 
     i = 0
     while i < len(partes):
-        if i + 2 < len(partes) and re.match(r'(?i)Art[íi]culo\s+\d+', partes[i]):
+        if i + 2 < len(partes) and re.match(r'(?i)\s*Art[íi]culo\s+\d+', partes[i]):
             numero    = partes[i + 1].strip()
             contenido = re.sub(r'\n{3,}', '\n\n', partes[i + 2]).strip()
             num_int   = int(numero)

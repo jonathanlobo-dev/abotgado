@@ -987,3 +987,97 @@ class TestDifamacionRedes:
         from prompts import GUIAS_INSTITUCIONALES
         guia = GUIAS_INSTITUCIONALES.get("difamacion_redes", "")
         assert "CICPC" in guia or "nformátic" in guia
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CHUNKER: extraer_articulos NO debe romperse en referencias intratexto
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestChunkerNoRompePorReferenciasInternas:
+    r"""Reproduce el bug que mutilaba ~80 articulos del corpus.
+
+    Antes: el regex `(?i)(Articulo \d+)` matcheaba referencias intratexto del
+    tipo '...previsto en el articulo 414...' y cortaba el cuerpo del articulo
+    real, dejando textos como 'Articulo 413. - Cuando el delito previsto en el'.
+
+    Ahora: el regex esta anclado a inicio de linea con re.MULTILINE, asi que
+    solo cabeceras reales (al inicio de su linea) se reconocen.
+    """
+
+    def _extraer(self, texto):
+        # Importamos el modulo dinamicamente porque empieza con digito
+        import importlib
+        m = importlib.import_module("1_procesar_leyes")
+        return m.extraer_articulos(texto, "Test Ley", "test.pdf")
+
+    def test_referencia_intratexto_no_corta_articulo(self):
+        """El cuerpo del Art. 413 menciona 'el articulo anterior' — NO debe cortarse."""
+        texto = (
+            "Artículo 413. - Cuando el delito previsto en el artículo anterior "
+            "se cometiere con armas insidiosas, o por veneno, o premeditadamente, "
+            "la pena sera de prision de tres a seis anos.\n"
+            "Artículo 414. - El que con intencion de causar dano le ocasionare "
+            "a alguna persona una lesion corporal grave la cual deje cicatriz."
+        )
+        arts = self._extraer(texto)
+        nums = [a["articulo"] for a in arts]
+        assert 413 in nums
+        assert 414 in nums
+        # El cuerpo del 413 debe contener 'armas insidiosas' (palabra que estaba DESPUES
+        # de la referencia 'articulo anterior' que rompia el split antiguo)
+        art_413 = next(a for a in arts if a["articulo"] == 413)
+        assert "armas insidiosas" in art_413["texto"]
+        # El texto NO debe terminar en 'en el' (el bug clasico)
+        assert not art_413["texto"].rstrip().endswith("en el")
+
+    def test_referencia_a_articulo_numerado_dentro_de_cuerpo(self):
+        """Referencia a 'el articulo 414' dentro del cuerpo del 413 NO crea articulo fantasma."""
+        texto = (
+            "Artículo 413. - Cuando el delito previsto en el artículo 414 "
+            "se cometiere con violencia, la pena se duplicara.\n"
+            "Artículo 414. - El que cause lesiones graves sera penado."
+        )
+        arts = self._extraer(texto)
+        # Debe haber exactamente 2 articulos (413 y 414), NO se crea un fantasma
+        # por el match de 'articulo 414' en el cuerpo de 413.
+        nums = sorted(a["articulo"] for a in arts)
+        assert nums == [413, 414]
+        art_413 = next(a for a in arts if a["articulo"] == 413)
+        assert "violencia" in art_413["texto"]
+        assert "duplicar" in art_413["texto"]
+
+    def test_articulo_corto_legitimo_se_indexa(self):
+        """Articulos legitimamente cortos (>30 chars) siguen indexandose."""
+        texto = (
+            "Artículo 1. La presente Ley tiene por objeto regular las relaciones.\n"
+            "Artículo 2. - Se exceptuan los casos previstos en la Constitucion."
+        )
+        arts = self._extraer(texto)
+        nums = sorted(a["articulo"] for a in arts)
+        assert nums == [1, 2]
+
+    def test_multiple_articulos_se_extraen_correctamente(self):
+        """Suite de articulos consecutivos sin perder ninguno."""
+        texto = "\n".join([
+            "Artículo 100. Primer texto sustantivo de prueba para el test.",
+            "Artículo 101. Segundo texto sustantivo. Hace referencia al artículo 100 anterior.",
+            "Artículo 102. Tercer texto. Tambien menciona el artículo 100 y el artículo 101.",
+            "Artículo 103. Cuarto texto. Sin referencias internas para variar.",
+        ])
+        arts = self._extraer(texto)
+        nums = sorted(a["articulo"] for a in arts)
+        assert nums == [100, 101, 102, 103]
+        # Cada articulo conserva su contenido completo
+        art_101 = next(a for a in arts if a["articulo"] == 101)
+        assert "Segundo texto" in art_101["texto"]
+        assert "anterior" in art_101["texto"]
+
+    def test_indentacion_inicial_no_rompe_match(self):
+        """Articulos con indentacion (espacios al inicio) tambien se reconocen."""
+        texto = (
+            "  Artículo 50. Texto con dos espacios de indentacion al inicio del rengloncito.\n"
+            "    Artículo 51. Texto con cuatro espacios al inicio que es valido tambien."
+        )
+        arts = self._extraer(texto)
+        nums = sorted(a["articulo"] for a in arts)
+        assert nums == [50, 51]

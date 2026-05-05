@@ -27,7 +27,7 @@ def main():
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
-    REINDEX_VERSION = "5"  # bump: agregamos Ley de Aguas + Ley Servicios Agua/Saneamiento
+    REINDEX_VERSION = "6"  # bump: fix chunker (regex anclado a ^line) — recupera ~80 articulos mutilados
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0
