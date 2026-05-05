@@ -1254,6 +1254,9 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "aguas_dominio_publico": "aguas_dominio_publico",
         "aguas_ley_especial": "aguas_dominio_publico",
         "usurpacion_aguas_penal": "aguas_dominio_publico",
+        # Árboles y raíces: guía propia que matiza Juez de Paz (mediación) vs
+        # Tribunal Civil (cuando hay daños cuantificables)
+        "arboles_raices_vecino": "arboles_raices_vecino",
     }
     guias_usadas = set()
     guia_textos = []

@@ -401,12 +401,31 @@ Este régimen aplica cuando hay agresión física y la víctima NO es mujer prot
 - Documenta: certificado médico-forense (CICPC), fotos de las lesiones, testigos, mensajes o audios donde el agresor reconozca los hechos.
 - NO necesitas un abogado para la denuncia inicial, pero conviene tenerlo para el proceso judicial posterior.
 """,
+    "arboles_raices_vecino": """
+INSTITUCIONES Y PASOS CONCRETOS PARA ÁRBOLES Y RAÍCES INVASORAS DEL VECINO:
+- Derecho sustantivo: Cód. Civil Arts. 702 y 703 — el propietario afectado tiene derecho a EXIGIR que se corten las ramas o raíces invasoras (no a cortarlas él mismo). La acción es IMPRESCRIPTIBLE.
+- Vía 1 (mediación, sin daños cuantificables): Juez de Paz Comunal de la jurisdicción. Audiencia de conciliación, máximo 15 días continuos. El juez puede dictar medida preventiva ordenando al vecino que pode o retire el árbol. Útil cuando no hay daños materiales serios y solo se busca arreglar la convivencia.
+- Vía 2 (con daños materiales cuantificables — pared rota, infraestructura dañada, pérdidas económicas): Tribunal Civil de Municipio competente. Demanda por cumplimiento de obligación + daños y perjuicios. Allí sí se puede pedir reparación económica de la pared o infraestructura afectada, no solo el cese de la invasión.
+- Documentación a llevar: título de propiedad, fotografías del daño, presupuesto de reparación de un perito o constructor, croquis con la ubicación del árbol respecto al lindero, testigos.
+- IMPORTANTE: NO recomiendes cortar el árbol por mano propia — eso puede generar responsabilidad civil y penal del usuario por daños a propiedad ajena (Cód. Penal sobre daños).
+""",
     "vivienda_desalojo": """
-INSTITUCIONES Y PASOS CONCRETOS PARA DESALOJO/ARRENDAMIENTO:
-- SUNAVI (Superintendencia Nacional de Arrendamiento de Vivienda): Es OBLIGATORIO agotar la vía administrativa en SUNAVI antes de ir a tribunal.
-- Si te quieren desalojar: Tu arrendador NO puede sacarte sin orden judicial. Si lo intenta, denuncia ante la Fiscalía.
-- Procedimiento: El arrendador debe solicitar ante SUNAVI la autorización de desalojo. Tú serás citado para audiencia conciliatoria.
-- Si tienes contrato vigente: No pueden desalojarte hasta que venza el contrato + la prórroga legal.
+INSTITUCIONES Y PASOS CONCRETOS PARA DESALOJO DE VIVIENDA:
+
+MARCO LEGAL APLICABLE: Para desalojos de VIVIENDAS (no locales comerciales) rige la Ley contra el Desalojo y la Desocupación Arbitraria de Viviendas (Decreto 8.190 de 2011) Y la Ley para la Regularización y Control de los Arrendamientos de Vivienda (2011). NO se aplica la antigua Ley de Arrendamientos Inmobiliarios (1999) — esa quedó vigente solo para uso comercial.
+
+PROCEDIMIENTO PREVIO OBLIGATORIO (Decreto 8.190, Art. 5): ANTES de cualquier acción judicial o administrativa de desalojo, el interesado DEBE agotar el procedimiento previo ante el Ministerio con competencia en vivienda y hábitat (vía SUNAVI). Sin ese trámite previo NO se puede ejecutar ningún desalojo. Esto aplica incluso al propietario que necesita ocupar su vivienda.
+
+REFUGIO DIGNO (Decreto 8.190, Art. 12): los funcionarios judiciales están OBLIGADOS a suspender cualquier desalojo por 90-180 días hábiles para verificar que el sujeto afectado tenga garantizado un refugio digno o solución habitacional. Sin esa garantía, el juez no puede ordenar la materialización del desalojo.
+
+PASOS CONCRETOS:
+1. Acude a SUNAVI (Superintendencia Nacional de Arrendamiento de Vivienda): es la vía administrativa OBLIGATORIA antes de ir a tribunal. Lleva: contrato de arrendamiento, título de propiedad, cédula, documentación de la causal invocada (ej: necesidad propia o de familiar segundo grado consanguíneo).
+2. SUNAVI cita a audiencia conciliatoria (Decreto 8.190, Art. 7). Lleva al inquilino notificado.
+3. Si SUNAVI autoriza el desalojo y el inquilino no desocupa, recién ahí se va al Tribunal de Municipio competente. El juez verificará el refugio digno antes de ordenar la materialización.
+
+ADVERTENCIA AL CONSULTANTE: en la práctica venezolana actual los desalojos de vivienda están MUY restringidos. Aunque el contrato haya vencido, el procedimiento puede tomar meses o más, y el juez puede suspenderlo si no hay refugio digno garantizado para el inquilino. Recomienda al usuario ser realista sobre los tiempos.
+
+NO uses la Ley de Arrendamientos Inmobiliarios de 1999 para vivienda. NO digas que el desalojo es rápido o automático al vencer el contrato.
 """,
     "vivienda_arrendamiento": """
 INSTITUCIONES Y PASOS CONCRETOS PARA ARRENDAMIENTO:

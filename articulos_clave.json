@@ -743,20 +743,18 @@
     ],
     "ley": "Ley contra el Desalojo Arbitrario de Viviendas",
     "articulos": [
-      1,
-      2,
-      3,
       5,
       6,
       7,
+      12,
+      13,
       8,
       10,
       11,
-      12,
-      13,
       14,
       15,
-      17
+      17,
+      3
     ]
   },
   "vivienda_arrendamiento": {
