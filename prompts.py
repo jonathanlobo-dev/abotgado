@@ -321,6 +321,7 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS LABORALES:
 - Reenganche por despido INJUSTIFICADO: si el despido fue sin causa legal, tienes 10 días hábiles para solicitar reenganche ante la Inspectoría.
 - Cobro de prestaciones sociales: el patrono tiene 5 días para pagar tras cualquier despido (justificado o no). Si no paga, denuncia en la Inspectoría.
 - Acoso laboral: denuncia ante la Inspectoría y ante la Fiscalía del Ministerio Público.
+- PRIMACÍA DE LA REALIDAD (Art. 22 LOTTT): En Venezuela, prevalece la REALIDAD de la relación sobre su forma o nombre. Si el trabajador cumple órdenes, tiene horario fijo, recibe pago periódico y usa equipos del patrono → ES UN TRABAJADOR, no un "contratista". El patrono NO puede quitarle sus derechos laborales (prestaciones, vacaciones, utilidades) solo llamándole "contratista" o "prestador de servicios". La Inspectoría del Trabajo puede declarar la existencia de la relación de dependencia y exigir el pago de todos los beneficios de ley.
 """,
     "comunicaciones": """
 INSTITUCIONES Y PASOS CONCRETOS PARA VIOLACIÓN DE COMUNICACIONES/PRIVACIDAD:
@@ -505,6 +506,50 @@ REGLAS DURAS PARA DESVÍO / MODIFICACIÓN / USURPACIÓN DE CAUCES POR ACTOS HUMA
     3. Si hay daños civiles cuantificables (pérdida de cosechas, daño a infraestructura), demanda civil ante el Tribunal Civil competente, en paralelo, por daños y perjuicios.
 
   El Juez de Paz Comunal puede mediar conflictos vecinales menores, pero NO es la vía adecuada cuando hay alteración del dominio público hidráulico. Si lo mencionas, debe ser solo como última opción y de manera explícita advirtiendo que no resuelve el fondo administrativo-ambiental.
+""",
+    "divorcio": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DIVORCIO:
+
+DIVORCIO DE MUTUO ACUERDO (Art. 185-A CC, incorporado por reforma de 1982):
+- Cuando AMBOS cónyuges están de acuerdo en divorciarse. No se necesita invocar causal alguna.
+- Artículo CLAVE: Art. 185-A del Código Civil venezolano. Es la norma ESPECÍFICA para el divorcio por mutuo consentimiento — cítalo como fundamento PRINCIPAL, no el Art. 185 (ese es para causales contenciosas).
+- Tribunal competente: Tribunal de Municipio de la jurisdicción del domicilio conyugal.
+- El juez los convoca a una audiencia. Si confirman el acuerdo, declara el divorcio. Proceso más rápido y económico.
+- Conviene llevar: acta de matrimonio, cédulas, acuerdo sobre bienes (si lo hay por escrito) y, si hay hijos, acuerdo de custodia/pensión o indicar que se tramitará por separado.
+
+DIVORCIO CONTENCIOSO (Art. 185 CC — causales):
+- Cuando uno no está de acuerdo o existe una causal legal (adulterio, abandono voluntario, excesos o trato cruel, condena penal, adicción, etc.).
+- Tribunal competente: Tribunal de Primera Instancia en lo Civil. Requiere abogado.
+- Es un proceso más largo: libelo, citación, contestación, pruebas, sentencia.
+
+BIENES Y CUSTODIA:
+- Comunidad conyugal (Arts. 148-172 CC): se liquida tras el divorcio. Para bienes inmuebles, la partición debe inscribirse en el Registro Inmobiliario.
+- Hijos: custodia, pensión alimentaria y régimen de visitas se fijan ante el Tribunal de Protección de Niños, Niñas y Adolescentes.
+""",
+    "bancario": """
+INSTITUCIONES Y PASOS CONCRETOS PARA PROBLEMAS BANCARIOS:
+- SUDEBAN (Superintendencia de las Instituciones del Sector Bancario): es el ente regulador de TODOS los bancos en Venezuela. Presenta tu queja formal en sudeban.gob.ve si el banco: te cobró comisiones no autorizadas, bloqueó tu cuenta sin justificación, te negó servicios sin causa, o incumplió sus propias condiciones.
+- Comisiones: Los bancos SOLO pueden cobrar comisiones previamente autorizadas por SUDEBAN. Si te cobran algo no autorizado, es ilegal. Exige al banco el número de resolución SUDEBAN que autoriza esa comisión.
+- Cuenta bloqueada sin causa: Exige por escrito la razón al banco (departamento de operaciones). Si no justifican en 48h, denuncia en SUDEBAN y en la Defensoría del Pueblo.
+- Cobro no reconocido: Denuncia ante el banco (genera número de expediente). Si no resuelven en 15 días hábiles, eleva la queja a SUDEBAN con ese número de expediente.
+- FOGADE (Fondo de Garantía de Depósitos y Protección Bancaria): si el banco entra en liquidación, FOGADE garantiza los depósitos hasta el monto establecido por ley.
+- Deuda bancaria: Puedes solicitar reestructuración o refinanciamiento directamente al banco por escrito. Si el banco usa prácticas coercitivas o de acoso por deuda, denuncia ante SUDEBAN.
+- SUNDDE: Si el problema involucra prácticas comerciales desleales o publicidad engañosa del banco.
+""",
+    "difamacion_redes": """
+INSTITUCIONES Y PASOS CONCRETOS PARA DIFAMACIÓN, CALUMNIA E INJURIA (incluyendo redes sociales):
+- Marco legal principal (Código Penal):
+  • Art. 442 (Difamación): imputar a alguien un hecho determinado capaz de exponerle al desprecio o al odio público, comunicado a varias personas (las redes sociales cuentan como "comunicación a varias personas").
+  • Art. 444 (Injuria): ofender de obra o de palabra. Pena: arresto de 3 a 8 días o multa.
+  • Art. 445 (Retractación): si el difamador se retracta públicamente, el juez puede atenuar la pena.
+- Ley Constitucional contra el Odio (2017): aplica cuando el contenido publicado incita al odio o discriminación por motivos de raza, religión, género, orientación sexual, etc. Penas de 10 a 20 años de prisión para los casos más graves. Requiere Fiscalía especializada.
+- Ley Especial contra los Delitos Informáticos: aplica si el acto se realizó por medios electrónicos (redes, mensajes, correo).
+
+PASOS CONCRETOS:
+1. Preserva la evidencia ANTES de que la borren: capturas de pantalla con fecha/hora, URL del post, usuario/cuenta del infractor, testigos si los hay.
+2. Denuncia ante la Fiscalía del Ministerio Público. Si hay elemento de odio o discriminación, solicita la Fiscalía con competencia en Ley contra el Odio.
+3. CICPC — División de Delitos Informáticos: para hechos cometidos por medios digitales. Lleva las capturas y la información de la cuenta infractora.
+4. Acción civil por daño moral: paralelamente, puedes demandar al infractor por daño moral ante el Tribunal Civil competente (Código Civil, Art. 1185).
 """,
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:

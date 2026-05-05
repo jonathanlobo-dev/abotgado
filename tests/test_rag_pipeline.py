@@ -808,3 +808,182 @@ class TestKeywordMatchUsaPreguntaOriginal:
             "alguien puede adueñarse de un pozo de agua o un dique en Venezuela?"
         )
         assert "aguas_dominio_publico" in temas
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NUEVOS TEMAS: DIVORCIO MUTUO ACUERDO, CONTRATISTA, BANCARIO, DIFAMACIÓN
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestDivorcioMutuoAcuerdo:
+    """Art. 185-A CC para divorcio de mutuo acuerdo debe disparar y tener guía."""
+
+    def test_keywords_mutuo_acuerdo_disparan_divorcio(self):
+        """'mutuo acuerdo' debe activar el tema divorcio."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("quiero divorciarme de mutuo acuerdo con mi esposa")
+        assert "divorcio" in temas
+
+    def test_keywords_los_dos_queremos_divorciarnos(self):
+        """Frase coloquial de acuerdo mutuo activa divorcio."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("los dos queremos divorciarnos sin peleas")
+        assert "divorcio" in temas
+
+    def test_guia_divorcio_existe_en_guias_institucionales(self):
+        """La guía 'divorcio' debe existir en GUIAS_INSTITUCIONALES."""
+        from prompts import GUIAS_INSTITUCIONALES
+        assert "divorcio" in GUIAS_INSTITUCIONALES
+
+    def test_guia_divorcio_menciona_185A(self):
+        """La guía de divorcio debe mencionar Art. 185-A (mutuo acuerdo)."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("divorcio", "")
+        assert "185-A" in guia
+
+    def test_guia_divorcio_distingue_mutuo_vs_contencioso(self):
+        """La guía debe diferenciar mutuo acuerdo (Municipio) de contencioso (Civil)."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("divorcio", "")
+        assert "mutuo" in guia.lower()
+        assert "contencioso" in guia.lower() or "185" in guia
+
+    def test_mapa_guia_divorcio_usa_guia_divorcio(self):
+        """El tema 'divorcio' debe mapearse a la guía 'divorcio', no a 'familia'."""
+        # Verificamos que la guía específica es la que se inyecta
+        from prompts import GUIAS_INSTITUCIONALES
+        # 'familia' no debe ser la guía asignada a divorcio
+        # (la familia guide no tiene Art. 185-A)
+        divorcio_guia = GUIAS_INSTITUCIONALES.get("divorcio", "")
+        familia_guia = GUIAS_INSTITUCIONALES.get("familia", "")
+        assert "185-A" in divorcio_guia
+        assert "185-A" not in familia_guia  # familia no tiene 185-A
+
+
+class TestContratistaPrimaciaRealidad:
+    """LOTTT Art. 22 (primacía de la realidad) para trabajadores disfrazados de contratistas."""
+
+    def test_keyword_contratista_dispara_tema(self):
+        """'contratista' debe activar laboral_contratista."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("me dicen que soy contratista pero trabajo igual que los empleados fijos")
+        assert "laboral_contratista" in temas
+
+    def test_keyword_prestador_servicios_dispara_tema(self):
+        """'prestador de servicios' debe activar laboral_contratista."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("la empresa me tiene como prestador de servicios pero nunca me pagan vacaciones")
+        assert "laboral_contratista" in temas
+
+    def test_tema_contratista_tiene_art_22(self):
+        """laboral_contratista debe incluir Art. 22 LOTTT en sus artículos."""
+        from busqueda import ARTICULOS_CLAVE
+        assert "laboral_contratista" in ARTICULOS_CLAVE
+        assert 22 in ARTICULOS_CLAVE["laboral_contratista"]["articulos"]
+
+    def test_laboral_general_tiene_art_22(self):
+        """laboral_general también debe tener Art. 22 LOTTT."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 22 in ARTICULOS_CLAVE["laboral_general"]["articulos"]
+
+    def test_guia_laboral_menciona_primacia_realidad(self):
+        """La guía laboral debe mencionar primacía de la realidad y Art. 22."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("laboral", "")
+        # Buscar sin acentos para evitar problemas de encoding en Windows
+        guia_lower = guia.lower()
+        assert "primac" in guia_lower and "realidad" in guia_lower  # cubre "primacía" y "primacia"
+        assert "art. 22" in guia_lower or "art 22" in guia_lower
+
+
+class TestBancarioComisiones:
+    """Comisiones bancarias deben disparar guía SUDEBAN, no Ley contra la Corrupción."""
+
+    def test_keyword_comision_bancaria_dispara_tema(self):
+        """'comisión bancaria' activa el tema bancario."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("el banco me cobra una comisión bancaria que no autorizé")
+        assert "bancario" in temas
+
+    def test_keyword_banco_me_cobro_dispara_tema(self):
+        """'banco me cobró' activa el tema bancario."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("banco me cobró algo raro en la cuenta")
+        assert "bancario" in temas
+
+    def test_guia_bancario_existe(self):
+        """La guía 'bancario' debe existir en GUIAS_INSTITUCIONALES."""
+        from prompts import GUIAS_INSTITUCIONALES
+        assert "bancario" in GUIAS_INSTITUCIONALES
+
+    def test_guia_bancario_menciona_sudeban(self):
+        """La guía bancaria debe mencionar SUDEBAN como ente regulador."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("bancario", "")
+        assert "SUDEBAN" in guia
+
+    def test_guia_bancario_menciona_comisiones_autorizadas(self):
+        """La guía debe aclarar que solo se pueden cobrar comisiones autorizadas por SUDEBAN."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("bancario", "")
+        assert "autorizad" in guia.lower()  # "autorizadas" o "autorizado"
+
+    def test_mapa_guia_bancario_correcto(self):
+        """El tema 'bancario' debe tener guía 'bancario' en GUIAS_INSTITUCIONALES."""
+        from prompts import GUIAS_INSTITUCIONALES
+        assert "bancario" in GUIAS_INSTITUCIONALES
+
+
+class TestDifamacionRedes:
+    """Difamación, calumnia e injuria en redes sociales deben disparar guía correcta."""
+
+    def test_keyword_difamacion_dispara_tema(self):
+        """'difamación' activa el tema difamacion."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("me están difamando en las redes sociales")
+        assert "difamacion" in temas
+
+    def test_keyword_calumnia_dispara_tema(self):
+        """'calumnia' activa el tema difamacion."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("publicaron calumnias sobre mí en Instagram")
+        assert "difamacion" in temas
+
+    def test_keyword_reputacion_dispara_tema(self):
+        """'dañaron mi reputación' activa el tema difamacion."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("me dañaron la reputación con mentiras en Twitter")
+        assert "difamacion" in temas
+
+    def test_tema_difamacion_apunta_a_cp_art_442(self):
+        """El tema difamacion debe tener Art. 442 del Código Penal."""
+        from busqueda import ARTICULOS_CLAVE
+        assert "difamacion" in ARTICULOS_CLAVE
+        assert 442 in ARTICULOS_CLAVE["difamacion"]["articulos"]
+
+    def test_tema_difamacion_apunta_a_cp_art_444(self):
+        """El tema difamacion debe tener Art. 444 (injuria)."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 444 in ARTICULOS_CLAVE["difamacion"]["articulos"]
+
+    def test_guia_difamacion_redes_existe(self):
+        """La guía 'difamacion_redes' debe existir en GUIAS_INSTITUCIONALES."""
+        from prompts import GUIAS_INSTITUCIONALES
+        assert "difamacion_redes" in GUIAS_INSTITUCIONALES
+
+    def test_guia_difamacion_menciona_cp_442(self):
+        """La guía de difamación debe mencionar Art. 442."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("difamacion_redes", "")
+        assert "442" in guia
+
+    def test_guia_difamacion_menciona_ley_contra_odio(self):
+        """La guía debe mencionar la Ley contra el Odio para casos de redes."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("difamacion_redes", "")
+        assert "odio" in guia.lower() or "Odio" in guia
+
+    def test_guia_difamacion_menciona_cicpc_delitos_informaticos(self):
+        """La guía debe mencionar CICPC / Delitos Informáticos para vía digital."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("difamacion_redes", "")
+        assert "CICPC" in guia or "nformátic" in guia

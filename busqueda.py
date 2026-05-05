@@ -1248,8 +1248,15 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "transito_estacionamiento": "transito_estacionamiento",
         "libre_transito": "transito_estacionamiento",
         "animales_via": "animales_via",
-        "divorcio": "familia",
+        # Divorcio: guía propia con Art. 185-A (mutuo acuerdo) vs Art. 185 (contencioso)
+        "divorcio": "divorcio",
         "drogas": "drogas",
+        # Bancario: guía propia con SUDEBAN, comisiones, FOGADE
+        "bancario": "bancario",
+        # Difamación: guía propia con CP Arts. 442/444 y Ley contra el Odio
+        "difamacion": "difamacion_redes",
+        # Laboral contratista: hereda guía laboral (que ya incluye primacía de la realidad)
+        "laboral_contratista": "laboral",
         # Aguas / recursos hídricos: ambos temas comparten guía con MINAGUAS + Hidroven
         "aguas_dominio_publico": "aguas_dominio_publico",
         "aguas_ley_especial": "aguas_dominio_publico",
@@ -1275,11 +1282,15 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
             "robar": "penal", "robo": "penal", "estafa": "penal",
             "vecino": "justicia_paz", "ruido": "justicia_paz",
             "desaloj": "vivienda_desalojo", "arrendad": "vivienda_arrendamiento",
-            "divorc": "familia", "custodia": "familia", "hijo": "familia",
+            "divorc": "divorcio", "custodia": "familia", "hijo": "familia",
             "golpe": "violencia_mujer", "maltrat": "violencia_mujer",
             "impuesto": "tributario", "seniat": "tributario",
             "droga": "drogas", "narco": "drogas", "trafic": "drogas",
             "estupefaciente": "drogas", "lesa humanidad": "drogas",
+            "banco": "bancario", "sudeban": "bancario", "comision bancaria": "bancario",
+            "difamaci": "difamacion_redes", "calumni": "difamacion_redes",
+            "injuria": "difamacion_redes",
+            "contratista": "laboral",
             "demandar": "demanda_civil_general", "libelo": "demanda_civil_general",
             "demanda": "demanda_civil_general",
         }
