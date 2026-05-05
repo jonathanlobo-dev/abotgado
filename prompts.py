@@ -467,6 +467,14 @@ INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS TRIBUTARIOS:
 - Si te multaron: Tienes 25 días hábiles para recurrir ante la Gerencia Regional del SENIAT.
 - Recurso jerárquico: Ante el SENIAT. Si no funciona, recurso contencioso tributario ante el Tribunal Superior Tributario.
 """,
+    "aguas_dominio_publico": """
+INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE AGUAS, POZOS, CAUCES Y RECURSOS HÍDRICOS:
+- Ente rector nacional: MINAGUAS (Ministerio del Poder Popular de Atención de las Aguas). Es la autoridad competente para concesiones, permisos y registro de usuarios. NO uses "MPPA" ni "Ministerio del Ambiente" — esas eran denominaciones anteriores.
+- Gestión operativa: Hidroven es la casa matriz que agrupa a todas las hidrológicas regionales (Hidrocapital, Hidrolara, Hidrocentro, Hidroandes, Hidrosuroeste, Hidrofalcón, etc.). Para trámites operativos o inspecciones técnicas en una zona específica, se acude a la hidrológica regional adscrita a Hidroven.
+- Concesiones / permisos / registro de pozo: solicitud escrita ante MINAGUAS, con cédula, título o contrato sobre el predio, estudio técnico del aprovechamiento propuesto, y plano de ubicación. La hidrológica regional puede hacer la inspección.
+- Si un vecino desvía, modifica, obstruye o usurpa cauces (ríos, quebradas, manantiales) sin autorización: NO es un caso de Juez de Paz Comunal. Es una infracción administrativa de la Ley de Aguas y, según el caso, un delito penal (Cód. Penal, capítulo de usurpación, Arts. 471-477). Denuncia ante: (1) la Fiscalía del Ministerio Público (división Ambiental si existe en la jurisdicción), (2) la Guardería Ambiental de la Guardia Nacional Bolivariana (GNB), y (3) MINAGUAS o la hidrológica regional para que ordene la restitución del cauce a costa del infractor.
+- Aguas como bien de dominio público: el agua es IMPRESCRIPTIBLE — la posesión por años no genera propiedad privada del agua. Particulares solo pueden tener derechos de uso/aprovechamiento mediante concesión.
+""",
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:
 - Si envenenaron o mataron al animal: Es un DELITO PENAL. Denuncia ante el CICPC (Cuerpo de Investigaciones Científicas, Penales y Criminalísticas) o la Fiscalía del Ministerio Público. NO es un caso para el Juez de Paz.

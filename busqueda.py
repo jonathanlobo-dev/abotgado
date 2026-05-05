@@ -1250,6 +1250,10 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "animales_via": "animales_via",
         "divorcio": "familia",
         "drogas": "drogas",
+        # Aguas / recursos hídricos: ambos temas comparten guía con MINAGUAS + Hidroven
+        "aguas_dominio_publico": "aguas_dominio_publico",
+        "aguas_ley_especial": "aguas_dominio_publico",
+        "usurpacion_aguas_penal": "aguas_dominio_publico",
     }
     guias_usadas = set()
     guia_textos = []
