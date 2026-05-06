@@ -542,7 +542,6 @@
       "injuria",
       "insultos en redes",
       "publicaron fotos sin permiso",
-      "honor",
       "reputación",
       "reputacion",
       "mala fama",
@@ -568,6 +567,14 @@
       444,
       445,
       446
+    ],
+    "excluir": [
+      "homicidio",
+      "asesinato",
+      "matar",
+      "rebaja de pena",
+      "atenuante",
+      "eximente"
     ]
   },
   "comunicaciones": {
@@ -832,22 +839,24 @@
       "refugio digno",
       "ejecucion de desalojo",
       "ejecución de desalojo",
-      "procedimiento previo al desalojo"
+      "procedimiento previo al desalojo",
+      "inquilino no paga",
+      "inquilino no me paga",
+      "inquilino debe meses",
+      "meses sin pagar alquiler",
+      "no paga el canon",
+      "no paga la renta",
+      "deuda de alquiler",
+      "mora de alquiler"
     ],
     "ley": "Ley contra el Desalojo Arbitrario de Viviendas",
     "articulos": [
+      3,
       5,
-      6,
       7,
-      12,
-      13,
       8,
-      10,
-      11,
-      14,
-      15,
-      17,
-      3
+      12,
+      13
     ]
   },
   "vivienda_arrendamiento": {
@@ -882,7 +891,23 @@
       "canon de alquiler",
       "fianza de alquiler",
       "depósito de alquiler",
-      "deposito de alquiler"
+      "deposito de alquiler",
+      "no devuelven el depósito",
+      "no devuelven el deposito",
+      "no me devuelven el depósito",
+      "no me devuelven el deposito",
+      "no me devuelve el depósito",
+      "no me devuelve el deposito",
+      "devolver el depósito",
+      "devolver el deposito",
+      "no me devuelve la garantía",
+      "no me devuelve la garantia",
+      "depósito de garantía",
+      "deposito de garantia",
+      "garantía de arrendamiento",
+      "garantia de arrendamiento",
+      "me quedaron debiendo el depósito",
+      "me quedaron debiendo el deposito"
     ],
     "ley": "Ley para la Regularización y Control de los Arrendamientos de Vivienda",
     "articulos": [
@@ -3119,12 +3144,24 @@
       "me amenazan",
       "vecino amenaza",
       "intimidó",
-      "intimidaron"
+      "intimidaron",
+      "con cuchillo",
+      "cuchillo",
+      "navaja",
+      "machete",
+      "arma blanca",
+      "me apuntó con",
+      "me apunto con",
+      "me metió un cuchillo",
+      "me mete el cuchillo",
+      "amenaza con arma",
+      "amenaza con cuchillo"
     ],
     "ley": "Código Penal",
     "articulos": [
       175,
-      176
+      176,
+      428
     ]
   },
   "recurso_multa": {
@@ -3213,6 +3250,45 @@
       51,
       53,
       62
+    ]
+  },
+  "moneda_curso_legal": {
+    "keywords": [
+      "petro",
+      "pagar en petro",
+      "me obligan a pagar en petro",
+      "me obligan pagar petro",
+      "solo acepta petro",
+      "pago en petro",
+      "pagar en dólares",
+      "pagar en dolares",
+      "pagar con dólares",
+      "pagar con dolares",
+      "me obligan a pagar en dólares",
+      "me obligan a pagar en dolares",
+      "me obligan a pagar con dólares",
+      "me obligan a pagar con dolares",
+      "obligan pagar dolares",
+      "obligan pagar dólares",
+      "solo acepta dolares",
+      "solo acepta dólares",
+      "no acepta bolivares",
+      "no acepta bolívares",
+      "cobran en dolares",
+      "cobran en dólares",
+      "me cobran en dólares",
+      "me cobran en dolares",
+      "obligado a pagar en divisas",
+      "pago en divisas obligatorio",
+      "moneda de curso legal",
+      "curso legal de la moneda",
+      "no me aceptan bolívares",
+      "no me aceptan bolivares",
+      "pago en moneda extranjera obligatorio"
+    ],
+    "ley": "Constitución de la República Bolivariana de Venezuela",
+    "articulos": [
+      318
     ]
   },
   "vicios_ocultos": {

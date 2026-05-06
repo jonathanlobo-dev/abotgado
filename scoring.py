@@ -82,6 +82,12 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # Comercio regula actos de comercio y sociedades, no investigación científica.
         "Código de Comercio",
     },
+    "moneda_curso_legal": {
+        # Código de Comercio Arts. 449/489 (letras de cambio/cheques) aparecen como
+        # falsos positivos para queries sobre obligatoriedad de petro/dólar.
+        # La institución correcta es SUNDDE y el fundamento es la CRBV/Ley del BCV.
+        "Código de Comercio",
+    },
 }
 
 # ─── MAPEO LEY → RAMA (desde leyes_config.json) ───────────────────────────────
@@ -148,6 +154,7 @@ RAMA_POR_TEMA = {
     "bancario": "bancario",
     "laboral_contratista": "laboral",
     "difamacion": "penal",
+    "moneda_curso_legal": "constitucional",
     "consejos_comunales": "administrativo",
     "comunas": "administrativo",
     "contraloria": "administrativo",

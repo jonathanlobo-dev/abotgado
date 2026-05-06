@@ -426,6 +426,8 @@ PASOS CONCRETOS:
 
 ADVERTENCIA AL CONSULTANTE: en la práctica venezolana actual los desalojos de vivienda están MUY restringidos. Aunque el contrato haya vencido, el procedimiento puede tomar meses o más, y el juez puede suspenderlo si no hay refugio digno garantizado para el inquilino. Recomienda al usuario ser realista sobre los tiempos.
 
+🚫 PROHIBIDO DECIR: "el juez puede sacarlo mañana", "desalojo inmediato", "salida inmediata", "medida cautelar de desalojo inmediato", "puede pedirle al juez que lo saque al día siguiente". Estas afirmaciones son FALSAS en Venezuela y crean expectativas irresponsables. El desalojo físico puede tardar meses o años.
+
 NO uses la Ley de Arrendamientos Inmobiliarios de 1999 para vivienda. NO digas que el desalojo es rápido o automático al vencer el contrato.
 """,
     "vivienda_arrendamiento": """
@@ -448,7 +450,11 @@ INSTITUCIONES Y PASOS CONCRETOS PARA REGISTRO DE EMPRESA:
 - Registro Mercantil: Acude al de tu jurisdicción con: acta constitutiva, estatutos, cédulas de los socios, RIF de los socios y reserva de nombre aprobada.
 - SENIAT: Después de registrar, solicita el RIF de la empresa. Web: seniat.gob.ve
 - Alcaldía: Solicita la Licencia de Actividades Económicas (patente de industria y comercio).
-- Tipo más común: C.A. (Compañía Anónima) para 2+ socios. Firma Personal para 1 solo dueño.
+- Tipo más común: C.A. (Compañía Anónima) para 2+ socios. Firma Personal para 1 solo dueño (no necesita socios).
+
+⚠️ ADVERTENCIA SOBRE ARTÍCULOS DEL CÓDIGO DE COMERCIO:
+- Arts. 355 y 357 del Código de Comercio son sobre COMPAÑÍAS EXTRANJERAS que operan en Venezuela (representante, registro, responsabilidad por contratos). NO los uses para el registro de una empresa venezolana nueva.
+- Para empresa unipersonal (un solo dueño): se registra como "Firma Personal" en el Registro Mercantil. No requiere mínimo de socios.
 """,
     "corrupcion": """
 INSTITUCIONES Y PASOS CONCRETOS PARA CORRUPCIÓN:
@@ -884,7 +890,7 @@ INSTITUCIONES Y PASOS CONCRETOS PARA VICIOS OCULTOS EN INMUEBLES:
 INSTITUCIONES Y PASOS CONCRETOS PARA MARCAS Y PROPIEDAD INDUSTRIAL EN VENEZUELA:
 ⚠️ NOMBRE CORRECTO: En Venezuela el ente se llama SAPI (Servicio Autónomo de la Propiedad Intelectual). NUNCA uses "INPI" — eso es Argentina.
 - SAPI (sapi.gob.ve): Registra marcas, modelos industriales, patentes y denominaciones de origen. Requisitos: RIF, cédula, solicitud de registro, descripción del signo/diseño, pago de tasa.
-- Registro de marca: Protege el nombre comercial y logotipo del producto. Tarda 6-18 meses. Es válido por 10 años renovables.
+- Registro de marca: Protege el nombre comercial y logotipo del producto. Tarda 6-18 meses. Es válido por 15 AÑOS renovables (Art. 31 LPI). NO digas "10 años" — es un error frecuente.
 - Registro de modelo industrial: Protege el diseño del envase o empaque (Art. 26 Ley de Propiedad Industrial). Requiere comprobante de fabricación en Venezuela.
 - OJO: Los productos alimenticios NO son patentables (Art. 15), pero SÍ puedes registrar la MARCA y el DISEÑO del envase.
 - SENCAMER (sencamer.gob.ve): Para vender productos envasados en supermercados o a nivel nacional, SENCAMER asigna el Código de Producto Envasado (CPE) que debe aparecer en la etiqueta. Sin CPE, el producto no puede entrar en cadenas de distribución nacional.
@@ -979,6 +985,45 @@ INSTRUCCIÓN DE CLARIFICACIÓN: Al final de la sección 💡 Qué hacer, SIEMPRE
 • 👨‍👩‍👧 Asunto familiar (divorcio, custodia, herencia)
 • 💼 Problema laboral (despido, prestaciones, salario)
 • 🚨 Me robaron, estafaron o cometieron un delito contra mí"
+""",
+    "laboral_contratista": """
+INSTRUCCIÓN ESPECIAL — CONTRATISTA VS. TRABAJADOR DEPENDIENTE:
+
+⚠️ ARTÍCULO CLAVE OBLIGATORIO: LOTTT Art. 22 (Primacía de la realidad)
+Cuando el usuario pregunta "¿soy trabajador o no?", "¿tengo derechos laborales como contratista?", o similar, el PRIMER artículo que DEBES citar es el Art. 22 LOTTT. Ese artículo establece que la realidad de la relación de trabajo prevalece sobre el nombre del contrato. Un "contratista" que trabaja con horario fijo, herramientas del empleador y subordinación directa ES un trabajador dependiente, sin importar cómo lo llamen.
+
+ARTÍCULOS DEL RÉGIMEN ESPECIAL DE CONTRATISTAS (LOTTT Arts. 53-57):
+- Art. 53: Define al contratista.
+- Art. 54: El beneficiario de la obra es solidariamente responsable con el contratista por las obligaciones laborales.
+- Art. 55: La solidaridad aplica cuando la obra es inherente o conexa a la actividad principal del beneficiario.
+- Art. 56: Presunción de inherencia o conexidad.
+- Art. 57: Condiciones laborales del contratista iguales a las del beneficiario.
+
+ORDEN DE CITA OBLIGATORIO cuando el caso es "¿soy trabajador?":
+1. Art. 22 LOTTT (primacía de la realidad) — SIEMPRE PRIMERO
+2. Arts. 53-57 LOTTT si la relación es de contratista/subcontratista con beneficiario
+3. Arts. 63, 83 LOTTT si hay contrato por obra determinada y rescisión unilateral
+
+INSTITUCIÓN: Inspectoría del Trabajo. Si hay indemnización reclamada, también Juzgado Laboral.
+""",
+    "moneda_curso_legal": """
+INSTRUCCIÓN ESPECIAL — MONEDA DE PAGO OBLIGATORIA (Petro, Dólares, Divisas):
+
+SITUACIÓN LEGAL ACTUAL EN VENEZUELA (compleja):
+- El BOLÍVAR es la moneda de curso legal obligatorio (CRBV Art. 318 + Ley del BCV).
+- Sin embargo, desde 2019 existe una flexibilización de facto: la Ley Constitucional Antibloqueo (2020) y las resoluciones del BCV han permitido implícitamente transacciones en divisas. En la práctica, muchos comercios cobran en USD y el Estado lo tolera.
+
+DISTINCIÓN IMPORTANTE:
+1) OBLIGARTE A PAGAR EN PETRO: El Petro no es moneda de curso legal obligatorio para particulares. Nadie puede obligarte a pagar en Petro. Institución: SUNDDE.
+2) COBRAR EN DÓLARES: Legalmente más gris. La ley dice bolívar, pero la flexibilización lo permite en muchos casos. Si es un abuso claro (precios exorbitantes en USD sin equivalencia razonable), la institución es la SUNDDE.
+3) NEGARSE A RECIBIR BOLÍVARES: Técnicamente infracción. Competencia: SUNDDE.
+
+INSTITUCIÓN CORRECTA: SUNDDE (Superintendencia Nacional para la Defensa de los Derechos Socioeconómicos), NO la Contraloría General de la República. La Contraloría atiende asuntos de fondos públicos, no comercio privado.
+- Denuncia ante SUNDDE: sundde.gob.ve o en oficinas regionales. Lleva: factura o comprobante del cobro, cédula, descripción del hecho.
+
+ARTÍCULO CLAVE: CRBV Art. 318 — El BCV tiene la competencia monetaria exclusiva y el bolívar es la unidad de valor nacional. Este es el fundamento constitucional para cuestionar pagos forzados en moneda distinta al bolívar.
+
+NO uses la Contraloría General para casos de comercio privado. NO cites artículos de letras de cambio del Código de Comercio (Arts. 449, 489) — esos son para instrumentos mercantiles, no para precios al consumidor.
 """,
     "ciencia_tecnologia": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE CIENCIA, TECNOLOGÍA E INNOVACIÓN (LOCTI):

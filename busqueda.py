@@ -1272,6 +1272,10 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "arboles_raices_vecino": "arboles_raices_vecino",
         # LOCTI/Ciencia y tecnología: guía con ONCTI, FONACIT, obligaciones de empresas
         "ciencia_tecnologia": "ciencia_tecnologia",
+        # Moneda de pago obligatoria (Petro, USD): SUNDDE, no Contraloría
+        "moneda_curso_legal": "moneda_curso_legal",
+        # Contratista: guía propia con Art. 22 (primacía realidad) como obligatorio
+        "laboral_contratista": "laboral_contratista",
     }
     guias_usadas = set()
     guia_textos = []
@@ -1309,6 +1313,10 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
             "oncti": "ciencia_tecnologia",
             "ciencia y tecnolog": "ciencia_tecnologia",
             "investigacion y desarrollo": "ciencia_tecnologia",
+            "petro": "moneda_curso_legal", "pagar en dolar": "moneda_curso_legal",
+            "cobran en dolar": "moneda_curso_legal", "no acepta bolivar": "moneda_curso_legal",
+            "curso legal": "moneda_curso_legal",
+            "contratista": "laboral_contratista",
         }
         for palabra, tema in mapeo_rapido.items():
             if palabra in pregunta_lower and tema in GUIAS_INSTITUCIONALES:
