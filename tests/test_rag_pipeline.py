@@ -954,27 +954,36 @@ class TestDifamacionRedes:
         _, temas = buscar_articulos_clave("me dañaron la reputación con mentiras en Twitter")
         assert "difamacion" in temas
 
-    def test_tema_difamacion_apunta_a_cp_art_442(self):
-        """El tema difamacion debe tener Art. 442 del Código Penal."""
+    def test_tema_difamacion_apunta_a_cp_art_444(self):
+        """El tema difamacion debe tener Art. 444 del CP (difamacion stricto sensu).
+
+        OJO: el CP venezolano usa numeracion donde 442 = malos tratos a ninos
+        (NO difamacion), 444 = difamacion, 445 = procesal, 446 = injuria.
+        """
         from busqueda import ARTICULOS_CLAVE
         assert "difamacion" in ARTICULOS_CLAVE
-        assert 442 in ARTICULOS_CLAVE["difamacion"]["articulos"]
-
-    def test_tema_difamacion_apunta_a_cp_art_444(self):
-        """El tema difamacion debe tener Art. 444 (injuria)."""
-        from busqueda import ARTICULOS_CLAVE
         assert 444 in ARTICULOS_CLAVE["difamacion"]["articulos"]
+
+    def test_tema_difamacion_apunta_a_cp_art_446(self):
+        """El tema difamacion debe tener Art. 446 (injuria) del CP."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 446 in ARTICULOS_CLAVE["difamacion"]["articulos"]
+
+    def test_tema_difamacion_NO_incluye_cp_442(self):
+        """Art. 442 CP es malos tratos a ninos, NO difamacion. Debe estar EXCLUIDO."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 442 not in ARTICULOS_CLAVE["difamacion"]["articulos"]
 
     def test_guia_difamacion_redes_existe(self):
         """La guía 'difamacion_redes' debe existir en GUIAS_INSTITUCIONALES."""
         from prompts import GUIAS_INSTITUCIONALES
         assert "difamacion_redes" in GUIAS_INSTITUCIONALES
 
-    def test_guia_difamacion_menciona_cp_442(self):
-        """La guía de difamación debe mencionar Art. 442."""
+    def test_guia_difamacion_menciona_cp_444(self):
+        """La guía de difamación debe mencionar Art. 444 (difamación) del CP."""
         from prompts import GUIAS_INSTITUCIONALES
         guia = GUIAS_INSTITUCIONALES.get("difamacion_redes", "")
-        assert "442" in guia
+        assert "444" in guia
 
     def test_guia_difamacion_menciona_ley_contra_odio(self):
         """La guía debe mencionar la Ley contra el Odio para casos de redes."""
@@ -1081,3 +1090,107 @@ class TestChunkerNoRompePorReferenciasInternas:
         arts = self._extraer(texto)
         nums = sorted(a["articulo"] for a in arts)
         assert nums == [50, 51]
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# REGRESIONES PUNTUALES — past tense, articulos correctos, marca, sanitarios
+# ═══════════════════════════════════════════════════════════════════════════
+
+class TestPasadoEnViolencia:
+    """'Mi novia me golpeo' (pasado) debe disparar tema de violencia/lesiones."""
+
+    def test_pasado_dispara_violencia_mujer_o_lesiones(self):
+        """Caso real del stress test: 'Mi novia me golpeó' debe rutar correctamente."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("Mi novia me golpeó la cara con la cartera")
+        # Debe disparar al menos uno de los dos temas
+        assert "violencia_mujer" in temas or "lesiones_personales" in temas
+
+    def test_carterazo_dispara_lesiones(self):
+        """Vocabulario coloquial 'carterazo' debe disparar lesiones_personales."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("me dio un carterazo en la cara mi pareja")
+        assert "violencia_mujer" in temas or "lesiones_personales" in temas
+
+    def test_esposa_me_pego_dispara_lesiones(self):
+        """Pasado simple 'me pegó' debe matchear."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("mi esposa me pegó cuando llegue a la casa")
+        assert "violencia_mujer" in temas or "lesiones_personales" in temas
+
+
+class TestBancarioArticulosLISBReales:
+    """Los articulos del tema bancario deben ser articulos reales de la LISB."""
+
+    def test_bancario_incluye_art_59_debitos_no_autorizados(self):
+        """Art. 59 LISB: prohibicion de debitos sin autorizacion. Critico para 'me quitaron $300'."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 59 in ARTICULOS_CLAVE["bancario"]["articulos"]
+
+    def test_bancario_incluye_art_62_intereses_comisiones(self):
+        """Art. 62 LISB: intereses, comisiones y tarifas."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 62 in ARTICULOS_CLAVE["bancario"]["articulos"]
+
+    def test_bancario_incluye_art_71_reclamos(self):
+        """Art. 71 LISB: atencion a reclamos y denuncias de usuarios."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 71 in ARTICULOS_CLAVE["bancario"]["articulos"]
+
+    def test_bancario_NO_usa_articulos_redondos_inexistentes(self):
+        """Los articulos redondos [100, 220, 250, 260] de la version anterior estaban
+        invented y no son los relevantes. Verificar que no esten."""
+        from busqueda import ARTICULOS_CLAVE
+        arts = ARTICULOS_CLAVE["bancario"]["articulos"]
+        # Si en la lista hay solo articulos sustantivos (todos < 220 en este caso),
+        # confirmamos que se purgo la lista round-numbered.
+        assert max(arts) <= 200  # ahora top es 200 (Irregularidades)
+
+    def test_guia_bancario_aclara_no_es_corrupcion(self):
+        """La guia debe explicitar que bancos privados NO se rigen por Ley contra la Corrupcion."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("bancario", "")
+        # Debe mencionar 'corrupcion' en negativa o aclaratoriamente
+        assert "Corrupci" in guia or "corrupci" in guia
+
+
+class TestMarcaPropiedadIndustrial:
+    """LPI Art. 31 — duracion de 15 anos. Topic reducido para evitar fallback embedding."""
+
+    def test_marca_topic_incluye_art_31(self):
+        """Art. 31 LPI debe estar en el topic curado (15 anos renovables)."""
+        from busqueda import ARTICULOS_CLAVE
+        assert 31 in ARTICULOS_CLAVE["marca_propiedad_industrial"]["articulos"]
+
+    def test_marca_topic_no_excede_10_articulos(self):
+        """El topic debe estar curado a <= 10 articulos para evitar forzar embedding."""
+        from busqueda import ARTICULOS_CLAVE
+        arts = ARTICULOS_CLAVE["marca_propiedad_industrial"]["articulos"]
+        assert len(arts) <= 10
+
+    def test_keyword_sapi_dispara_tema(self):
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("como registro un nombre comercial en el SAPI")
+        assert "marca_propiedad_industrial" in temas
+
+    def test_guia_marca_menciona_15_anos(self):
+        """La guia debe mencionar la duracion de 15 anos del Art. 31 LPI."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("marca_propiedad_industrial", "")
+        assert "15" in guia and ("año" in guia.lower() or "ano" in guia.lower())
+
+
+class TestPermisosSanitariosLocalVsProducto:
+    """Distinguir Permiso de Funcionamiento del local vs Registro Sanitario de producto."""
+
+    def test_guia_permisos_sanitarios_existe(self):
+        from prompts import GUIAS_INSTITUCIONALES
+        assert "permisos_sanitarios" in GUIAS_INSTITUCIONALES
+
+    def test_guia_distingue_local_vs_producto(self):
+        """La guia debe explicitar la diferencia entre permiso de local y registro de producto."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("permisos_sanitarios", "").lower()
+        assert "funcionamiento" in guia
+        assert "registro sanitario" in guia or "registro de producto" in guia
+        assert "panader" in guia  # menciona panaderia explicitamente

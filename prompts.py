@@ -528,20 +528,36 @@ BIENES Y CUSTODIA:
 """,
     "bancario": """
 INSTITUCIONES Y PASOS CONCRETOS PARA PROBLEMAS BANCARIOS:
-- SUDEBAN (Superintendencia de las Instituciones del Sector Bancario): es el ente regulador de TODOS los bancos en Venezuela. Presenta tu queja formal en sudeban.gob.ve si el banco: te cobró comisiones no autorizadas, bloqueó tu cuenta sin justificación, te negó servicios sin causa, o incumplió sus propias condiciones.
-- Comisiones: Los bancos SOLO pueden cobrar comisiones previamente autorizadas por SUDEBAN. Si te cobran algo no autorizado, es ilegal. Exige al banco el número de resolución SUDEBAN que autoriza esa comisión.
-- Cuenta bloqueada sin causa: Exige por escrito la razón al banco (departamento de operaciones). Si no justifican en 48h, denuncia en SUDEBAN y en la Defensoría del Pueblo.
-- Cobro no reconocido: Denuncia ante el banco (genera número de expediente). Si no resuelven en 15 días hábiles, eleva la queja a SUDEBAN con ese número de expediente.
-- FOGADE (Fondo de Garantía de Depósitos y Protección Bancaria): si el banco entra en liquidación, FOGADE garantiza los depósitos hasta el monto establecido por ley.
-- Deuda bancaria: Puedes solicitar reestructuración o refinanciamiento directamente al banco por escrito. Si el banco usa prácticas coercitivas o de acoso por deuda, denuncia ante SUDEBAN.
-- SUNDDE: Si el problema involucra prácticas comerciales desleales o publicidad engañosa del banco.
+
+MARCO LEGAL APLICABLE: Ley de las Instituciones del Sector Bancario (LISB). Los bancos privados venezolanos NO se rigen por la Ley contra la Corrupción (esa aplica solo a funcionarios públicos sobre fondos públicos). Si el problema es con un banco privado por comisiones, débitos no autorizados, etc., el marco es la LISB y el ente competente es SUDEBAN.
+
+ARTÍCULOS CLAVE DE LA LISB QUE DEBES PRIORIZAR EN LA RESPUESTA:
+- Art. 59 LISB — Prohibición de débitos sin autorización del usuario: la institución NO puede debitar de tu cuenta sin tu autorización expresa. Si te quitaron dinero sin avisar, este es el artículo central.
+- Art. 62 LISB — Intereses, comisiones y tarifas: regula qué pueden cobrar los bancos. Solo se cobran comisiones AUTORIZADAS por SUDEBAN.
+- Art. 71 LISB — Atención a reclamos y denuncias de usuarios: define el procedimiento de queja y los plazos del banco para responder.
+- Art. 80 LISB — Exhibición de tasas y comisiones: el banco DEBE exhibir públicamente las comisiones autorizadas. Si te cobran algo no exhibido/autorizado, es ilegal.
+- Art. 154 / 173 LISB — competencias de SUDEBAN para protección del usuario.
+- Art. 192 / 200 LISB — sanciones a las instituciones bancarias por irregularidades.
+
+INSTITUCIONES Y PASOS CONCRETOS:
+- SUDEBAN (Superintendencia de las Instituciones del Sector Bancario): ente regulador. Web: sudeban.gob.ve. Recibe quejas por comisiones no autorizadas, débitos sin consentimiento, bloqueos sin causa, etc.
+- Defensor del Cliente Bancario (de la propia institución): paso previo OBLIGATORIO antes de SUDEBAN. Por escrito, con número de expediente. El banco tiene plazos definidos (Art. 71 LISB) para responder.
+- FOGADE (Fondo de Garantía de Depósitos): si el banco entra en liquidación, garantiza depósitos hasta el monto legal.
+- SUNDDE: si hay publicidad engañosa o prácticas comerciales desleales del banco.
+
+PASOS:
+1. Reclamo escrito al banco (Defensor del Cliente). Conserva número de expediente.
+2. Si no resuelve en plazo (típicamente 15-20 días hábiles), eleva queja a SUDEBAN con copia del expediente, extracto donde aparece el cargo, y comunicaciones con el banco.
+3. SUDEBAN puede ordenar la devolución y aplicar sanciones a la institución.
+
+NO uses la Ley contra la Corrupción para bancos privados. NO uses Reglamento de Alimentos. La LISB es la ley aplicable.
 """,
     "difamacion_redes": """
 INSTITUCIONES Y PASOS CONCRETOS PARA DIFAMACIÓN, CALUMNIA E INJURIA (incluyendo redes sociales):
 - Marco legal principal (Código Penal):
-  • Art. 442 (Difamación): imputar a alguien un hecho determinado capaz de exponerle al desprecio o al odio público, comunicado a varias personas (las redes sociales cuentan como "comunicación a varias personas").
-  • Art. 444 (Injuria): ofender de obra o de palabra. Pena: arresto de 3 a 8 días o multa.
-  • Art. 445 (Retractación): si el difamador se retracta públicamente, el juez puede atenuar la pena.
+  • Art. 444 (Difamación): "El que comunicándose con varias personas reunidas o separadas, hubiere imputado a algún individuo un hecho determinado capaz de exponerlo al desprecio o al odio público, u ofensivo a su honor o reputación..." — las redes sociales SÍ cuentan como "comunicación a varias personas".
+  • Art. 445: aspecto procesal de la difamación — regula cuándo se admite la prueba de la verdad del hecho difamatorio (solo en casos específicos como funcionario público).
+  • Art. 446 (Injuria): "Todo individuo que en comunicación con varias personas, juntas o separadas, hubiere ofendido de alguna manera el honor, la reputación o el decoro de alguna persona..." — pena: arresto de 3 a 8 días o multa.
 - Ley Constitucional contra el Odio (2017): aplica cuando el contenido publicado incita al odio o discriminación por motivos de raza, religión, género, orientación sexual, etc. Penas de 10 a 20 años de prisión para los casos más graves. Requiere Fiscalía especializada.
 - Ley Especial contra los Delitos Informáticos: aplica si el acto se realizó por medios electrónicos (redes, mensajes, correo).
 
@@ -550,6 +566,59 @@ PASOS CONCRETOS:
 2. Denuncia ante la Fiscalía del Ministerio Público. Si hay elemento de odio o discriminación, solicita la Fiscalía con competencia en Ley contra el Odio.
 3. CICPC — División de Delitos Informáticos: para hechos cometidos por medios digitales. Lleva las capturas y la información de la cuenta infractora.
 4. Acción civil por daño moral: paralelamente, puedes demandar al infractor por daño moral ante el Tribunal Civil competente (Código Civil, Art. 1185).
+""",
+    "marca_propiedad_industrial": """
+INSTITUCIONES Y PASOS CONCRETOS PARA REGISTRO DE MARCA / NOMBRE COMERCIAL:
+
+DURACIÓN DE LA PROTECCIÓN — DATO CLAVE:
+- Art. 31 de la Ley de Propiedad Industrial: el registro de una marca dura QUINCE (15) AÑOS, renovable indefinidamente por períodos sucesivos de 15 años. La renovación debe solicitarse dentro de los 6 meses anteriores al vencimiento.
+- Si el usuario pregunta "por cuánto tiempo me protege" o "cuánto dura", la respuesta correcta es: 15 AÑOS RENOVABLES. NO digas "no establece plazo específico" — sí lo establece, en el Art. 31.
+
+INSTITUCIÓN COMPETENTE:
+- SAPI (Servicio Autónomo de la Propiedad Intelectual): web sapi.gob.ve. Es el ente que registra marcas, lemas, patentes, diseños industriales y nombres comerciales en Venezuela.
+
+PROCESO TÍPICO DE REGISTRO DE MARCA:
+1. Búsqueda fonética y gráfica previa en el SAPI (recomendable, para evitar rechazo por similitud con marca registrada — Art. 33 LPI).
+2. Solicitud formal con: identificación del solicitante (cédula/RIF), denominación de la marca, lista de productos/servicios que distinguirá (clasificación de Niza), pago de tasa.
+3. Examen de fondo del SAPI (verifica si la marca cumple Arts. 27-30 LPI y no incurre en prohibiciones del Art. 33).
+4. Publicación en el Boletín de la Propiedad Industrial. Plazo para oposiciones de terceros.
+5. Concesión y entrega del título. Plazo total típico: 18-24 meses.
+
+DIFERENCIAS QUE EL CONSULTANTE DEBE CONOCER:
+- "Marca": signo distintivo de productos o servicios. Dura 15 años renovables.
+- "Nombre comercial": identifica al establecimiento o empresa. Tiene régimen propio en la LPI.
+- "Lema comercial": frase publicitaria asociada a la marca.
+- "Patente de invención": protege invenciones técnicas. Dura 20 años NO renovables (régimen distinto).
+""",
+    "permisos_sanitarios": """
+INSTITUCIONES Y PASOS CONCRETOS PARA PERMISOS SANITARIOS DE NEGOCIOS DE ALIMENTOS (panadería, restaurante, kiosco, etc.):
+
+DISTINCIÓN CRÍTICA — NO confundir estos dos trámites:
+
+1) PERMISO SANITARIO DE FUNCIONAMIENTO DEL ESTABLECIMIENTO (lo que se necesita para ABRIR el local):
+   - Lo emite la Dirección Estatal de Salud o la Contraloría Sanitaria del estado/municipio (depende de la jurisdicción), en aplicación de la Ley Orgánica de Salud y el Reglamento de la Ley Orgánica de Salud.
+   - Requiere: solicitud, croquis del local, descripción de la actividad, RIF, cédula del propietario, conformidad de uso del inmueble, constancia de fumigación, exámenes médicos del personal manipulador, etc.
+   - Hay inspección física del local antes de la emisión.
+   - Es lo que se busca PRIMERO al abrir cualquier negocio donde se manipulen alimentos (panadería, charcutería, restaurante).
+
+2) REGISTRO SANITARIO DE PRODUCTO (lo que se necesita para FABRICAR Y COMERCIALIZAR un alimento envasado con marca propia):
+   - Lo emite el Instituto Nacional de Higiene "Rafael Rangel" (INH) en aplicación del Reglamento General de Alimentos (Art. 32 y siguientes).
+   - Requiere: muestras del producto, etiqueta proyectada, fórmula, análisis de laboratorio.
+   - Es para productos envasados con marca/etiqueta (NO para pan recién horneado vendido al detal en la propia panadería).
+
+PARA UNA PANADERÍA TÍPICA EN CASA o establecimiento al detal:
+- Lo PRIMERO es el Permiso Sanitario de Funcionamiento (paso 1 arriba), no el Registro Sanitario de Producto (paso 2). El Reglamento de Alimentos Art. 32 NO aplica a venta al detal de pan recién horneado.
+
+OTROS PERMISOS COMPLEMENTARIOS PARA EL NEGOCIO:
+- SAREN (sfrregistros.saren.gob.ve): Si se constituye persona jurídica (C.A. o firma personal). Reserva de nombre.
+- SENIAT: RIF de la empresa, si aplica IVA o ISLR.
+- Alcaldía: Licencia de Actividades Económicas (Patente Municipal). Conformidad de uso.
+- Bomberos: Conformidad ignífuga / certificado de prevención de incendios.
+- INPSASEL: Si tiene empleados, registro patronal.
+- IVSS: Inscripción de trabajadores.
+
+ORDEN PRÁCTICO RECOMENDABLE:
+1) Conformidad de uso de la alcaldía. 2) Permiso sanitario de funcionamiento. 3) Patente municipal. 4) Si vende producto envasado de marca propia, registro sanitario en el INH.
 """,
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:
@@ -638,13 +707,6 @@ INSTITUCIONES Y PASOS CONCRETOS PARA DEFENSA DEL CONSUMIDOR:
 - Ley aplicable: Ley Orgánica de Precios Justos (sustituyó a la antigua INDEPABIS).
 - Si compraste algo defectuoso: Tienes derecho a reparación, reposición o devolución del dinero.
 - Guarda siempre: factura, ticket, fotos del producto, conversaciones con el vendedor.
-""",
-    "bancario": """
-INSTITUCIONES Y PASOS CONCRETOS PARA PROBLEMAS BANCARIOS:
-- SUDEBAN (Superintendencia de Bancos): Reclamos contra bancos. Web: sudeban.gob.ve. Si el banco no resuelve tu reclamo en 20 días, acude a SUDEBAN.
-- Defensor del Cliente Bancario: Cada banco tiene uno, es tu primer recurso.
-- Si clonaron tu tarjeta o hubo fraude: Reporta inmediatamente al banco, solicita bloqueo y apertura de reclamo por escrito. Denuncia en el CICPC.
-- Comisiones ilegales: Los bancos NO pueden cobrar comisiones no autorizadas por SUDEBAN. Denuncia si lo hacen.
 """,
     "seguro_social": """
 INSTITUCIONES Y PASOS CONCRETOS PARA SEGURO SOCIAL:

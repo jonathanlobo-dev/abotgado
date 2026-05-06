@@ -1253,10 +1253,14 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "drogas": "drogas",
         # Bancario: guía propia con SUDEBAN, comisiones, FOGADE
         "bancario": "bancario",
-        # Difamación: guía propia con CP Arts. 442/444 y Ley contra el Odio
+        # Difamación: guía propia con CP Arts. 444/445/446 y Ley contra el Odio
         "difamacion": "difamacion_redes",
         # Laboral contratista: hereda guía laboral (que ya incluye primacía de la realidad)
         "laboral_contratista": "laboral",
+        # Marca / SAPI: guía propia con duración 15 años (Art. 31 LPI)
+        "marca_propiedad_industrial": "marca_propiedad_industrial",
+        # Permisos sanitarios: guía con distinción local vs producto envasado
+        "permisos_sanitarios": "permisos_sanitarios",
         # Aguas / recursos hídricos: ambos temas comparten guía con MINAGUAS + Hidroven
         "aguas_dominio_publico": "aguas_dominio_publico",
         "aguas_ley_especial": "aguas_dominio_publico",
@@ -1291,6 +1295,10 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
             "difamaci": "difamacion_redes", "calumni": "difamacion_redes",
             "injuria": "difamacion_redes",
             "contratista": "laboral",
+            "marca": "marca_propiedad_industrial", "sapi": "marca_propiedad_industrial",
+            "patente": "marca_propiedad_industrial", "nombre comercial": "marca_propiedad_industrial",
+            "panaderia": "permisos_sanitarios", "panadería": "permisos_sanitarios",
+            "restaurante": "permisos_sanitarios", "permiso sanitario": "permisos_sanitarios",
             "demandar": "demanda_civil_general", "libelo": "demanda_civil_general",
             "demanda": "demanda_civil_general",
         }
