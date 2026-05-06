@@ -591,34 +591,48 @@ DIFERENCIAS QUE EL CONSULTANTE DEBE CONOCER:
 - "Patente de invención": protege invenciones técnicas. Dura 20 años NO renovables (régimen distinto).
 """,
     "permisos_sanitarios": """
-INSTITUCIONES Y PASOS CONCRETOS PARA PERMISOS SANITARIOS DE NEGOCIOS DE ALIMENTOS (panadería, restaurante, kiosco, etc.):
+INSTITUCIONES Y PASOS CONCRETOS PARA PERMISOS SANITARIOS DE NEGOCIOS DE ALIMENTOS (panadería, restaurante, kiosco, charcutería, etc.):
 
-DISTINCIÓN CRÍTICA — NO confundir estos dos trámites:
+ARTÍCULOS QUE DEBES PRIORIZAR EN LA RESPUESTA (cítalos cuando estén disponibles en la lista):
+- Reglamento General de Alimentos, Art. 11: "Quedan sujetos a las prescripciones de este Reglamento los establecimientos destinados a la producción y depósito de alimentos, los expendios fijos o ambulantes y los vehículos destinados al transporte de alimentos." Es la norma BASE que somete al establecimiento al régimen sanitario.
+- Reglamento General de Alimentos, Art. 12: "Los establecimientos, expendios y vehículos a que se refiere el artículo anterior no podrán funcionar sin el correspondiente permiso de la autoridad sanitaria local." Es el FUNDAMENTO de la obligación de obtener el permiso.
+- Reglamento General de Alimentos, Arts. 14 y 15: detalle adicional sobre uso del establecimiento y dispositivos exigidos.
+- Resolución SG-403-96 (Permisos Sanitarios), Art. 2: "La Autoridad Sanitaria Competente debe otorgar el permiso sanitario o licencia sanitaria a todo establecimiento o vehículo para alimentos."
+- Resolución SG-403-96, Art. 7: requisitos previos al otorgamiento del permiso (proyecto de construcción, planos, memoria descriptiva, diagrama de flujo, etc.).
+- Resolución SG-403-96, Arts. 4 y 5: causales de renovación y suspensión del permiso.
+- Resolución SG-403-96, Art. 8: plazo máximo del trámite.
+
+DISTINCIÓN CRÍTICA — NO confundir estos dos trámites distintos:
 
 1) PERMISO SANITARIO DE FUNCIONAMIENTO DEL ESTABLECIMIENTO (lo que se necesita para ABRIR el local):
-   - Lo emite la Dirección Estatal de Salud o la Contraloría Sanitaria del estado/municipio (depende de la jurisdicción), en aplicación de la Ley Orgánica de Salud y el Reglamento de la Ley Orgánica de Salud.
-   - Requiere: solicitud, croquis del local, descripción de la actividad, RIF, cédula del propietario, conformidad de uso del inmueble, constancia de fumigación, exámenes médicos del personal manipulador, etc.
+   - Marco: Reglamento General de Alimentos Arts. 11, 12, 14, 15 + Resolución SG-403-96 (procedimiento y requisitos del permiso).
+   - Lo emite la Autoridad Sanitaria Competente (Dirección Estatal de Salud o Contraloría Sanitaria del municipio).
+   - Requiere: solicitud formal, proyecto de construcción / planos, memoria descriptiva, diagrama de flujo, descripción de equipos, croquis del local, constancia de uso del inmueble, RIF, cédula, exámenes médicos del personal manipulador, constancia de fumigación.
    - Hay inspección física del local antes de la emisión.
-   - Es lo que se busca PRIMERO al abrir cualquier negocio donde se manipulen alimentos (panadería, charcutería, restaurante).
+   - Es lo que se busca PRIMERO al abrir cualquier negocio donde se manipulen alimentos (panadería, restaurante, charcutería, etc.).
 
-2) REGISTRO SANITARIO DE PRODUCTO (lo que se necesita para FABRICAR Y COMERCIALIZAR un alimento envasado con marca propia):
-   - Lo emite el Instituto Nacional de Higiene "Rafael Rangel" (INH) en aplicación del Reglamento General de Alimentos (Art. 32 y siguientes).
+2) REGISTRO SANITARIO DEL PRODUCTO ENVASADO (solo si fabricas alimentos envasados con marca propia para distribución):
+   - Marco: Reglamento General de Alimentos Art. 32 y siguientes (NO Arts. 11/12).
+   - Lo emite el Instituto Nacional de Higiene "Rafael Rangel" (INH).
    - Requiere: muestras del producto, etiqueta proyectada, fórmula, análisis de laboratorio.
-   - Es para productos envasados con marca/etiqueta (NO para pan recién horneado vendido al detal en la propia panadería).
-
-PARA UNA PANADERÍA TÍPICA EN CASA o establecimiento al detal:
-- Lo PRIMERO es el Permiso Sanitario de Funcionamiento (paso 1 arriba), no el Registro Sanitario de Producto (paso 2). El Reglamento de Alimentos Art. 32 NO aplica a venta al detal de pan recién horneado.
+   - NO aplica a venta al detal de pan recién horneado, comida preparada al momento, ni a la mayoría de panaderías/restaurantes típicos.
+   - Si el caso es una panadería normal en casa, NO cites el Art. 32 — ese es de otro régimen.
 
 OTROS PERMISOS COMPLEMENTARIOS PARA EL NEGOCIO:
 - SAREN (sfrregistros.saren.gob.ve): Si se constituye persona jurídica (C.A. o firma personal). Reserva de nombre.
 - SENIAT: RIF de la empresa, si aplica IVA o ISLR.
-- Alcaldía: Licencia de Actividades Económicas (Patente Municipal). Conformidad de uso.
+- Alcaldía: Conformidad de uso del inmueble + Licencia de Actividades Económicas (Patente Municipal).
 - Bomberos: Conformidad ignífuga / certificado de prevención de incendios.
 - INPSASEL: Si tiene empleados, registro patronal.
 - IVSS: Inscripción de trabajadores.
 
 ORDEN PRÁCTICO RECOMENDABLE:
-1) Conformidad de uso de la alcaldía. 2) Permiso sanitario de funcionamiento. 3) Patente municipal. 4) Si vende producto envasado de marca propia, registro sanitario en el INH.
+1) Conformidad de uso de la alcaldía.
+2) Permiso sanitario de funcionamiento (Reg. Alimentos Arts. 11/12 + SG-403-96).
+3) Patente municipal de actividades económicas.
+4) Bomberos.
+5) SENIAT (RIF) e IVSS/INPSASEL si hay empleados.
+6) Solo si vende producto envasado de marca propia, registro sanitario del producto en el INH (Reg. Alimentos Art. 32+).
 """,
     "animales": """
 INSTITUCIONES Y PASOS CONCRETOS PARA MALTRATO ANIMAL:

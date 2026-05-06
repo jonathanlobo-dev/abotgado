@@ -1261,6 +1261,8 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "marca_propiedad_industrial": "marca_propiedad_industrial",
         # Permisos sanitarios: guía con distinción local vs producto envasado
         "permisos_sanitarios": "permisos_sanitarios",
+        "negocio_alimentos_local": "permisos_sanitarios",
+        "negocio_alimentos_permiso_sg": "permisos_sanitarios",
         # Aguas / recursos hídricos: ambos temas comparten guía con MINAGUAS + Hidroven
         "aguas_dominio_publico": "aguas_dominio_publico",
         "aguas_ley_especial": "aguas_dominio_publico",

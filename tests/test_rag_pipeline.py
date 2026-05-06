@@ -1194,3 +1194,49 @@ class TestPermisosSanitariosLocalVsProducto:
         assert "funcionamiento" in guia
         assert "registro sanitario" in guia or "registro de producto" in guia
         assert "panader" in guia  # menciona panaderia explicitamente
+
+    def test_panaderia_dispara_negocio_alimentos_local(self):
+        """'abrir panaderia en mi casa' debe disparar negocio_alimentos_local."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("Quiero abrir una panadería en mi casa, qué permisos necesito?")
+        assert "negocio_alimentos_local" in temas
+
+    def test_panaderia_dispara_negocio_alimentos_permiso_sg(self):
+        """Tambien debe disparar el topic de SG-403-96 (que cita Art. 7 del permiso)."""
+        from busqueda import buscar_articulos_clave
+        _, temas = buscar_articulos_clave("Quiero abrir una panadería en mi casa, qué permisos necesito?")
+        assert "negocio_alimentos_permiso_sg" in temas
+
+    def test_topic_negocio_local_apunta_reg_alimentos_art_11(self):
+        """El topic local debe incluir Art. 11 del Reglamento General de Alimentos."""
+        from busqueda import ARTICULOS_CLAVE
+        assert "negocio_alimentos_local" in ARTICULOS_CLAVE
+        arts = ARTICULOS_CLAVE["negocio_alimentos_local"]["articulos"]
+        assert 11 in arts
+        assert 12 in arts
+
+    def test_topic_negocio_sg_apunta_a_resolucion(self):
+        """Topic SG debe apuntar a Resolución SG-403-96 con Art. 7."""
+        from busqueda import ARTICULOS_CLAVE
+        assert "negocio_alimentos_permiso_sg" in ARTICULOS_CLAVE
+        topic = ARTICULOS_CLAVE["negocio_alimentos_permiso_sg"]
+        assert "SG-403" in topic["ley"]
+        assert 7 in topic["articulos"]
+
+    def test_restaurante_y_kiosco_disparan_temas(self):
+        """Variantes de negocio de comida tambien disparan."""
+        from busqueda import buscar_articulos_clave
+        for q in [
+            "abrir un restaurante",
+            "abrir un kiosco de comida",
+            "voy a poner un negocio de comida",
+        ]:
+            _, temas = buscar_articulos_clave(q)
+            assert "negocio_alimentos_local" in temas, f"Fallo para: {q}"
+
+    def test_guia_permisos_sanitarios_menciona_arts_11_12(self):
+        """La guia ahora debe orientar al LLM a citar Reg. Alimentos Arts. 11 y 12."""
+        from prompts import GUIAS_INSTITUCIONALES
+        guia = GUIAS_INSTITUCIONALES.get("permisos_sanitarios", "")
+        assert "Art. 11" in guia or "art. 11" in guia.lower()
+        assert "Art. 12" in guia or "art. 12" in guia.lower()
