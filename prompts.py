@@ -980,6 +980,24 @@ INSTRUCCIÓN DE CLARIFICACIÓN: Al final de la sección 💡 Qué hacer, SIEMPRE
 • 💼 Problema laboral (despido, prestaciones, salario)
 • 🚨 Me robaron, estafaron o cometieron un delito contra mí"
 """,
+    "ciencia_tecnologia": """
+INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE CIENCIA, TECNOLOGÍA E INNOVACIÓN (LOCTI):
+
+OBLIGACIONES DE LAS EMPRESAS:
+- Art. 26 LOCTI: Toda empresa con ingresos brutos anuales superiores al límite que fije el Ejecutivo Nacional DEBE destinar un porcentaje (fijado por el ONCTI/FONACIT) a actividades de investigación, innovación y desarrollo tecnológico.
+- Art. 27 LOCTI: Las empresas pueden cumplir la obligación ejecutando proyectos propios de I+D, aportando al FONACIT, o financiando proyectos en universidades o centros de investigación.
+- Art. 28 LOCTI: Las inversiones en I+D deben ser declaradas anualmente ante el ONCTI (Observatorio Nacional de Ciencia, Tecnología e Innovación).
+- Art. 29 LOCTI: Las empresas que no declaren o no cumplan el aporte pueden ser sancionadas por el ONCTI.
+- Art. 30 LOCTI: FONACIT administra los aportes y financia proyectos de investigación e innovación.
+
+ENTE RECTOR: ONCTI (oncti.gob.ve) — Observatorio Nacional de Ciencia, Tecnología e Innovación. Órgano de supervisión y registro de las declaraciones anuales.
+FONDO: FONACIT (fonacit.gob.ve) — Fondo Nacional de Ciencia, Tecnología e Innovación. Recibe aportes de las empresas y financia proyectos.
+
+ADVERTENCIA IMPORTANTE:
+- La LOCTI aplica a EMPRESAS PRIVADAS con ciertos ingresos, NO a personas naturales ni microempresas pequeñas.
+- Si la pregunta es sobre patentes de invención (NO marcas), la ley aplicable es la Ley de Propiedad Industrial (LPI), NO la LOCTI.
+- Si la pregunta es sobre marcas o diseños industriales, usar la guía de Marca/SAPI.
+""",
     "consulta_generica": """
 INSTRUCCIÓN ESPECIAL — CONSULTA DEMASIADO GENERAL:
 El usuario hizo una pregunta muy amplia sin especificar el tipo de problema legal. El bot NO debe inventar una respuesta específica ni citar artículos al azar.

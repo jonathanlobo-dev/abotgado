@@ -63,6 +63,25 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         "Ley de Tránsito Terrestre",
         "Ley de Registros y Notarías",
     },
+    "lesiones_personales": {
+        # CRBV aparece como falso positivo (Art. 54 esclavitud, Art. 114 consumidor,
+        # Art. 271 imprescriptibilidad) cuando el reformulador LLM malinterpreta
+        # "golpear con la cartera" como crimen económico. La respuesta correcta
+        # es siempre el CP (Arts. 414-422 lesiones). La CRBV no aplica directamente.
+        "Constitución de la República Bolivariana de Venezuela",
+    },
+    "bancario": {
+        # LCC (Ley contra la Corrupción) aparece como falso positivo semántico
+        # para queries de comisiones/cobros bancarios. La LCC regula funcionarios
+        # públicos, no bancos privados; LISB (Arts. 59, 62, 71, 80) es la ley correcta.
+        "Ley contra la Corrupción",
+    },
+    "ciencia_tecnologia": {
+        # Código de Comercio aparece como falso positivo ("empresa" + "obligaciones")
+        # en queries sobre LOCTI. La LOCTI rige las obligaciones de I+D; el Código de
+        # Comercio regula actos de comercio y sociedades, no investigación científica.
+        "Código de Comercio",
+    },
 }
 
 # ─── MAPEO LEY → RAMA (desde leyes_config.json) ───────────────────────────────
@@ -126,6 +145,9 @@ RAMA_POR_TEMA = {
     "licores_alcohol": "tributario",
     "secuestro_extorsion": "penal",
     "odio_discriminacion": "penal",
+    "bancario": "bancario",
+    "laboral_contratista": "laboral",
+    "difamacion": "penal",
     "consejos_comunales": "administrativo",
     "comunas": "administrativo",
     "contraloria": "administrativo",
@@ -134,7 +156,7 @@ RAMA_POR_TEMA = {
     "poder_popular": "administrativo",
     "permisos_sanitarios": "administrativo",
     "justicia_militar": "penal",
-    "ciencia_tecnologia": "administrativo",
+    "ciencia_tecnologia": "tecnologia",
     "alimentos_regulacion": "administrativo",
     "genero_lenguaje": "constitucional",
     "infogobierno": "administrativo",

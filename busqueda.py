@@ -1270,6 +1270,8 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         # Árboles y raíces: guía propia que matiza Juez de Paz (mediación) vs
         # Tribunal Civil (cuando hay daños cuantificables)
         "arboles_raices_vecino": "arboles_raices_vecino",
+        # LOCTI/Ciencia y tecnología: guía con ONCTI, FONACIT, obligaciones de empresas
+        "ciencia_tecnologia": "ciencia_tecnologia",
     }
     guias_usadas = set()
     guia_textos = []
@@ -1303,6 +1305,10 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
             "restaurante": "permisos_sanitarios", "permiso sanitario": "permisos_sanitarios",
             "demandar": "demanda_civil_general", "libelo": "demanda_civil_general",
             "demanda": "demanda_civil_general",
+            "locti": "ciencia_tecnologia", "fonacit": "ciencia_tecnologia",
+            "oncti": "ciencia_tecnologia",
+            "ciencia y tecnolog": "ciencia_tecnologia",
+            "investigacion y desarrollo": "ciencia_tecnologia",
         }
         for palabra, tema in mapeo_rapido.items():
             if palabra in pregunta_lower and tema in GUIAS_INSTITUCIONALES:
