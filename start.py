@@ -22,8 +22,36 @@ def main():
     # Crear DATA_DIR si no existe (Railway Volume)
     os.makedirs(config.DATA_DIR, exist_ok=True)
 
-    # Verificar si ChromaDB ya existe
-    chroma_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
+    # Umbral mínimo de artículos para considerar la DB sana (actual ~15.018).
+    UMBRAL_MIN_ARTICULOS = 14000
+
+    # Verificar si ChromaDB ya existe (carpeta no vacía)
+    carpeta_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
+
+    # IMPORTANTE: no basta con que la CARPETA exista. La colección puede haberse
+    # perdido/corromper (volumen lleno, contenedor matado a mitad de escritura →
+    # chroma.sqlite3 truncado) dejando las carpetas de segmentos en disco pero
+    # SIN la colección. Antes eso hacía que el bot arrancara y crasheara al
+    # importar busqueda ("Collection leyes_venezolanas does not exist") en bucle
+    # infinito sin auto-repararse. Ahora verificamos que la colección esté SANA.
+    coleccion_sana = False
+    if carpeta_existe:
+        try:
+            import chromadb
+            _c = chromadb.PersistentClient(path=str(config.DB_PATH))
+            _n = _c.get_collection("leyes_venezolanas").count()
+            coleccion_sana = _n >= UMBRAL_MIN_ARTICULOS
+            if coleccion_sana:
+                print(f"[OK] Colección 'leyes_venezolanas' sana ({_n} artículos).")
+            else:
+                print(f"[!] Colección presente pero incompleta ({_n} < {UMBRAL_MIN_ARTICULOS}). Se forzará reindex.")
+            del _c
+        except Exception as e:
+            print(f"[!] Carpeta ChromaDB presente pero la colección NO se pudo abrir: {e}")
+            print("    Se forzará un reindex limpio.")
+            coleccion_sana = False
+
+    chroma_existe = carpeta_existe and coleccion_sana
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
@@ -70,13 +98,17 @@ def main():
             razon = f"Cambios en PDFs detectados ({pdfs_actuales} PDFs, fingerprint cambió)"
         elif forzar_reindex:
             razon = "REINDEX=1 activado"
-        else:
+        elif not carpeta_existe:
             razon = "ChromaDB no encontrada"
+        else:
+            razon = "Colección perdida/corrupta (carpeta existe pero sin datos válidos)"
         print(f"\n[!] {razon}. Indexando leyes...")
         print("    Esto toma ~10-15 minutos.\n")
 
-        # Borrar ChromaDB vieja para reindex limpio
-        if chroma_existe:
+        # Borrar ChromaDB vieja para reindex limpio. Usar carpeta_existe (no
+        # chroma_existe): si la colección está corrupta hay que borrar igual
+        # los restos en disco antes de reconstruir.
+        if carpeta_existe and os.path.exists(config.DB_PATH):
             import shutil
             shutil.rmtree(config.DB_PATH)
             print("    ChromaDB anterior eliminada.")
@@ -91,7 +123,6 @@ def main():
         # Evita que el bot arranque con DB corrupta si el indexado fue
         # interrumpido (OOM/timeout en Railway → ChromaDB queda con menos
         # artículos de lo esperado y el bug es silencioso).
-        UMBRAL_MIN_ARTICULOS = 14000  # actual: ~15.018; margen de seguridad
         try:
             import chromadb
             _chroma = chromadb.PersistentClient(path=str(config.DB_PATH))
