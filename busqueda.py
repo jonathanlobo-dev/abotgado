@@ -75,7 +75,8 @@ ALIAS_LEYES: dict[str, str] = {}
 for _ley in _leyes_cfg["leyes"]:
     for _alias in _ley["aliases"]:
         ALIAS_LEYES[_alias] = _ley["nombre"]
-del _leyes_cfg
+# _leyes_cfg se reutiliza más abajo (tras definir normalizar) para construir
+# el índice de catálogo; NO lo borramos aquí.
 
 # ─── PROMPTS Y GUÍAS (importados desde prompts.py) ──────────────────────────
 from prompts import (
@@ -110,6 +111,141 @@ def normalizar(texto: str) -> str:
     texto = unicodedata.normalize("NFD", texto)
     texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
     return texto
+
+
+# ─── ÍNDICE DE CATÁLOGO ("¿tienes tal ley?") ────────────────────────────────
+# Construye, desde leyes_config.json, un índice para detectar y responder
+# preguntas de DISPONIBILIDAD de leyes (no consultas de fondo).
+_CATALOGO_STOP = frozenset(
+    "de la el los las y o un una para por con sobre que se su sus a en del al "
+    "ley leyes reglamento reglamentos codigo norma normas decreto".split()
+)
+
+
+def _stem_simple(w: str) -> str:
+    """Normalización singular→plural ligera para matchear nombres de leyes."""
+    return w[:-1] if len(w) > 4 and w.endswith("s") else w
+
+
+def _palabras(texto: str) -> list:
+    """Palabras alfanuméricas de un texto ya sin acentos (ignora puntuación)."""
+    return re.findall(r"[a-z0-9]+", normalizar(texto))
+
+
+def _tokens_ley(texto: str) -> set:
+    """Tokens significativos (>=3 chars, sin stopwords) de un texto."""
+    return {
+        _stem_simple(w) for w in _palabras(texto)
+        if len(w) >= 3 and w not in _CATALOGO_STOP
+    }
+
+
+# (nombre_canónico, tokens significativos de nombre+aliases, aliases normalizados, alias_repr)
+LEYES_CATALOGO: list[tuple] = []
+for _ley in _leyes_cfg["leyes"]:
+    _toks: set = set()
+    for _fuente in [_ley["nombre"]] + _ley["aliases"]:
+        _toks |= {_stem_simple(w) for w in _palabras(_fuente) if len(w) >= 3}
+    _aliases_norm = [normalizar(a) for a in _ley["aliases"]]
+    _alias_repr = _ley["aliases"][0] if _ley["aliases"] else _ley["nombre"]
+    LEYES_CATALOGO.append((_ley["nombre"], _toks, _aliases_norm, _alias_repr))
+del _leyes_cfg
+
+
+def _match_leyes_catalogo(referencia: str) -> list[tuple]:
+    """Devuelve [(nombre, alias_repr), ...] de leyes que coinciden con la
+    referencia textual, ordenadas por relevancia. Lista vacía si nada matchea."""
+    ref_norm = normalizar(referencia)
+    ref_toks = _tokens_ley(referencia)
+    puntuadas = []
+    for nombre, toks, aliases_norm, alias_repr in LEYES_CATALOGO:
+        alias_hit = any(
+            a in ref_norm or (len(a.split()) >= 2 and all(p in ref_norm for p in a.split()))
+            for a in aliases_norm
+        )
+        score = len(ref_toks & toks) + (3 if alias_hit else 0)
+        if alias_hit or score >= 2:
+            puntuadas.append((score, nombre, alias_repr))
+    puntuadas.sort(reverse=True)
+    return [(n, a) for _, n, a in puntuadas[:5]]
+
+
+# Verbos/giros que indican pregunta de DISPONIBILIDAD de una ley.
+_RE_DISPONIBILIDAD = re.compile(
+    r"\b(tienes?|tienen|teneis|manejas?|manejan|cuentas?\s+con|dispone[ns]?\s+de|"
+    r"conoces?|esta(?:n)?\s+(?:la|el|disponible)|hay\s+(?:alguna\s+)?(?:ley|norma|reglamento|codigo))\b",
+    re.IGNORECASE,
+)
+# Listado general del catálogo.
+_RE_QUE_LEYES = re.compile(
+    r"\b(que|cuales|cuantas|qué|cuáles|cuántas)\s+leyes\b", re.IGNORECASE
+)
+# Palabras que indican consulta de FONDO (no de disponibilidad).
+_RE_SUSTANTIVA = re.compile(
+    r"\b(que\s+dice|qué\s+dice|como|cómo|cuando|cuándo|donde|dónde|cuanto|cuánto|"
+    r"por\s+que|por\s+qué|puedo|debo|tengo\s+derecho|me\s+pueden|es\s+legal|"
+    r"que\s+hago|qué\s+hago|explica|resume)\b",
+    re.IGNORECASE,
+)
+# Mención de un tipo de norma.
+_RE_TIPO_NORMA = re.compile(
+    r"\b(ley|leyes|reglamento|codigo|código|norma|normas|decreto|ordenanza|constitucion|constitución)\b",
+    re.IGNORECASE,
+)
+# Referencia a un artículo concreto → es lookup, no disponibilidad.
+_RE_ARTICULO = re.compile(r"\b(art[ií]culo|art\.?)\s*\d+", re.IGNORECASE)
+
+
+def detectar_consulta_catalogo(pregunta: str) -> dict | None:
+    """Si la pregunta es "¿tienes tal ley?" (disponibilidad), responde mostrando
+    la(s) ley(es) que coinciden. Devuelve None si NO es una consulta de catálogo
+    (para que siga el pipeline RAG normal)."""
+    p = pregunta.strip()
+    p_norm = normalizar(p)
+
+    # "¿qué leyes tienes?" / "¿cuáles leyes manejas?" → listar catálogo
+    if _RE_QUE_LEYES.search(p) and _RE_DISPONIBILIDAD.search(p):
+        return {
+            "respuesta": ("📚 Tengo decenas de leyes venezolanas indexadas.\n\n"
+                          "Mira el catálogo completo con /leyes, o pregúntame "
+                          "<i>\"¿tienes la ley de…?\"</i> con el tema que te interese."),
+            "temas": [], "confianza": "catalogo",
+        }
+
+    # Debe ser pregunta de disponibilidad sobre una norma, SIN artículo y SIN
+    # ser una consulta de fondo.
+    es_disponibilidad = bool(_RE_DISPONIBILIDAD.search(p)) and bool(_RE_TIPO_NORMA.search(p))
+    if not es_disponibilidad or _RE_ARTICULO.search(p) or _RE_SUSTANTIVA.search(p):
+        return None
+
+    matches = _match_leyes_catalogo(p)
+
+    if not matches:
+        return {
+            "respuesta": ("🔎 No tengo una ley con ese nombre exacto en mi base actual.\n\n"
+                          "Mira el catálogo completo con /leyes, o reformula tu "
+                          "consulta y te ayudo igual."),
+            "temas": [], "confianza": "catalogo",
+        }
+
+    if len(matches) == 1:
+        nombre, alias = matches[0]
+        return {
+            "respuesta": (f"✅ Sí, tengo esta ley:\n\n📖 <b>{nombre}</b>\n\n"
+                          f"Puedes:\n"
+                          f"• Hacerme tu pregunta directamente y te respondo con base en ella.\n"
+                          f"• Consultar un artículo: <code>/ley {alias} &lt;número&gt;</code>"),
+            "temas": [], "confianza": "catalogo",
+        }
+
+    # Varias coincidencias → listarlas para que el usuario elija
+    lista = "\n".join(f"• <b>{n}</b>" for n, _ in matches)
+    return {
+        "respuesta": ("📚 Encontré varias leyes relacionadas. ¿Cuál te interesa?\n\n"
+                      f"{lista}\n\n"
+                      "Escribe el nombre o tu pregunta y te respondo con base en ella."),
+        "temas": [], "confianza": "catalogo",
+    }
 
 
 # ─── STEMMER ESPAÑOL LIGERO ──────────────────────────────────────────────────
@@ -1448,6 +1584,15 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 "temas": [], "confianza": "n/a"}
 
     pregunta = sanitizar_input(pregunta)
+
+    # ── CONSULTA DE CATÁLOGO ("¿tienes tal ley?") ────────────────────────────
+    # Determinística y barata (sin LLM). Si el usuario pregunta por la
+    # DISPONIBILIDAD de una ley, le mostramos cuál(es) tenemos en vez de
+    # forzar una respuesta de fondo con leyes que no aplican.
+    cat = detectar_consulta_catalogo(pregunta)
+    if cat is not None:
+        logger.info("  → Consulta de catálogo (disponibilidad de ley)")
+        return cat
 
     # ── ROUTER UNIFICADO ─────────────────────────────────────────────────────
     # 1 sola llamada LLM que decide tipo (nueva/seguimiento/saludo/fuera_dominio),

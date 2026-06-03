@@ -55,6 +55,7 @@ CATALOGO_LEYES = {
         ("Registros y Notarias", "ley de registros y notarias"),
         ("Ley contra el Odio", "ley contra el odio"),
         ("Contraloria General", "contraloria"),
+        ("Entrega de Cargos Publicos", "entrega de cargo, acta de entrega"),
         ("Ley de Residuos", "ley de residuos"),
         ("Ley de Comunas", "ley de comunas"),
         ("Consejos Comunales", "consejos comunales"),

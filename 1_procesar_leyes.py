@@ -91,6 +91,21 @@ def detectar_nombre_ley(texto: str, nombre_archivo: str) -> str:
     return nombre_archivo.replace("_", " ").replace(".pdf", "").title()
 
 
+# Encabezados estructurales que aparecen ENTRE artículos y no deben quedar
+# pegados al final del artículo anterior. Anclado a inicio de línea y seguido de
+# numeral romano/ordinal/arábigo (o palabra estructural) para no cortar frases
+# legítimas como "título de propiedad" o "sección de un terreno" en medio del texto.
+_RE_CORTE_SECCION = re.compile(
+    r'(?im)^\s*(?:'
+    r'(?:cap[ií]tulo|t[ií]tulo|secci[oó]n|sub-?secci[oó]n)\s+'
+    r'(?:[ivxlcdm]{1,7}|primer[oa]|segund[oa]|tercer[oa]|cuart[oa]|quint[oa]|'
+    r'sext[oa]|s[eé]ptim[oa]|octav[oa]|noven[oa]|d[eé]cim[oa]|'
+    r'[0-9]{1,3}|preliminar|[uú]nic[oa]|final)\b'
+    r'|disposici[oó]n(?:es)?\s+(?:transitori|final|derogatori|general|complementari)'
+    r')'
+)
+
+
 def extraer_articulos(texto, nombre_ley, nombre_pdf):
     r"""
     Divide el texto del PDF en artículos individuales.
@@ -118,6 +133,14 @@ def extraer_articulos(texto, nombre_ley, nombre_pdf):
         if i + 2 < len(partes) and re.match(r'(?i)\s*Art[íi]culo\s+\d+', partes[i]):
             numero    = partes[i + 1].strip()
             contenido = re.sub(r'\n{3,}', '\n\n', partes[i + 2]).strip()
+            # El cuerpo del artículo es todo hasta el siguiente "Artículo N", así
+            # que los encabezados de CAPÍTULO/TÍTULO/SECCIÓN/DISPOSICIONES (y sus
+            # notas marginales) que van ENTRE artículos se desbordan al final del
+            # anterior. Los recortamos. Anclado a inicio de línea + numeral/ordinal
+            # para no cortar frases tipo "título de propiedad" en medio del texto.
+            corte = _RE_CORTE_SECCION.search(contenido)
+            if corte:
+                contenido = contenido[:corte.start()].strip()
             num_int   = int(numero)
 
             if num_int not in numeros_vistos and len(contenido) > 30:
