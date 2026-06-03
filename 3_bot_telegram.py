@@ -18,6 +18,7 @@ from telegram.ext import (
     Application, CommandHandler, ConversationHandler, MessageHandler,
     CallbackQueryHandler, InlineQueryHandler, filters, ContextTypes
 )
+from telegram.error import NetworkError, TimedOut
 import hashlib
 import config
 import db
@@ -2400,6 +2401,11 @@ def main():
     # Error handler global — envía errores al admin
     async def error_handler(update, context):
         logger.error(f"Error: {context.error}", exc_info=context.error)
+        # Errores de red transitorios del long-polling (httpx.ReadError, timeouts,
+        # conexiones cerradas por Telegram): PTB reconecta solo. Se loguean pero
+        # NO se reenvían al admin para no generar spam de "🔴 ERROR".
+        if isinstance(context.error, (NetworkError, TimedOut)):
+            return
         for admin_id in config.ADMIN_IDS:
             try:
                 await context.bot.send_message(
