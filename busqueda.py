@@ -1276,6 +1276,8 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         "moneda_curso_legal": "moneda_curso_legal",
         # Contratista: guía propia con Art. 22 (primacía realidad) como obligatorio
         "laboral_contratista": "laboral_contratista",
+        # Entrega de cargos públicos: guía con acta de entrega, anexos, plazos
+        "entrega_cargos_publicos": "entrega_cargos_publicos",
     }
     guias_usadas = set()
     guia_textos = []

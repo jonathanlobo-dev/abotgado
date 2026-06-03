@@ -158,6 +158,7 @@ RAMA_POR_TEMA = {
     "consejos_comunales": "administrativo",
     "comunas": "administrativo",
     "contraloria": "administrativo",
+    "entrega_cargos_publicos": "administrativo",
     "residuos_desechos": "administrativo",
     "etica_abogado": "administrativo",
     "poder_popular": "administrativo",

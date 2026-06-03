@@ -205,6 +205,20 @@
       ]
     },
     {
+      "id": "normas_entrega_cargos_publicos",
+      "nombre": "Normas para Regular la Entrega de los Órganos de la Administración Pública",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "Normas_Regular_la_Entrega_de_Cargos_Publicos.pdf"
+      ],
+      "aliases": [
+        "normas de entrega de cargos",
+        "entrega de cargo publico",
+        "acta de entrega",
+        "entrega de organos administracion publica"
+      ]
+    },
+    {
       "id": "ley_contraloria_social",
       "nombre": "Ley Orgánica de Contraloría Social",
       "rama": "administrativo",

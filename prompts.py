@@ -174,7 +174,7 @@ VIVIENDA: vivienda_cc (compra, cláusulas abusivas), vivienda_desalojo (desalojo
 CIVIL: civil (obligaciones, contratos), propiedad (posesión, invasión, usucapión), testamento (testamento, herencia), herencia (sucesión, herederos), deuda_civil (deudas, cobro, pagaré), vicios_ocultos (defectos ocultos en compraventa)
 COMERCIAL: comercial (empresas, sociedades), negocio_casa (emprendimiento desde casa), bancario (bancos, créditos, tarjetas)
 PROTECCIÓN: consumidor (derechos del consumidor), proteccion_consumidor (reclamos, SUNDDE), discapacidad (personas con discapacidad), adultos_mayores (tercera edad, jubilados), animales (maltrato animal, fauna doméstica)
-OTROS: comunicaciones (privacidad, teléfono, interceptación), derechos (derechos constitucionales), seguro_social (IVSS, pensiones), islr (impuesto sobre la renta), tributario (impuestos, tributos), zonas_economicas (zonas especiales), mala_praxis (negligencia médica), tramites (documentos, apostilla, legalización), recurso_multa (impugnar multa), sobreprecio (especulación, precios), municipal (ordenanzas, alcaldía), ambiente (ambiente, contaminación), trabajadores_residenciales (conserjes, trabajadores de edificio), justicia_paz (juez de paz, conciliación)"""
+OTROS: comunicaciones (privacidad, teléfono, interceptación), derechos (derechos constitucionales), seguro_social (IVSS, pensiones), islr (impuesto sobre la renta), tributario (impuestos, tributos), zonas_economicas (zonas especiales), mala_praxis (negligencia médica), tramites (documentos, apostilla, legalización), recurso_multa (impugnar multa), sobreprecio (especulación, precios), municipal (ordenanzas, alcaldía), ambiente (ambiente, contaminación), trabajadores_residenciales (conserjes, trabajadores de edificio), justicia_paz (juez de paz, conciliación), contraloria (control fiscal, declaración patrimonio, rendición de cuentas), entrega_cargos_publicos (acta de entrega de cargo público, funcionario saliente, traspaso de cargo)"""
 
 SYSTEM_PROMPT = """Eres aBOTgado, asistente jurídico virtual especializado en leyes venezolanas para Telegram. Tono profesional, accesible y en español venezolano.
 
@@ -1024,6 +1024,35 @@ INSTITUCIÓN CORRECTA: SUNDDE (Superintendencia Nacional para la Defensa de los 
 ARTÍCULO CLAVE: CRBV Art. 318 — El BCV tiene la competencia monetaria exclusiva y el bolívar es la unidad de valor nacional. Este es el fundamento constitucional para cuestionar pagos forzados en moneda distinta al bolívar.
 
 NO uses la Contraloría General para casos de comercio privado. NO cites artículos de letras de cambio del Código de Comercio (Arts. 449, 489) — esos son para instrumentos mercantiles, no para precios al consumidor.
+""",
+    "entrega_cargos_publicos": """
+INSTITUCIONES Y PASOS CONCRETOS PARA LA ENTREGA DE CARGOS PÚBLICOS (ACTA DE ENTREGA):
+
+MARCO LEGAL: "Normas para Regular la Entrega de los Órganos de la Administración Pública y de sus Respectivas Oficinas o Dependencias" (Contraloría General de la República, Gaceta Oficial Nº 39.229 del 28/07/2009).
+
+QUIÉN DEBE HACER LA ENTREGA (Art. 3 y 5): TODO servidor público que administre, maneje o custodie recursos o bienes públicos, al cesar en su empleo, cargo o función. Aplica a Poder Público Nacional, Estadal, Municipal, institutos autónomos, BCV, universidades públicas y entidades con 50%+ de fondos públicos.
+
+PLAZO (Art. 4): El acta se elabora en la fecha en que el servidor entrante toma posesión, o en un plazo máximo de TRES (3) días hábiles desde la toma de posesión.
+
+CONTENIDO MÍNIMO DEL ACTA (Art. 10):
+1. Lugar y fecha de suscripción.
+2. Identificación del órgano/entidad/oficina que se entrega.
+3. Identificación de quien entrega y de quien recibe.
+4. Motivo de la entrega y su fundamentación legal.
+5. Relación de los anexos (Arts. 11-17).
+6. Suscripción por quien entrega y quien recibe.
+
+ANEXOS (Art. 11): estado de cuentas (situación presupuestaria, financiera y patrimonial), número de cargos existentes, inventario de bienes muebles e inmuebles, situación de ejecución del plan operativo, índice del archivo.
+
+SI EL FUNCIONARIO SALIENTE NO HACE LA ENTREGA (Art. 9): el servidor entrante (o quien designe la máxima autoridad) levanta acta detallada CON DOS TESTIGOS y el auditor interno, dejando constancia del estado de los asuntos y de errores/omisiones, para delimitar responsabilidades.
+
+COPIAS Y ARCHIVO (Art. 21): original + tres (3) copias certificadas. Una copia va a la unidad de auditoría interna dentro de los 5 días hábiles siguientes.
+
+OBSERVACIONES Y VERIFICACIÓN (Arts. 22-24): quien recibe tiene hasta 120 días hábiles para formular observaciones por escrito al órgano de control fiscal. La unidad de auditoría interna verifica la sinceridad y exactitud del acta. Si se detectan daños al patrimonio público, se pueden iniciar acciones fiscales (Art. 77 LOCGRSNCF).
+
+INSTITUCIÓN: Unidad de auditoría interna del propio órgano + Contraloría General de la República (cgr.gob.ve) como órgano de control fiscal externo.
+
+ADVERTENCIA: el incumplimiento de la obligación de entrega puede generar responsabilidad administrativa, civil o penal del funcionario saliente.
 """,
     "ciencia_tecnologia": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS DE CIENCIA, TECNOLOGÍA E INNOVACIÓN (LOCTI):

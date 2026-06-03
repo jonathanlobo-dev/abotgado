@@ -27,7 +27,7 @@ def main():
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
-    REINDEX_VERSION = "7"  # bump: PDFs consolidados de LCC, LOCTI, Consejos Comunales (antes eran reformas)
+    REINDEX_VERSION = "8"  # bump: nueva ley — Normas de Entrega de Cargos Públicos (Contraloría 2009)
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0
