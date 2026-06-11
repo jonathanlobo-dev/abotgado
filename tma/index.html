@@ -1583,7 +1583,8 @@ if (tg) {
   tg.expand();               // Expande a pantalla completa
   // Si Telegram pasa datos del usuario, los usamos como user_id
   window._tgUserId = tg.initDataUnsafe?.user?.id?.toString() || 'tma_anonimo';
-  // initData firmado — lo usa el backend para validar admin (HMAC-SHA256)
+  // initData firmado — lo usa el backend para autenticar TODAS las llamadas
+  // con identidad (HMAC-SHA256). El user_id es solo informativo.
   window._tgInitData = tg.initData || '';
   // Sincronizar tema con el de Telegram si está disponible
   if (tg.colorScheme === 'dark') {
@@ -1595,6 +1596,9 @@ if (tg) {
   window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
   window._tgInitData = '';
 }
+
+// Querystring de autenticación para llamadas GET/DELETE con identidad
+window._authQS = () => `init_data=${encodeURIComponent(window._tgInitData || '')}`;
 
 // NO auto-crear conversación al cargar — se crea lazily al primer mensaje
 
@@ -1864,6 +1868,7 @@ async function enviar(texto) {
       body: JSON.stringify({
         pregunta:  texto,
         user_id:   window._tgUserId || 'tma_anonimo',
+        init_data: window._tgInitData || '',
         conv_id:   convActualId || null,
         historial: historial.slice(-10).slice(0, -1).map(m => ({
           rol:   m.rol,
@@ -1874,6 +1879,14 @@ async function enviar(texto) {
 
     hideTyping();
 
+    if (res.status === 401 || res.status === 429) {
+      // Mensajes de auth/cuota del backend — mostrarlos tal cual al usuario
+      const err = await res.json().catch(() => ({}));
+      addMessage('bot', `⚠️ ${err.detail || 'No autorizado.'}`, []);
+      enviando = false;
+      btnSend.disabled = false;
+      return;
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
@@ -2045,9 +2058,9 @@ async function cargarConversaciones() {
   sbList.innerHTML = '<div class="sb-loading">Cargando…</div>';
   try {
     // Limpiar conversaciones vacías acumuladas (ignorar si falla — no es crítico)
-    fetch(`${API}/conversaciones/vacias/${window._tgUserId}`, { method: 'DELETE' }).catch(() => {});
+    fetch(`${API}/conversaciones/vacias/${window._tgUserId}?${window._authQS()}`, { method: 'DELETE' }).catch(() => {});
 
-    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}`);
+    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}?${window._authQS()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error('Respuesta inesperada del servidor');
@@ -2116,7 +2129,7 @@ async function cargarConversacion(convId, titulo) {
   historial = [];
 
   try {
-    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}/${convId}`);
+    const res  = await fetch(`${API}/conversaciones/${window._tgUserId}/${convId}?${window._authQS()}`);
     const msgs = await res.json();
 
     msgs.forEach(m => {
@@ -2134,7 +2147,7 @@ async function cargarConversacion(convId, titulo) {
 async function eliminarConversacion(convId) {
   try {
     const uid = encodeURIComponent(window._tgUserId);
-    const res = await fetch(`${API}/conversaciones/${convId}?user_id=${uid}`, {
+    const res = await fetch(`${API}/conversaciones/${convId}?user_id=${uid}&${window._authQS()}`, {
       method: 'DELETE',
     });
     if (!res.ok) console.error(`Error eliminando conversación ${convId}: HTTP ${res.status}`);
@@ -2148,7 +2161,7 @@ async function renombrarConversacion(convId, titulo) {
     const res = await fetch(`${API}/conversaciones/${convId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: window._tgUserId, titulo }),
+      body: JSON.stringify({ user_id: window._tgUserId, titulo, init_data: window._tgInitData || '' }),
     });
     if (!res.ok) console.error(`Error renombrando conversación ${convId}: HTTP ${res.status}`);
   } catch (e) {
@@ -2174,7 +2187,7 @@ async function _asegurarConversacion() {
     const res  = await fetch(`${API}/conversaciones`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: window._tgUserId }),
+      body: JSON.stringify({ user_id: window._tgUserId, init_data: window._tgInitData || '' }),
     });
     const data = await res.json();
     convActualId = data.id;
@@ -2313,7 +2326,7 @@ async function cargarPerfil() {
   }
 
   try {
-    const res  = await fetch(`${API}/perfil/${window._tgUserId}`);
+    const res  = await fetch(`${API}/perfil/${window._tgUserId}?${window._authQS()}`);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -2390,7 +2403,7 @@ async function cargarStats() {
 
   // ── Estadísticas personales ──────────────────────────────────────
   try {
-    const res = await fetch(`${API}/stats/usuario/${window._tgUserId}`);
+    const res = await fetch(`${API}/stats/usuario/${window._tgUserId}?${window._authQS()}`);
     if (res.ok) {
       const s = await res.json();
       statsUserGrid.innerHTML = `

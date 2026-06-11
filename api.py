@@ -35,9 +35,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Orígenes permitidos para CORS. En producción setear TMA_ORIGINS en Railway
+# con el dominio real de la TMA (ej: "https://abotgado.netlify.app").
+# Default "*" mantiene compatibilidad; la seguridad real la da el initData
+# firmado (no usamos cookies, así que CORS abierto no expone credenciales).
+_tma_origins = [o.strip() for o in os.getenv("TMA_ORIGINS", "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_tma_origins,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
@@ -53,6 +58,7 @@ class ConsultaRequest(BaseModel):
     user_id: str = "tma_anonimo"
     historial: list[MensajeHistorial] = []
     conv_id: int | None = None   # ID de conversación del sidebar (opcional)
+    init_data: str = ""          # firmado por Telegram — autentica al usuario
 
     @field_validator("pregunta")
     @classmethod
@@ -86,10 +92,12 @@ class ResolverRequest(BaseModel):
 class ConversacionRequest(BaseModel):
     user_id: str
     titulo: str = "Nueva consulta"
+    init_data: str = ""
 
 class RenombrarRequest(BaseModel):
     user_id: str
     titulo: str
+    init_data: str = ""
 
 
 # ─── Startup: asegurar que el DB esté inicializado ───────────────────────────
@@ -408,6 +416,39 @@ def _user_id_from_init_data(init_data: str) -> int | None:
     return None
 
 
+def _conv_pertenece_a(conv_id: int, uid: int) -> bool:
+    """True si la conversación TMA pertenece al usuario autenticado."""
+    try:
+        import db as database
+        with database.get_db() as con:
+            fila = con.execute(
+                "SELECT user_id FROM tma_conversaciones WHERE id = ?", (conv_id,)
+            ).fetchone()
+        return fila is not None and str(fila[0]) == str(uid)
+    except Exception as e:
+        logger.error(f"Error verificando dueño de conversación {conv_id}: {e}")
+        return False
+
+
+def _uid_autenticado(init_data: str, user_id_declarado: str = "") -> int | None:
+    """user_id REAL del solicitante, autenticado por la firma HMAC del initData.
+
+    NUNCA confiar en el user_id que declara el cliente (path/query/body): es
+    suplantable. Esta función es la única fuente válida de identidad en la API.
+    En DEV_MODE=1 (desarrollo local en browser, sin Telegram) se acepta el
+    user_id declarado como fallback.
+    """
+    uid = _user_id_from_init_data(init_data)
+    if uid is not None:
+        return uid
+    if config.DEV_MODE:
+        try:
+            return int(user_id_declarado)
+        except (ValueError, TypeError):
+            return None
+    return None
+
+
 def _admin_from_init_data(init_data: str) -> int | None:
     """Devuelve el user_id si es admin válido (initData firmado), None si no.
 
@@ -549,19 +590,18 @@ def _manejar_admin(cmd: str, partes: list, user_id_raw: str) -> ConsultaResponse
 # ─── Endpoints ───────────────────────────────────────────────────────────────
 
 @app.get("/perfil/{user_id}")
-def perfil_usuario(user_id: str):
+def perfil_usuario(user_id: str, init_data: str = ""):
     """
     Devuelve información de perfil del usuario para mostrar en el sidebar de la TMA:
     plan, consultas hoy / límite / restantes, y si tiene memoria activa.
+    El user_id real sale del initData firmado; el del path es solo informativo.
     """
-    if user_id == "tma_anonimo":
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
+        # Sin identidad verificable → perfil anónimo (no expone datos de nadie)
         return {"plan_id": None, "plan_nombre": None, "plan_icono": "👤",
                 "consultas_hoy": 0, "consultas_limite": 0, "consultas_restantes": 0,
                 "memoria": False}
-    try:
-        uid = int(user_id)
-    except (ValueError, TypeError):
-        raise HTTPException(status_code=400, detail="user_id inválido")
 
     try:
         import db as database
@@ -630,14 +670,12 @@ def directorio_abogados(especialidad: str = None, estado: str = None):
 
 
 @app.get("/stats/usuario/{user_id}")
-def stats_usuario_endpoint(user_id: str):
-    """Estadísticas personales para el dashboard de la TMA."""
-    if user_id == "tma_anonimo":
+def stats_usuario_endpoint(user_id: str, init_data: str = ""):
+    """Estadísticas personales para el dashboard de la TMA.
+    El user_id real sale del initData firmado (anti-IDOR)."""
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
         raise HTTPException(status_code=401, detail="No autenticado")
-    try:
-        uid = int(user_id)
-    except (ValueError, TypeError):
-        raise HTTPException(status_code=400, detail="user_id inválido")
     try:
         import db as database
         s = database.stats_usuario(uid)
@@ -693,13 +731,37 @@ def consultar(req: ConsultaRequest):
     Los comandos (/leyes, /ayuda, etc.) se manejan directamente sin pasar por el RAG.
     El campo `respuesta` viene en HTML; la TMA lo renderiza con innerHTML.
     """
+    # ── Autenticación: el user_id REAL sale del initData firmado ───
+    # El user_id del body NUNCA se usa como identidad (suplantable).
+    uid_auth = _uid_autenticado(req.init_data, req.user_id)
+
     # ── Detectar comandos ──────────────────────────────────────────
+    # Se pasa el uid AUTENTICADO: los comandos admin (/usuarios, /stats_admin)
+    # comparan contra ADMIN_IDS y antes confiaban en el user_id declarado.
     if req.pregunta.startswith("/"):
-        resultado_cmd = _manejar_comando(req.pregunta, req.user_id)
+        resultado_cmd = _manejar_comando(req.pregunta, str(uid_auth or ""))
         if resultado_cmd is not None:
             return resultado_cmd
 
-    # ── RAG normal ─────────────────────────────────────────────────
+    # ── RAG normal: requiere usuario autenticado y cuota disponible ─
+    if uid_auth is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Abre la Mini App desde Telegram para hacer consultas.",
+        )
+
+    try:
+        import db as database
+        if not database.puede_consultar(uid_auth):
+            raise HTTPException(
+                status_code=429,
+                detail="Has alcanzado tu límite de consultas. Vuelve mañana o mejora tu plan con /planes en el bot.",
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verificando cuota: {e}", exc_info=True)
+
     try:
         import db as database
         motor = get_busqueda()
@@ -709,16 +771,10 @@ def consultar(req: ConsultaRequest):
             for m in req.historial
         ]
 
-        # Convertir user_id a int si es posible (para que el bot lo reconozca)
-        try:
-            uid_int = int(req.user_id)
-        except (ValueError, TypeError):
-            uid_int = None
-
         resultado = motor.buscar_y_responder(
             pregunta=req.pregunta,
             historial=historial_fmt if historial_fmt else None,
-            user_id=uid_int,
+            user_id=uid_auth,
         )
 
         if isinstance(resultado, dict):
@@ -732,8 +788,17 @@ def consultar(req: ConsultaRequest):
 
         resp_html = motor.formatear_respuesta(resp_html)
 
+        # ── Registrar consumo de cuota (mismo contador que el bot) ──
+        try:
+            database.registrar_consulta(uid_auth)
+        except Exception as e_q:
+            logger.error(f"Error registrando consulta: {e_q}")
+
         # ── Auto-guardar en conversación TMA si se indicó conv_id ──
-        if req.conv_id and req.user_id != "tma_anonimo":
+        # Solo si la conversación pertenece al usuario autenticado.
+        if req.conv_id and not _conv_pertenece_a(req.conv_id, uid_auth):
+            logger.warning(f"conv_id {req.conv_id} no pertenece a user {uid_auth} — no se guarda")
+        elif req.conv_id:
             try:
                 database.tma_guardar_mensaje(req.conv_id, "usuario", req.pregunta)
                 database.tma_guardar_mensaje(req.conv_id, "bot", resp_html, temas)
@@ -754,14 +819,19 @@ def consultar(req: ConsultaRequest):
 
 # ─── Endpoints de conversaciones TMA ────────────────────────────────────────
 
+# Las conversaciones de la TMA contienen consultas legales PRIVADAS.
+# Todos estos endpoints derivan la identidad del initData firmado (anti-IDOR):
+# el user_id del path/body/query NUNCA se usa como identidad.
+
 @app.get("/conversaciones/{user_id}")
-def listar_conversaciones(user_id: str):
-    """Lista las conversaciones del sidebar para un usuario."""
-    if user_id == "tma_anonimo":
+def listar_conversaciones(user_id: str, init_data: str = ""):
+    """Lista las conversaciones del sidebar para el usuario autenticado."""
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
         return []
     try:
         import db as database
-        return database.tma_listar_conversaciones(user_id)
+        return database.tma_listar_conversaciones(str(uid))
     except Exception as e:
         logger.error(f"Error listando conversaciones: {e}")
         raise HTTPException(status_code=500, detail="Error obteniendo conversaciones")
@@ -770,11 +840,12 @@ def listar_conversaciones(user_id: str):
 @app.post("/conversaciones")
 def crear_conversacion(req: ConversacionRequest):
     """Crea una nueva conversación en el sidebar."""
-    if req.user_id == "tma_anonimo":
-        raise HTTPException(status_code=400, detail="Se requiere user_id de Telegram")
+    uid = _uid_autenticado(req.init_data, req.user_id)
+    if uid is None:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         import db as database
-        conv_id = database.tma_nueva_conversacion(req.user_id, req.titulo)
+        conv_id = database.tma_nueva_conversacion(str(uid), req.titulo)
         return {"id": conv_id, "titulo": req.titulo}
     except Exception as e:
         logger.error(f"Error creando conversación: {e}")
@@ -782,11 +853,14 @@ def crear_conversacion(req: ConversacionRequest):
 
 
 @app.get("/conversaciones/{user_id}/{conv_id}")
-def obtener_mensajes(user_id: str, conv_id: int):
-    """Retorna los mensajes de una conversación."""
+def obtener_mensajes(user_id: str, conv_id: int, init_data: str = ""):
+    """Retorna los mensajes de una conversación del usuario autenticado."""
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         import db as database
-        return database.tma_obtener_mensajes(conv_id, user_id)
+        return database.tma_obtener_mensajes(conv_id, str(uid))
     except Exception as e:
         logger.error(f"Error obteniendo mensajes: {e}")
         raise HTTPException(status_code=500, detail="Error obteniendo mensajes")
@@ -794,10 +868,13 @@ def obtener_mensajes(user_id: str, conv_id: int):
 
 @app.put("/conversaciones/{conv_id}")
 def renombrar_conversacion(conv_id: int, req: RenombrarRequest):
-    """Renombra una conversación."""
+    """Renombra una conversación del usuario autenticado."""
+    uid = _uid_autenticado(req.init_data, req.user_id)
+    if uid is None:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         import db as database
-        database.tma_renombrar_conversacion(conv_id, req.user_id, req.titulo)
+        database.tma_renombrar_conversacion(conv_id, str(uid), req.titulo)
         return {"ok": True}
     except Exception as e:
         logger.error(f"Error renombrando: {e}")
@@ -805,8 +882,11 @@ def renombrar_conversacion(conv_id: int, req: RenombrarRequest):
 
 
 @app.delete("/conversaciones/vacias/{user_id}")
-def limpiar_vacias(user_id: str):
-    """Elimina conversaciones sin mensajes (acumuladas por bug anterior)."""
+def limpiar_vacias(user_id: str, init_data: str = ""):
+    """Elimina conversaciones sin mensajes del usuario autenticado."""
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         import db as database
         with database.get_db() as con:
@@ -814,7 +894,7 @@ def limpiar_vacias(user_id: str):
                 DELETE FROM tma_conversaciones
                 WHERE user_id = ?
                 AND id NOT IN (SELECT DISTINCT conv_id FROM tma_mensajes)
-            """, (user_id,))
+            """, (str(uid),))
         return {"ok": True}
     except Exception as e:
         logger.error(f"Error limpiando vacías: {e}")
@@ -822,14 +902,17 @@ def limpiar_vacias(user_id: str):
 
 
 @app.delete("/conversaciones/{conv_id}")
-def eliminar_conversacion(conv_id: int, user_id: str):
+def eliminar_conversacion(conv_id: int, user_id: str = "", init_data: str = ""):
     """
-    Elimina una conversación y todos sus mensajes.
-    user_id se pasa como query param: DELETE /conversaciones/123?user_id=456
+    Elimina una conversación y todos sus mensajes del usuario autenticado.
+    DELETE /conversaciones/123?init_data=...
     """
+    uid = _uid_autenticado(init_data, user_id)
+    if uid is None:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         import db as database
-        database.tma_eliminar_conversacion(conv_id, user_id)
+        database.tma_eliminar_conversacion(conv_id, str(uid))
         return {"ok": True}
     except Exception as e:
         logger.error(f"Error eliminando: {e}")
@@ -842,16 +925,10 @@ def feedback(req: FeedbackRequest):
     try:
         import db as database
         tipo = "positivo" if req.valor == 1 else "negativo"
-        # Si hay initData válido, usar ese user_id (anti-suplantación).
-        # Si no, caer al user_id del body (compat con TMA sin initData todavía).
-        uid_auth = _user_id_from_init_data(req.init_data)
-        if uid_auth is not None:
-            uid = uid_auth
-        else:
-            try:
-                uid = int(req.user_id)
-            except (ValueError, TypeError):
-                uid = 0
+        # Identidad solo del initData firmado (anti-suplantación).
+        # Sin firma válida el feedback se registra como anónimo (uid=0):
+        # no se confía en el user_id del body para atribuirlo a otra persona.
+        uid = _uid_autenticado(req.init_data, req.user_id) or 0
         fb_id = database.guardar_feedback_v2(
             uid, tipo, req.pregunta, req.respuesta, req.motivo
         )
@@ -1026,15 +1103,9 @@ def crear_solicitud(req: SolicitudAbogadoRequest):
 def estado_solicitud(init_data: str = "", user_id: str = ""):
     """Devuelve el estado de solicitud/membresía del usuario para decidir qué mostrar en la TMA.
     Incluye is_admin para que el frontend no necesite una segunda llamada.
-    Acepta init_data (firmado, preferido) o user_id como fallback.
+    Identidad solo por initData firmado (en DEV_MODE acepta user_id).
     """
-    uid = _user_id_from_init_data(init_data)
-    if uid is None and user_id:
-        # Fallback: user_id sin firma (solo para estado de solicitud, no acciones)
-        try:
-            uid = int(user_id)
-        except (ValueError, TypeError):
-            uid = None
+    uid = _uid_autenticado(init_data, user_id)
     if uid is None:
         return {"es_abogado": False, "tiene_solicitud": False, "estado": None, "is_admin": False}
     try:
@@ -1057,13 +1128,9 @@ def check_is_admin(user_id: str = ""):
 
 @app.delete("/abogados/solicitud")
 def cancelar_solicitud_endpoint(init_data: str = "", user_id: str = ""):
-    """El usuario cancela su propia solicitud pendiente."""
-    uid = _user_id_from_init_data(init_data)
-    if uid is None and user_id:
-        try:
-            uid = int(user_id)
-        except (ValueError, TypeError):
-            uid = None
+    """El usuario cancela su propia solicitud pendiente.
+    Acción destructiva → identidad solo por initData firmado."""
+    uid = _uid_autenticado(init_data, user_id)
     if uid is None:
         raise HTTPException(status_code=403, detail="No autorizado")
     try:
@@ -1081,14 +1148,9 @@ def cancelar_solicitud_endpoint(init_data: str = "", user_id: str = ""):
 
 @app.post("/abogado/baja")
 def baja_abogado_endpoint(req: dict):
-    """El abogado se da de baja (se marca inactivo)."""
-    init_data = req.get("init_data", "")
-    uid = _user_id_from_init_data(init_data)
-    if uid is None:
-        try:
-            uid = int(req.get("user_id", 0))
-        except (ValueError, TypeError):
-            uid = None
+    """El abogado se da de baja (se marca inactivo).
+    Acción destructiva → identidad solo por initData firmado."""
+    uid = _uid_autenticado(req.get("init_data", ""), str(req.get("user_id", "")))
     if uid is None or uid == 0:
         raise HTTPException(status_code=403, detail="No autorizado")
     try:
@@ -1566,10 +1628,7 @@ _LIMITE_POR_TIPO = {'nombre': 100, 'cedula': 15, 'numero': 6, 'fecha': 40,
 @app.get("/documentos/plantillas")
 def listar_plantillas_endpoint(init_data: str = "", user_id: str = ""):
     """Devuelve las plantillas disponibles y cuántos docs le quedan al usuario."""
-    uid = _user_id_from_init_data(init_data)
-    if uid is None and user_id:
-        try: uid = int(user_id)
-        except: uid = None
+    uid = _uid_autenticado(init_data, user_id)
     try:
         import db as database
         import documentos as docs_mod
@@ -1596,11 +1655,8 @@ def generar_documento_endpoint(req: dict):
     import documentos as docs_mod
     import db as database
 
-    # ── Auth ──────────────────────────────────────────────────────────────────
-    uid = _user_id_from_init_data(req.get("init_data", ""))
-    if uid is None:
-        try: uid = int(req.get("user_id", 0)) or None
-        except: uid = None
+    # ── Auth: solo initData firmado (el user_id del body es suplantable) ─────
+    uid = _uid_autenticado(req.get("init_data", ""), str(req.get("user_id", "")))
     if not uid:
         raise HTTPException(status_code=403, detail="No autorizado")
 
