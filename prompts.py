@@ -473,7 +473,8 @@ QUÉ PROCEDE CUANDO UNA MUERTE FUE CAUSADA SIN INTENCIÓN (ACCIDENTE, IMPRUDENCI
 - Fiscalía del Ministerio Público (fiscalías con competencia en delitos asociados al tránsito): dirige la investigación penal. Los familiares de la víctima pueden constituirse como víctima en el proceso y aportar pruebas.
 - Si el conductor huyó del sitio sin auxiliar a la víctima, se suma el delito de OMISIÓN DE SOCORRO (Código Penal Art. 438) y el peligro de fuga pesa contra él en la audiencia de presentación.
 - Responsabilidad civil: aparte de la pena, los familiares pueden demandar indemnización por daños y perjuicios (incluye al propietario del vehículo y al seguro RCV).
-- IMPORTANTE: NO sugieras "intercambiar datos del seguro" ni trámites ante el INTT como respuesta principal — con un fallecido el caso es PENAL y va a la Fiscalía. Adapta los pasos según si quien pregunta es el conductor (derecho a abogado, no declarar sin defensor) o familiar de la víctima (denuncia, constitución como víctima).
+- IMPORTANTE: NO sugieras "intercambiar datos del seguro" ni trámites ante el INTT — con un fallecido el caso es PENAL y va a la Fiscalía; la vigencia de licencia/seguro la verifica la autoridad en su informe, no el usuario.
+- FORMATO OBLIGATORIO de la sección 💡: si no sabes el rol del usuario, divide los pasos en DOS subsecciones: "Si eres familiar de la víctima:" (acreditarse como víctima ante la Fiscalía, aportar testigos/fotos, exigir indemnización civil) y "Si eres el conductor o su familiar:" (será presentado ante el Tribunal de Control en 48 horas, nombrar abogado de confianza o pedir Defensor Público en la audiencia, no declarar sin defensor). NUNCA mezcles consejos de ambos roles en un mismo paso.
 """,
     "transito": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TRÁNSITO:

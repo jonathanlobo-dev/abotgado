@@ -1425,11 +1425,22 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
         # Entrega de cargos públicos: guía con acta de entrega, anexos, plazos
         "entrega_cargos_publicos": "entrega_cargos_publicos",
     }
+    # Guías que NO deben inyectarse cuando un tema más grave domina el caso.
+    # Ej: con un fallecido (homicidio_culposo), la guía de tránsito mete ruido
+    # (INTT, licencias, "intercambiar datos del seguro") y el LLM la mezcla.
+    _GUIAS_SUPRIMIR_POR_TEMA = {
+        "homicidio_culposo": {"transito", "transito_estacionamiento"},
+    }
+    guias_suprimidas = set()
+    for tema in temas_detectados:
+        guias_suprimidas |= _GUIAS_SUPRIMIR_POR_TEMA.get(tema, set())
+
     guias_usadas = set()
     guia_textos = []
     for tema in temas_detectados:
         guia_key = _MAPA_GUIA.get(tema, tema)
-        if guia_key in GUIAS_INSTITUCIONALES and guia_key not in guias_usadas:
+        if (guia_key in GUIAS_INSTITUCIONALES and guia_key not in guias_usadas
+                and guia_key not in guias_suprimidas):
             guia_textos.append(GUIAS_INSTITUCIONALES[guia_key])
             guias_usadas.add(guia_key)
 
