@@ -62,6 +62,17 @@ for _ley in _leyes_data["leyes"]:
     for _pdf in _ley["archivos_pdf"]:
         NOMBRES_CORRECTOS[_pdf] = _ley["nombre"]
 
+# REEMPLAZOS_TEXTO: PDF filename → [[buscar, reemplazar], ...]
+# Corrige artefactos de OCR puntuales (ej: el ordinal "1°" leído como "10" o
+# "12", que crea artículos fantasma y ensombrece a los reales). Se definen en
+# leyes_config.json (campo opcional "reemplazos_texto" por ley) para no
+# hardcodear correcciones en el código.
+REEMPLAZOS_TEXTO: dict[str, list] = {}
+for _ley in _leyes_data["leyes"]:
+    if _ley.get("reemplazos_texto"):
+        for _pdf in _ley["archivos_pdf"]:
+            REEMPLAZOS_TEXTO[_pdf] = _ley["reemplazos_texto"]
+
 # CLASIFICACION_LEYES: nombre canónico → rama del derecho
 CLASIFICACION_LEYES = {_ley["nombre"]: _ley["rama"] for _ley in _leyes_data["leyes"]}
 
@@ -127,6 +138,62 @@ _RE_CORTE_SECCION = re.compile(
 )
 
 
+# Palabras que preceden a una REFERENCIA intratexto ("...en el artículo 39...")
+# y nunca a una cabecera real. Si la palabra anterior a "Artículo N." es una de
+# estas, NO es cabecera y no se parte la línea.
+_PALABRAS_REFERENCIA = frozenset(
+    "el del al este ese dicho dicha presente siguiente anterior mismo misma "
+    "citado citada referido referida los las un una y o u e en con por sobre "
+    "segun según conforme ver vease véase numeral paragrafo parágrafo".split()
+)
+
+# Cabecera inline: epígrafe y cabecera en la misma línea (común en gacetas con
+# layout a columnas), ej: "Requisitos de importación y exportación Artículo 24."
+# Detectado en Ley de Salud Agrícola Integral (30+ artículos perdidos).
+# Guardas anti-falso-positivo (el bug histórico eran referencias intratexto):
+#   1. 'Artículo' con A mayúscula (las referencias van en minúscula casi siempre)
+#   2. el número debe ir seguido de punto/°/º (referencias usan coma o nada)
+#   3. la palabra anterior no puede ser determinante/preposición de referencia
+_RE_CABECERA_INLINE = re.compile(
+    r'(\S+)([ \t]+)(Artículo[ \t]*\n?[ \t]*\d+[ \t]*[.°º])'
+)
+
+
+# Referencia intratexto partida por el wrapping del PDF: la línea termina en
+# un conector ("...previstos en el") y la siguiente empieza con "artículo 114"
+# (minúscula). El patrón anclado a inicio de línea la tomaba como CABECERA,
+# mutilando el artículo real (ej: Precios Justos Art. 51 quedaba en 15 chars
+# y aparecía un art. "114" espurio). Se re-une con su línea anterior.
+# Solo minúscula: las cabeceras reales van con 'Artículo' capitalizado.
+_RE_REF_PARTIDA = re.compile(
+    # (?m) sin (?i): 'artículo' SOLO en minúscula — cabeceras reales van con
+    # 'Artículo' capitalizado y no deben re-unirse.
+    r'(?m)^(.*?\b(?:' + '|'.join(_PALABRAS_REFERENCIA) + r'))[ \t]*\n[ \t]*(art[íi]culo[ \t]+\d)'
+)
+
+
+def _desenvolver_referencias(texto: str) -> str:
+    """Une referencias 'el \\n artículo N' partidas por el wrapping del PDF."""
+    # Iterar hasta estabilizar (una línea puede contener varias referencias)
+    prev = None
+    while prev != texto:
+        prev = texto
+        texto = _RE_REF_PARTIDA.sub(lambda m: f"{m.group(1)} {m.group(2)}", texto)
+    return texto
+
+
+def _normalizar_cabeceras(texto: str) -> str:
+    """Inserta salto de línea antes de cabeceras 'Artículo N.' que quedaron a
+    mitad de línea (pegadas al epígrafe), para que el patrón anclado a inicio
+    de línea las detecte. Conservador: ante la duda, no toca nada."""
+    def _reemplazo(m):
+        palabra_previa = m.group(1).strip().strip('.,;:()').lower()
+        if palabra_previa in _PALABRAS_REFERENCIA:
+            return m.group(0)  # referencia intratexto — no tocar
+        return f"{m.group(1)}\n{m.group(3)}"
+    return _RE_CABECERA_INLINE.sub(_reemplazo, texto)
+
+
 def extraer_articulos(texto, nombre_ley, nombre_pdf):
     r"""
     Divide el texto del PDF en artículos individuales.
@@ -143,6 +210,10 @@ def extraer_articulos(texto, nombre_ley, nombre_pdf):
     de oraciones (después de "el", "del", "al"...) y nunca al inicio de línea.
     """
     articulos      = []
+    # Re-unir referencias intratexto partidas por el wrapping del PDF
+    texto          = _desenvolver_referencias(texto)
+    # Rescatar cabeceras que quedaron a mitad de línea (epígrafe + cabecera)
+    texto          = _normalizar_cabeceras(texto)
     # ^\s* + MULTILINE: solo matchea "Artículo N" al INICIO de línea (con
     # indentación opcional). Bloquea referencias intratexto.
     patron         = r'(?im)^\s*(Art[íi]culo\s+(\d+)[°º\.]?\.?)'
@@ -352,6 +423,8 @@ def main():
         print(f"\n📄 [{idx_pdf}/{len(por_procesar)}] {nombre_pdf}")
 
         texto      = extraer_texto(ruta)
+        for _buscar, _reemplazar in REEMPLAZOS_TEXTO.get(nombre_pdf, []):
+            texto = texto.replace(_buscar, _reemplazar)
         nombre_ley = detectar_nombre_ley(texto, nombre_pdf)
         if nombre_ley is None:
             print(f"   ⚠️  SALTADO: '{nombre_pdf}' no está registrado en leyes_config.json")

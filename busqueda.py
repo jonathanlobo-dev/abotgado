@@ -728,7 +728,17 @@ def buscar_articulos_clave(pregunta: str) -> tuple[list[dict], list[str]]:
     articulos      = []
     ids_vistos     = set()
     temas          = []
-    for tema, cfg in ARTICULOS_CLAVE.items():
+    # Temas MÁS ESPECÍFICOS primero (menos artículos = curación más precisa).
+    # Todos los curados empatan en score (0.95) y el ranking final desempata
+    # por orden de inserción; con MAX_POR_LEY=4, si un tema amplio ('penal',
+    # 10 arts) se itera antes que uno específico ('homicidio_culposo', 2 arts)
+    # sobre la misma ley, los artículos del específico quedan fuera del cupo.
+    # Caso real: "moto... la mató" llenaba el cupo del CP con 286/287/405/406
+    # y cortaba el 409 (homicidio culposo), el artículo central del caso.
+    temas_ordenados = sorted(
+        ARTICULOS_CLAVE.items(), key=lambda kv: len(kv[1].get("articulos", []))
+    )
+    for tema, cfg in temas_ordenados:
         # Verificar exclusiones primero
         excluir = cfg.get("excluir", [])
         if any(normalizar(e) in pregunta_norm for e in excluir):

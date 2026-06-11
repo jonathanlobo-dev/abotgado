@@ -12,7 +12,8 @@
         "constitucion",
         "constitucion de venezuela",
         "crbv"
-      ]
+      ],
+      "gaceta": "G.O. 36.860 del 30-diciembre-1999"
     },
     {
       "id": "codigo_civil",
@@ -25,7 +26,8 @@
       "aliases": [
         "codigo civil",
         "cc"
-      ]
+      ],
+      "gaceta": "G.O. 2.990 del 26-julio-1982"
     },
     {
       "id": "codigo_penal",
@@ -52,7 +54,8 @@
       "aliases": [
         "codigo de procedimiento civil",
         "cpc"
-      ]
+      ],
+      "gaceta": "G.O. 4.209 Extraordinario del 18-septiembre-1990"
     },
     {
       "id": "lottt",
@@ -67,7 +70,8 @@
         "ley organica del trabajo",
         "ley de trabajo",
         "trabajo"
-      ]
+      ],
+      "gaceta": "G.O. 6.076 Extraordinario del 7-mayo-2012"
     },
     {
       "id": "ley_transito_terrestre",
@@ -91,8 +95,7 @@
       "nombre": "Ley Orgánica para la Protección de Niños, Niñas y Adolescentes (LOPNA)",
       "rama": "familia",
       "archivos_pdf": [
-        "lopna.pdf",
-        "reforma-lopna.pdf"
+        "lopnna_2015.pdf"
       ],
       "aliases": [
         "lopna",
@@ -100,7 +103,8 @@
         "lopnna",
         "ninos",
         "menores"
-      ]
+      ],
+      "gaceta": "G.O. 6.185 Extraordinario del 08-06-2015 (texto consolidado vigente)"
     },
     {
       "id": "ley_mujeres_violencia",
@@ -114,7 +118,8 @@
         "ley de la mujer",
         "violencia de genero",
         "violencia contra la mujer"
-      ]
+      ],
+      "gaceta": "G.O. 6.667 Extraordinario del 16-diciembre-2021"
     },
     {
       "id": "ley_familias_maternidad",
@@ -126,7 +131,8 @@
       "aliases": [
         "ley de familias",
         "maternidad"
-      ]
+      ],
+      "gaceta": "G.O. 6.686 Extraordinario del 15-febrero-2022"
     },
     {
       "id": "ley_contra_odio",
@@ -137,7 +143,8 @@
       ],
       "aliases": [
         "ley contra el odio"
-      ]
+      ],
+      "gaceta": "G.O. 41.276 del 10-noviembre-2017"
     },
     {
       "id": "ley_propiedad_horizontal",
@@ -149,7 +156,8 @@
       "aliases": [
         "ley de propiedad horizontal",
         "propiedad horizontal"
-      ]
+      ],
+      "gaceta": "G.O. 3.241 Extraordinario del 18-agosto-1983"
     },
     {
       "id": "ley_discapacidad",
@@ -161,7 +169,8 @@
       ],
       "aliases": [
         "discapacidad"
-      ]
+      ],
+      "gaceta": "G.O. 6.817 Extraordinario del 27-junio-2024"
     },
     {
       "id": "ley_fauna_domestica",
@@ -178,7 +187,8 @@
         "ley de animales",
         "proteccion animal",
         "ley animales"
-      ]
+      ],
+      "gaceta": "G.O. 39.338 del 4-enero-2010"
     },
     {
       "id": "ley_corrupcion",
@@ -190,7 +200,8 @@
       "aliases": [
         "ley contra la corrupcion",
         "corrupcion"
-      ]
+      ],
+      "gaceta": "G.O. 5.637 Extraordinario del 07-abril-2003"
     },
     {
       "id": "ley_contraloria_general",
@@ -201,7 +212,8 @@
       ],
       "aliases": [
         "contraloria"
-      ]
+      ],
+      "gaceta": "G.O. 6.013 Extraordinario del 23-diciembre-2010"
     },
     {
       "id": "normas_entrega_cargos_publicos",
@@ -219,7 +231,8 @@
         "entrega de instituciones publicas",
         "entrega de organos de la administracion publica",
         "normas de entrega"
-      ]
+      ],
+      "gaceta": "G.O. 39.229 del 28-julio-2009"
     },
     {
       "id": "ley_contraloria_social",
@@ -228,7 +241,8 @@
       "archivos_pdf": [
         "LEY DE REFORMA DE LA LEY ORGÁNICA DE CONTRALORÍA SOCIAL.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 6.748 Extraordinario del 9-junio-2023"
     },
     {
       "id": "ley_registros_notarias",
@@ -239,7 +253,8 @@
       ],
       "aliases": [
         "ley de registros y notarias"
-      ]
+      ],
+      "gaceta": "G.O. 6.668 Extraordinario del 16-diciembre-2021"
     },
     {
       "id": "ley_residuos_desechos",
@@ -259,7 +274,8 @@
       "archivos_pdf": [
         "LEY ORGÁNICA DE GESTIÓN COMUNITARIA.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 9.043 del 15-junio-2012"
     },
     {
       "id": "ley_comunas",
@@ -290,7 +306,8 @@
       "archivos_pdf": [
         "LEY ORGÁNICA DE REFORMA DE LA LEY ORGÁNICA DEL PODER POPULAR.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 6.812 Extraordinario del 6-junio-2024"
     },
     {
       "id": "ley_sistema_economico_comunal",
@@ -309,7 +326,8 @@
       "archivos_pdf": [
         "ley_organica_de_planificacion_publica_y_popular.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 6.011 Extraordinario del 21-diciembre-2010"
     },
     {
       "id": "ley_lenguaje_genero",
@@ -318,7 +336,8 @@
       "archivos_pdf": [
         "LEY PARA LA PROMOCIÓN Y USO DEL LENGUAJE DE GÉNERO.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 6.654 Extraordinario del 7-octubre-2021"
     },
     {
       "id": "ley_secuestro_extorsion",
@@ -371,7 +390,8 @@
       ],
       "aliases": [
         "adultos mayores"
-      ]
+      ],
+      "gaceta": "G.O. 6.641 Extraordinario del 13-septiembre-2021"
     },
     {
       "id": "codigo_comercio",
@@ -398,7 +418,8 @@
       "aliases": [
         "codigo organico tributario",
         "cot"
-      ]
+      ],
+      "gaceta": "G.O. 6.507 Extraordinario del 29-enero-2020"
     },
     {
       "id": "codigo_justicia_militar",
@@ -409,7 +430,8 @@
       ],
       "aliases": [
         "codigo de justicia militar"
-      ]
+      ],
+      "gaceta": "G.O. 5.263 del 17-septiembre-1998"
     },
     {
       "id": "ley_arrendamientos_vivienda",
@@ -435,7 +457,8 @@
       ],
       "aliases": [
         "zonas economicas"
-      ]
+      ],
+      "gaceta": "G.O. 6.710 Extraordinario del 20-julio-2022"
     },
     {
       "id": "ley_antecedentes_penales",
@@ -478,7 +501,8 @@
         "ley del consumidor",
         "consumidor",
         "proteccion al consumidor"
-      ]
+      ],
+      "gaceta": "G.O. 40.340 del 23-enero-2014"
     },
     {
       "id": "ley_seguro_social",
@@ -491,7 +515,8 @@
         "seguro social",
         "ley del seguro social",
         "ivss"
-      ]
+      ],
+      "gaceta": "G.O. 4.322 Extraordinario del 3-octubre-1991"
     },
     {
       "id": "islr",
@@ -505,7 +530,8 @@
         "impuesto sobre la renta",
         "ley de islr",
         "renta"
-      ]
+      ],
+      "gaceta": "G.O. 38.628 del 16-febrero-2007"
     },
     {
       "id": "ley_delitos_informaticos",
@@ -531,7 +557,8 @@
         "simplificacion de tramites",
         "ley de tramites",
         "tramites"
-      ]
+      ],
+      "gaceta": "G.O. 6.265 del 22-octubre-1999"
     },
     {
       "id": "codigo_etica_abogado",
@@ -549,7 +576,8 @@
       "archivos_pdf": [
         "ley-de-arrendamientos-inmobiliarios-1999.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 36.687 del 22-abril-1999"
     },
     {
       "id": "ley_drogas",
@@ -573,7 +601,8 @@
         "ley-organica-de-salud.pdf",
         "ley organica de salud.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 36579 del 11-noviembre-1998"
     },
     {
       "id": "reglamento_general_alimentos",
@@ -582,7 +611,8 @@
       "archivos_pdf": [
         "reglamento-general-de-alimentos.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 25.864 del 16-enero-1959"
     },
     {
       "id": "resolucion_permisos_sanitarios",
@@ -604,7 +634,8 @@
         "ley de bancos",
         "sector bancario",
         "ley bancaria"
-      ]
+      ],
+      "gaceta": "G.O. 6.015 Extraordinario del 28-diciembre-2010"
     },
     {
       "id": "ley_telecomunicaciones",
@@ -613,7 +644,8 @@
       "archivos_pdf": [
         "ley-organica-de-telecomunicaciones.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 36.970 del 12-junio-2000"
     },
     {
       "id": "ley_actividad_aseguradora",
@@ -649,7 +681,8 @@
       "archivos_pdf": [
         "Ley_de_Interoperabilidad.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 9.051 del 15-junio-2012"
     },
     {
       "id": "ley_funcion_publica_estadistica",
@@ -679,7 +712,8 @@
       "aliases": [
         "ley contra el desalojo",
         "desalojo"
-      ]
+      ],
+      "gaceta": "G.O. 8.190 del 6-mayo-2011"
     },
     {
       "id": "ley_ambiente",
@@ -704,7 +738,8 @@
       "aliases": [
         "ley de aguas",
         "ley aguas"
-      ]
+      ],
+      "gaceta": "G.O. 38.595 del 2-enero-2007"
     },
     {
       "id": "ley_servicios_agua_saneamiento",
@@ -730,7 +765,8 @@
       "aliases": [
         "ley municipal",
         "poder publico municipal"
-      ]
+      ],
+      "gaceta": "G.O. 6.015 del 28-diciembre-2010"
     },
     {
       "id": "ley_arrendamiento_comercial",
@@ -742,6 +778,17 @@
       "aliases": [
         "arrendamiento comercial",
         "ley de arrendamiento comercial"
+      ],
+      "gaceta": "G.O. 40.418 del 23-mayo-2014",
+      "reemplazos_texto": [
+        [
+          "Artículo 10, El presente Decreto",
+          "Artículo 1. El presente Decreto"
+        ],
+        [
+          "Artículo 20. A los fines de la aplicació",
+          "Artículo 2. A los fines de la aplicació"
+        ]
       ]
     },
     {
@@ -753,7 +800,8 @@
       ],
       "aliases": [
         "trabajadores residenciales"
-      ]
+      ],
+      "gaceta": "G.O. 39.677 del 19-mayo-2011"
     },
     {
       "id": "ley_procesos_electorales",
@@ -808,6 +856,12 @@
         "impuesto sobre alcohol",
         "ley alcoholes",
         "especies alcoholicas"
+      ],
+      "reemplazos_texto": [
+        [
+          "Artículo 12. El alcohol etílico y las es",
+          "Artículo 1. El alcohol etílico y las es"
+        ]
       ]
     },
     {
@@ -841,7 +895,8 @@
         "marca comercial",
         "patente",
         "lema comercial"
-      ]
+      ],
+      "gaceta": "G.O. 25.227 del 10-diciembre-1956"
     },
     {
       "id": "ley_consejo_federal_gobierno",
@@ -855,7 +910,8 @@
         "consejo federal de gobierno",
         "federalismo",
         "descentralizacion"
-      ]
+      ],
+      "gaceta": "G.O. 5.963 Extraordinario del 22-febrero-2010"
     },
     {
       "id": "reglamento_consejo_federal",
@@ -867,7 +923,8 @@
       "aliases": [
         "reglamento consejo federal",
         "transferencia competencias"
-      ]
+      ],
+      "gaceta": "G.O. 39.924 del 17-mayo-2012"
     },
     {
       "id": "convenio_cambiario",
@@ -887,7 +944,24 @@
         "mercado cambiario",
         "especulacion cambiaria",
         "bcv"
-      ]
+      ],
+      "gaceta": "G.O. 3.126 del 26-octubre-2017"
+    },
+    {
+      "id": "ley_soberania_agroalimentaria",
+      "nombre": "Ley Orgánica de Seguridad y Soberanía Agroalimentaria",
+      "rama": "administrativo",
+      "archivos_pdf": [
+        "ley-organica-seguridad-soberania-agroalimentaria-2008.pdf"
+      ],
+      "aliases": [
+        "soberania agroalimentaria",
+        "soberanía agroalimentaria",
+        "seguridad agroalimentaria",
+        "ley agroalimentaria",
+        "seguridad y soberania agroalimentaria"
+      ],
+      "gaceta": "G.O. 5.889 Extraordinario del 31-07-2008 (Decreto 6.071)"
     }
   ]
 }

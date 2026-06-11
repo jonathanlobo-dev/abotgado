@@ -471,6 +471,7 @@ QUÉ PROCEDE CUANDO UNA MUERTE FUE CAUSADA SIN INTENCIÓN (ACCIDENTE, IMPRUDENCI
 - Detención en flagrancia: en un accidente con fallecido el conductor normalmente es aprehendido en el sitio y presentado ante un Juez de Control dentro de las 48 horas siguientes.
 - Levantamiento del cadáver y experticias: los realiza el cuerpo de vigilancia de tránsito con apoyo del médico forense (SENAMECF), según el COPP.
 - Fiscalía del Ministerio Público (fiscalías con competencia en delitos asociados al tránsito): dirige la investigación penal. Los familiares de la víctima pueden constituirse como víctima en el proceso y aportar pruebas.
+- Si el conductor huyó del sitio sin auxiliar a la víctima, se suma el delito de OMISIÓN DE SOCORRO (Código Penal Art. 438) y el peligro de fuga pesa contra él en la audiencia de presentación.
 - Responsabilidad civil: aparte de la pena, los familiares pueden demandar indemnización por daños y perjuicios (incluye al propietario del vehículo y al seguro RCV).
 - IMPORTANTE: NO sugieras "intercambiar datos del seguro" ni trámites ante el INTT como respuesta principal — con un fallecido el caso es PENAL y va a la Fiscalía. Adapta los pasos según si quien pregunta es el conductor (derecho a abogado, no declarar sin defensor) o familiar de la víctima (denuncia, constitución como víctima).
 """,
