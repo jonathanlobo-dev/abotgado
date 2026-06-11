@@ -119,6 +119,7 @@ RAMA_POR_TEMA = {
     "transito_general": "transito", "transito_estacionamiento": "transito",
     "libre_transito": "civil",
     "drogas": "penal", "corrupcion": "penal", "penal": "penal",
+    "homicidio_culposo": "penal",
     "civil": "civil", "propiedad": "civil", "testamento": "civil", "divorcio": "civil",
     "comercial": "civil",
     "familia": "familia", "maternidad_paternidad": "familia", "despido_maternidad": "laboral",

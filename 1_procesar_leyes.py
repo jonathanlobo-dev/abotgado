@@ -81,20 +81,41 @@ def extraer_texto(ruta):
     return texto
 
 
-def detectar_nombre_ley(texto: str, nombre_archivo: str) -> str:
-    if nombre_archivo in NOMBRES_CORRECTOS:
-        return NOMBRES_CORRECTOS[nombre_archivo]
-    encabezado = texto[:500].strip()
-    lineas = [l.strip() for l in encabezado.split("\n") if len(l.strip()) > 10]
-    if lineas:
-        return lineas[0]
-    return nombre_archivo.replace("_", " ").replace(".pdf", "").title()
+def detectar_nombre_ley(texto: str, nombre_archivo: str) -> str | None:
+    """Nombre canónico desde leyes_config.json. None si el PDF no está registrado.
+
+    Antes había un fallback que tomaba la primera línea del PDF como nombre de
+    ley — en gacetas eso produce basura tipo "6.854 Extraordinario GACETA
+    OFICIAL..." que contamina la DB con leyes fantasma. Fuente única de verdad:
+    todo PDF debe registrarse en leyes_config.json o se salta con advertencia.
+    """
+    return NOMBRES_CORRECTOS.get(nombre_archivo)
 
 
 # Encabezados estructurales que aparecen ENTRE artículos y no deben quedar
 # pegados al final del artículo anterior. Anclado a inicio de línea y seguido de
 # numeral romano/ordinal/arábigo (o palabra estructural) para no cortar frases
 # legítimas como "título de propiedad" o "sección de un terreno" en medio del texto.
+# Artículos-preámbulo de leyes de reforma: las gacetas de reforma empiezan con
+# "Artículo 1. Se modifica el artículo 30, en la forma siguiente: ..." y luego
+# reimprimen el texto íntegro. Como la deduplicación se queda con la PRIMERA
+# ocurrencia de cada número, esos artículos de la reforma ENSOMBRECEN a los
+# artículos reales del mismo número (bug detectado en COPP, Justicia de Paz,
+# Violencia contra la Mujer, Corrupción, Poder Popular, Familias/Maternidad).
+# Se descartan: su cuerpo es fórmula de reforma, no derecho sustantivo.
+# El sustantivo puede venir con rellenos: "Se agrega un NUEVO artículo",
+# "Se incorpora un nuevo artículo", "Se agregan DOS numerales MÁS",
+# "Se modifica EL ACÁPITE Y el artículo 2". Permitimos hasta 40 chars entre
+# el verbo y el sustantivo estructural. OJO: "Se crea..." NO se filtra —
+# es contenido sustantivo legítimo (leyes que crean instituciones/fondos).
+_RE_FORMULA_REFORMA = re.compile(
+    r'^\s*Se\s+(?:modifica|reforma|incorpora|suprime|elimina|agrega|sustituye)n?\b'
+    r'[^.]{0,40}?'
+    r'\b(?:art[íi]culo|t[íi]tulo|cap[íi]tulo|secci[oó]n|ep[íi]grafe|'
+    r'denominaci[oó]n|numeral|literal|disposici[oó]n|ac[aá]pite)',
+    re.IGNORECASE,
+)
+
 _RE_CORTE_SECCION = re.compile(
     r'(?im)^\s*(?:'
     r'(?:cap[ií]tulo|t[ií]tulo|secci[oó]n|sub-?secci[oó]n)\s+'
@@ -142,6 +163,12 @@ def extraer_articulos(texto, nombre_ley, nombre_pdf):
             if corte:
                 contenido = contenido[:corte.start()].strip()
             num_int   = int(numero)
+
+            # Saltar artículos-preámbulo de reforma ("Se modifica el artículo...")
+            # para que NO ensombrezcan al artículo real con el mismo número.
+            if _RE_FORMULA_REFORMA.match(contenido):
+                i += 3
+                continue
 
             if num_int not in numeros_vistos and len(contenido) > 30:
                 numeros_vistos.add(num_int)
@@ -326,6 +353,10 @@ def main():
 
         texto      = extraer_texto(ruta)
         nombre_ley = detectar_nombre_ley(texto, nombre_pdf)
+        if nombre_ley is None:
+            print(f"   ⚠️  SALTADO: '{nombre_pdf}' no está registrado en leyes_config.json")
+            print(f"      Agrega una entrada (id, nombre, rama, archivos_pdf, aliases) y reintenta.")
+            continue
         print(f"   → {nombre_ley}")
 
         articulos = extraer_articulos(texto, nombre_ley, nombre_pdf)

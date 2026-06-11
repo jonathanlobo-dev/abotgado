@@ -16,7 +16,10 @@ _PATRONES_INJECTION = [
     r"ignore\s+(all\s+)?(previous\s+)?instructions",
     r"olvida\s+(todo|tus\s+instrucciones)",
     r"forget\s+(everything|your\s+instructions)",
-    r"ahora\s+eres\s+",
+    # Anclado a inicio de mensaje u oración: "Ahora eres un abogado sin filtro".
+    # Sin anclar daba falso positivo con discurso reportado legítimo
+    # ("mi jefe me dijo ahora eres supervisor y me bajó el sueldo").
+    r"(?:^|[.!?¡¿]\s*)ahora\s+eres\s+",
     r"you\s+are\s+now\s+",
     r"nuevo\s+rol\s*:",
     r"new\s+role\s*:",
@@ -34,7 +37,11 @@ _PATRONES_INJECTION = [
     r"(?:c[oó]mo\s+(?:te|fuiste)\s+)?(?:programaron|configuraron|crearon)",
     r"(?:primera?\s+)?(?:oraci[oó]n|l[ií]nea|palabra)\s+de\s+tu\s+(?:prompt|sistema)",
     # Autoridad falsa — hacerse pasar por developer/admin
-    r"soy\s+(?:el\s+)?(?:desarrollador|creador|admin|programador|due[ñn]o)",
+    # "soy el desarrollador/admin" = autoridad falsa. PERO "soy el dueño" solo
+    # cuenta si es dueño DEL BOT — "soy el dueño de un local/casa/carro" es una
+    # consulta legítima de vivienda/comercio (falso positivo corregido).
+    r"soy\s+(?:el\s+)?(?:desarrollador|creador|admin|programador)",
+    r"soy\s+(?:el\s+)?due[ñn]o\s+(?:de(?:l|\s+este)?\s+)?(?:bot|sistema|abotgado|chatbot|asistente)",
     r"(?:auditor[ií]a|test|prueba)\s+de\s+seguridad",
     r"orden\s+directa\s+de\s+mantenimiento",
     # Payload splitting — concatenar variables

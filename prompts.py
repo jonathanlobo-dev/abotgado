@@ -169,7 +169,7 @@ QUERY: <términos jurídicos>
 TEMAS DISPONIBLES:
 TRÁNSITO: transito_infracciones (multas, semáforos, velocidad, alcohol), transito_licencia (licencias de conducir), transito_accidente (choques, atropellos, colisiones), transito_vehiculo (seguro, placa, RCV, revisión), transito_general (normas de circulación), transito_estacionamiento (mal estacionado, grúa), libre_transito (derecho a circular), animales_via (animales sueltos en vía pública), robo_vehiculo (robo/hurto de carro)
 LABORAL: laboral_despido (despido, indemnización), laboral_vacaciones (vacaciones, días libres), laboral_prestaciones (prestaciones, liquidación, aguinaldo), laboral_general (derechos laborales), pago_feriados (trabajo en feriados), permiso_medico (reposo médico)
-PENAL: penal (delitos, penas, prisión, acusado, cargo penal, asociación para delinquir, crimen organizado, banda delictiva, pandilla, qué pena tiene, cuántos años de cárcel), drogas (drogas, sustancias), faltas_penales (riñas, escándalo, lesiones leves), amenazas (amenazas, intimidación), detencion_arbitraria (detención ilegal, flagrancia), antecedentes_penales (antecedentes, certificado), procesal_penal (juicios penales, procedimiento), delitos_informaticos (hackeo, estafas online), corrupcion (soborno, peculado)
+PENAL: penal (delitos, penas, prisión, acusado, cargo penal, asociación para delinquir, crimen organizado, banda delictiva, pandilla, qué pena tiene, cuántos años de cárcel), homicidio_culposo (muerte causada SIN intención: accidente con fallecido, atropelló y mató, conducción imprudente con muerto, negligencia o impericia que causó una muerte), drogas (drogas, sustancias), faltas_penales (riñas, escándalo, lesiones leves), amenazas (amenazas, intimidación), detencion_arbitraria (detención ilegal, flagrancia), antecedentes_penales (antecedentes, certificado), procesal_penal (juicios penales, procedimiento), delitos_informaticos (hackeo, estafas online), corrupcion (soborno, peculado)
 FAMILIA: familia (custodia, patria potestad), divorcio (divorcio, separación), maternidad_paternidad (permisos maternidad/paternidad, lactancia), despido_maternidad (despedida por embarazo, inamovilidad LOTTT Art.335), violencia_mujer (violencia de género, maltrato a mujer por pareja), lesiones_personales (agresión física sin importar el sexo de la víctima — "me pega", "me golpearon", riña)
 VIVIENDA: vivienda_cc (compra, cláusulas abusivas), vivienda_desalojo (desalojo, desahucio), vivienda_arrendamiento (alquiler, arrendamiento), arrendamiento_comercial (local comercial), propiedad_horizontal (condominio, edificio)
 CIVIL: civil (obligaciones, contratos), propiedad (posesión, invasión, usucapión), testamento (testamento, herencia), herencia (sucesión, herederos), deuda_civil (deudas, cobro, pagaré), vicios_ocultos (defectos ocultos en compraventa)
@@ -464,6 +464,15 @@ INSTITUCIONES Y PASOS CONCRETOS PARA CORRUPCIÓN:
 - Defensoría del Pueblo: Si el funcionario te niega un servicio público.
 - Guarda toda evidencia: grabaciones, mensajes, nombres, fechas, testigos.
 - Denuncia anónima: Puedes denunciar sin identificarte ante la Fiscalía.
+""",
+    "homicidio_culposo": """
+QUÉ PROCEDE CUANDO UNA MUERTE FUE CAUSADA SIN INTENCIÓN (ACCIDENTE, IMPRUDENCIA, NEGLIGENCIA):
+- El hecho NO es solo una infracción administrativa de tránsito: es el delito de HOMICIDIO CULPOSO (Código Penal Art. 409, prisión de 6 meses a 5 años; puede subir hasta 8 años si hay varias víctimas). Distinto del homicidio intencional (Art. 405).
+- Detención en flagrancia: en un accidente con fallecido el conductor normalmente es aprehendido en el sitio y presentado ante un Juez de Control dentro de las 48 horas siguientes.
+- Levantamiento del cadáver y experticias: los realiza el cuerpo de vigilancia de tránsito con apoyo del médico forense (SENAMECF), según el COPP.
+- Fiscalía del Ministerio Público (fiscalías con competencia en delitos asociados al tránsito): dirige la investigación penal. Los familiares de la víctima pueden constituirse como víctima en el proceso y aportar pruebas.
+- Responsabilidad civil: aparte de la pena, los familiares pueden demandar indemnización por daños y perjuicios (incluye al propietario del vehículo y al seguro RCV).
+- IMPORTANTE: NO sugieras "intercambiar datos del seguro" ni trámites ante el INTT como respuesta principal — con un fallecido el caso es PENAL y va a la Fiscalía. Adapta los pasos según si quien pregunta es el conductor (derecho a abogado, no declarar sin defensor) o familiar de la víctima (denuncia, constitución como víctima).
 """,
     "transito": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TRÁNSITO:

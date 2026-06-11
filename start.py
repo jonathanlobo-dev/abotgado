@@ -22,8 +22,11 @@ def main():
     # Crear DATA_DIR si no existe (Railway Volume)
     os.makedirs(config.DATA_DIR, exist_ok=True)
 
-    # Umbral mínimo de artículos para considerar la DB sana (actual ~15.018).
-    UMBRAL_MIN_ARTICULOS = 14000
+    # Umbral mínimo de artículos para considerar la DB sana (actual: 14.040
+    # tras deduplicar CPC/antecedentes/justicia de paz y filtrar preámbulos
+    # de reforma). Margen de ~5% por si una ley se reemplaza por una versión
+    # con menos artículos.
+    UMBRAL_MIN_ARTICULOS = 13300
 
     # Verificar si ChromaDB ya existe (carpeta no vacía)
     carpeta_existe = os.path.exists(config.DB_PATH) and os.listdir(config.DB_PATH)
@@ -55,7 +58,7 @@ def main():
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
-    REINDEX_VERSION = "8"  # bump: nueva ley — Normas de Entrega de Cargos Públicos (Contraloría 2009)
+    REINDEX_VERSION = "9"  # bump: CP 2005 + COPP 2021 vigentes, fix artículos-preámbulo de reforma, dedup CPC/antecedentes/justicia de paz
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0

@@ -2193,7 +2193,11 @@
       "me acusan de violar",
       "imputable",
       "inimputable",
-      "responsabilidad penal"
+      "responsabilidad penal",
+      "mataron",
+      "asesinaron",
+      "asesinó",
+      "asesino a"
     ],
     "ley": "Código Penal",
     "articulos": [
@@ -3965,7 +3969,7 @@
       "raptaron",
       "raptado"
     ],
-    "ley": "Ley contra el Secuestro y la Extorsión",
+    "ley": "Ley Contra el Secuestro y la Extorsión",
     "articulos": [
       2,
       3,
@@ -4015,7 +4019,7 @@
       "segregacion",
       "segregación"
     ],
-    "ley": "Ley contra el Odio, por la Convivencia Pacífica y la Tolerancia",
+    "ley": "Ley Constitucional contra el Odio",
     "articulos": [
       4,
       5,
@@ -4275,7 +4279,7 @@
       "residuos peligrosos",
       "manejo de desechos"
     ],
-    "ley": "Ley de Gestión Integral de la Basura",
+    "ley": "Ley de Residuos y Desechos Sólidos",
     "articulos": [
       1,
       2,
@@ -4320,7 +4324,7 @@
       "sancion disciplinaria",
       "sanción disciplinaria"
     ],
-    "ley": "Ley de Abogados",
+    "ley": "Código de Ética Profesional del Abogado Venezolano",
     "articulos": [
       1,
       2,
@@ -5675,6 +5679,47 @@
       "trabajo",
       "especie salvaje",
       "fauna silvestre"
+    ]
+  },
+  "homicidio_culposo": {
+    "keywords": [
+      "homicidio culposo",
+      "la mató",
+      "la mato",
+      "lo mató",
+      "lo mato",
+      "la mataron",
+      "lo mataron",
+      "mató a",
+      "mato a",
+      "murió en el accidente",
+      "murio en el accidente",
+      "falleció en el accidente",
+      "fallecio en el accidente",
+      "atropelló y murió",
+      "atropello y murio",
+      "atropelló y mató",
+      "atropello y mato",
+      "accidente con muerto",
+      "accidente con muertos",
+      "accidente fatal",
+      "accidente mortal",
+      "muerte por imprudencia",
+      "muerte por negligencia",
+      "causó la muerte",
+      "causo la muerte",
+      "ocasionó la muerte",
+      "ocasiono la muerte",
+      "perdió la vida",
+      "perdio la vida",
+      "sin querer matar",
+      "sin intención de matar",
+      "sin intencion de matar"
+    ],
+    "ley": "Código Penal",
+    "articulos": [
+      409,
+      405
     ]
   }
 }

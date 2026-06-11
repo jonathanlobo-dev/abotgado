@@ -41,3 +41,5 @@ db.txt
 # OS
 Thumbs.db
 .DS_Store
+leyes_obsoletas/
+.ca_bundle_local.pem

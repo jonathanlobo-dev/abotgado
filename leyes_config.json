@@ -32,14 +32,14 @@
       "nombre": "Código Penal",
       "rama": "penal",
       "archivos_pdf": [
-        "codigo_penal.pdf",
-        "reforma-del-codigo-penal.pdf"
+        "codigo_penal_2005.pdf"
       ],
       "aliases": [
         "codigo penal",
         "cp",
         "penal"
-      ]
+      ],
+      "gaceta": "G.O. 5.768 Extraordinario del 13-04-2005"
     },
     {
       "id": "cpc",
@@ -47,8 +47,7 @@
       "rama": "civil",
       "archivos_pdf": [
         "CÓDIGO_PROCEDIMIENTO_CIVIL.pdf",
-        "CÓDIGO PROCEDIMIENTO CIVIL.pdf",
-        "codigo-de-procedimiento-civil.pdf"
+        "CÓDIGO PROCEDIMIENTO CIVIL.pdf"
       ],
       "aliases": [
         "codigo de procedimiento civil",
@@ -353,14 +352,14 @@
       "nombre": "Ley Orgánica de Justicia de Paz Comunal",
       "rama": "administrativo",
       "archivos_pdf": [
-        "Ley Orgánica de Justicia de Paz Comunal.pdf",
-        "reforma-justicia-paz-comunal.pdf"
+        "Ley Orgánica de Justicia de Paz Comunal.pdf"
       ],
       "aliases": [
         "justicia de paz",
         "ley de justicia de paz",
         "paz comunal"
-      ]
+      ],
+      "gaceta": "G.O. 6.854 Extraordinario del 14-11-2024 (edición consolidada TSJ 2024)"
     },
     {
       "id": "ley_adultos_mayores",
@@ -442,25 +441,26 @@
       "nombre": "Ley de Registro de Antecedentes Penales",
       "rama": "penal",
       "archivos_pdf": [
-        "ley-regist-20220728163728.pdf",
-        "ley de registro de antecedentes penales.pdf"
+        "ley-regist-20220728163728.pdf"
       ],
       "aliases": [
         "antecedentes penales"
-      ]
+      ],
+      "gaceta": "G.O. 6.712 Extraordinario del 20-07-2022"
     },
     {
       "id": "copp",
       "nombre": "Código Orgánico Procesal Penal (COPP)",
       "rama": "penal",
       "archivos_pdf": [
-        "codigo-organico-procesal-penal.pdf"
+        "copp_2021.pdf"
       ],
       "aliases": [
         "copp",
         "codigo organico procesal penal",
         "procesal penal"
-      ]
+      ],
+      "gaceta": "G.O. 6.644 Extraordinario del 17-09-2021 (reforma con texto íntegro)"
     },
     {
       "id": "ley_precios_justos",
