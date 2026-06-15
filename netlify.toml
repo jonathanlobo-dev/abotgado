@@ -1,0 +1,7 @@
+# Configuración de despliegue de Netlify para el landing de aBOTgado.
+# El sitio estático vive en landing/ (no en la raíz del repo), así que hay
+# que indicarle explícitamente a Netlify cuál es el directorio a publicar.
+# Sin esto, Netlify publica la raíz del repo —que no tiene index.html— y el
+# landing nunca aparece.
+[build]
+  publish = "landing"
