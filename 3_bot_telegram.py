@@ -1703,6 +1703,21 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return
 
+    # ── Cap de longitud ──────────────────────────────────────────────────
+    # Evita que peguen una ley/texto completo: Telegram lo parte en varios
+    # mensajes (>4096 chars c/u) y cada fragmento dispararía una consulta RAG
+    # independiente —respuestas fragmentadas y quema del rate limit del LLM—.
+    # Una pregunta legal concreta cabe de sobra en este límite.
+    if len(pregunta) > config.MAX_CONSULTA_CHARS:
+        await enviar_respuesta(
+            update.message,
+            f"📏 Tu mensaje es muy largo ({len(pregunta)} caracteres). "
+            f"No hace falta pegarme la ley completa: hazme una <b>pregunta concreta</b> "
+            f"sobre tu caso (máx. {config.MAX_CONSULTA_CHARS} caracteres) y yo busco los artículos.\n\n"
+            f"Ej: <i>«Me despidieron estando de reposo, ¿es legal?»</i>"
+        )
+        return
+
     db.registrar_usuario(user_id, user.first_name, user.username or "")
 
     # ── Esperando nombre de ley (flujo "explícame artículo X") ───────────

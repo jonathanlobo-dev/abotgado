@@ -82,6 +82,12 @@ DOCS_HABILITADOS = True
 
 MAX_HISTORIAL = 10
 
+# Longitud máxima de una consulta (caracteres). Una pregunta legal real cabe
+# de sobra; el tope evita que peguen leyes/textos completos —que Telegram parte
+# en varios mensajes y disparan varias consultas RAG fragmentadas, quemando el
+# rate limit del LLM—. El pipeline internamente ya trunca a 500 para la búsqueda.
+MAX_CONSULTA_CHARS = int(os.getenv("MAX_CONSULTA_CHARS", "1000"))
+
 # ─── AUTO TESTERS ─────────────────────────────────────────────────────────────
 MAX_AUTO_TESTERS = 50  # primeros N usuarios reciben 14 días de Pionero gratis
 
