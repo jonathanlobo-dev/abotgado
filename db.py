@@ -878,7 +878,11 @@ def quitar_consultas_extra(user_id: int, cantidad: int = 5):
 
 # ─── HISTORIAL DE CONVERSACIÓN ────────────────────────────────────────────────
 
-def guardar_mensaje(user_id: int, rol: str, mensaje: str):
+def guardar_mensaje(user_id: int, rol: str, mensaje: str, limite: int = None):
+    """Guarda un mensaje y recorta el historial del usuario a `limite` mensajes
+    (ring buffer). `limite` permite una ventana corta para usuarios gratis."""
+    if limite is None:
+        limite = config.MAX_HISTORIAL
     with get_db() as con:
         con.execute("""
             INSERT INTO historial (user_id, rol, mensaje)
@@ -893,7 +897,7 @@ def guardar_mensaje(user_id: int, rol: str, mensaje: str):
                 ORDER BY id DESC
                 LIMIT ?
             )
-        """, (user_id, user_id, config.MAX_HISTORIAL))
+        """, (user_id, user_id, limite))
 
 
 def cargar_historial(user_id: int) -> list[dict]:

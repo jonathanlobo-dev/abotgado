@@ -89,6 +89,12 @@ DOCS_HABILITADOS = True
 
 MAX_HISTORIAL = 10
 
+# Memoria corta para usuarios SIN plan de memoria (gratis): guarda/usa los
+# últimos N mensajes (≈2-3 turnos) para que los seguimientos inmediatos ("¿y si
+# insiste?", "pero aquí no nos dan el contrato") no se rompan. La memoria LARGA
+# (MAX_HISTORIAL) y la persistencia de contexto siguen siendo premium.
+MAX_HISTORIAL_GRATIS = int(os.getenv("MAX_HISTORIAL_GRATIS", "4"))
+
 # Longitud máxima de una consulta (caracteres). Una pregunta legal real cabe
 # de sobra; el tope evita que peguen leyes/textos completos —que Telegram parte
 # en varios mensajes y disparan varias consultas RAG fragmentadas, quemando el

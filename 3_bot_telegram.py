@@ -1971,7 +1971,12 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     )
 
     con_memoria = db.tiene_memoria(user_id)
-    historial = db.cargar_historial(user_id) if con_memoria else None
+    # Memoria larga (premium) vs. memoria corta de cortesía (gratis): ambos
+    # cargan historial, pero el gratis solo ve los últimos MAX_HISTORIAL_GRATIS
+    # mensajes para que los seguimientos inmediatos no se rompan.
+    historial = db.cargar_historial(user_id)
+    if not con_memoria:
+        historial = historial[-config.MAX_HISTORIAL_GRATIS:] if historial else None
 
     try:
         resultado = await asyncio.to_thread(busqueda.buscar_y_responder, pregunta, historial, user_id)
@@ -1993,9 +1998,11 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     db.registrar_consulta(user_id)
-    if con_memoria:
-        db.guardar_mensaje(user_id, "user", pregunta)
-        db.guardar_mensaje(user_id, "assistant", respuesta)
+    # Guardar historial para todos; el ring buffer se recorta según el plan
+    # (largo para premium, corto para gratis — memoria de cortesía).
+    _limite_hist = config.MAX_HISTORIAL if con_memoria else config.MAX_HISTORIAL_GRATIS
+    db.guardar_mensaje(user_id, "user", pregunta, _limite_hist)
+    db.guardar_mensaje(user_id, "assistant", respuesta, _limite_hist)
 
     # Actualizar ultima_ley si los temas RAG apuntan a una sola ley
     if temas:
@@ -2031,7 +2038,12 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             import re as _re
             temas_str = ", ".join(temas) if temas else "ninguno"
             # Versión limpia de la respuesta (sin etiquetas HTML) para el mensaje admin
-            resp_limpia = _re.sub(r"<[^>]+>", "", respuesta).strip()[:600]
+            # Preview para el log admin. 1500 chars: suficiente para ver la
+            # respuesta casi completa (la respuesta real al usuario NO se trunca;
+            # esto es solo el resumen de monitoreo).
+            resp_limpia = _re.sub(r"<[^>]+>", "", respuesta).strip()
+            if len(resp_limpia) > 1500:
+                resp_limpia = resp_limpia[:1500] + " […preview cortado, el usuario recibió la respuesta completa]"
 
             if confianza in ("baja", "media"):
                 icono_conf = "🔴" if confianza == "baja" else "🟡"
