@@ -465,6 +465,23 @@ INSTITUCIONES Y PASOS CONCRETOS PARA CORRUPCIÓN:
 - Guarda toda evidencia: grabaciones, mensajes, nombres, fechas, testigos.
 - Denuncia anónima: Puedes denunciar sin identificarte ante la Fiscalía.
 """,
+    "secreto_medico": """
+GRABACIÓN O FOTOGRAFÍA EN LA CONSULTA Y SECRETO MÉDICO — ACLARACIÓN CLAVE DE DIRECCIÓN:
+- El SECRETO MÉDICO es una obligación del MÉDICO hacia el paciente (Ley del Ejercicio de la Medicina, Arts. 46-52). El paciente NO está obligado por ese secreto, así que un paciente que graba su propia consulta NO "viola el secreto médico". NO inviertas esta dirección.
+- Grabar una conversación en la que uno mismo participa, en general, NO es ilegal en Venezuela. Lo que sí puede ser ilegal es DIFUNDIR o publicar esa grabación sin consentimiento para dañar el honor o la reputación de la otra persona (derecho al honor, vida privada e imagen, CRBV Art. 60; eventual responsabilidad civil o difamación).
+- SI QUIEN PREGUNTA ES EL MÉDICO y un paciente lo grabó: no puede objetar la grabación en sí; si el paciente la difunde y daña su reputación, la vía es civil (daños) o penal (difamación/injuria). NO sirve denunciar al paciente ante el Colegio de Médicos ni los Tribunales Disciplinarios: esos solo tienen jurisdicción sobre los MÉDICOS, no sobre pacientes.
+- SI QUIEN PREGUNTA ES EL PACIENTE y quiere grabar su consulta: puede hacerlo para su propio resguardo; debe evitar difundirla públicamente sin necesidad.
+- Identifica el rol de quien pregunta antes de dar pasos, y no des consejos cruzados (no le digas al médico "conserva la grabación" si la tiene el paciente).
+""",
+    "abuso_policial_transito": """
+EXTORSIÓN O COBRO INDEBIDO DE UN FUNCIONARIO (alcabala, "matraca", "matraqueo"):
+- Exigir dinero abusando del cargo es CONCUSIÓN (Ley contra la Corrupción, Art. 67). Si además te detienen sin delito, hay abuso de funciones / privación ilegítima de libertad (Código Penal, Arts. 175-176) y violación de tus derechos (CRBV Art. 44 libertad personal, Art. 49 debido proceso).
+- DÓNDE DENUNCIAR (lo eficaz; NO la Contraloría, que es control fiscal/patrimonial y no atiende extorsión policial en la calle):
+  1. Ministerio Público — Fiscalía con competencia en corrupción (vía penal principal).
+  2. La oficina de asuntos internos / supervisión disciplinaria del propio cuerpo policial.
+  3. Defensoría del Pueblo, si se vulneraron tus derechos.
+- QUÉ RESGUARDAR: hora y lugar, número de placa y de la unidad, nombres si los ves, testigos, y cualquier grabación o foto. No entregues dinero; si puedes, graba el momento de forma discreta.
+""",
     "homicidio_culposo": """
 QUÉ PROCEDE CUANDO UNA MUERTE FUE CAUSADA SIN INTENCIÓN (ACCIDENTE, IMPRUDENCIA, NEGLIGENCIA):
 - El hecho NO es solo una infracción administrativa de tránsito: es el delito de HOMICIDIO CULPOSO (Código Penal Art. 409, prisión de 6 meses a 5 años; puede subir hasta 8 años si hay varias víctimas). Distinto del homicidio intencional (Art. 405).

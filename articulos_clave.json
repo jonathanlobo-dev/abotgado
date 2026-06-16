@@ -1628,14 +1628,14 @@
     ],
     "ley": "Ley contra la Corrupción",
     "articulos": [
-      2,
       52,
       53,
       54,
-      55,
-      56,
-      57,
-      58
+      59,
+      60,
+      67,
+      68,
+      69
     ]
   },
   "comercial": {
@@ -5759,7 +5759,7 @@
     ],
     "ley": "Ley contra la Corrupción",
     "articulos": [
-      60
+      67
     ]
   }
 }

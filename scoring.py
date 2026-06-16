@@ -82,6 +82,14 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
         # Comercio regula actos de comercio y sociedades, no investigación científica.
         "Código de Comercio",
     },
+    "abuso_policial_transito": {
+        # El COPP (procesal) produce falsos positivos semánticos por mencionar
+        # "Ministerio Público"/"funcionario" (ej: Art. 202 sobre autopsias salía
+        # citado para una extorsión policial). La concusión (LCC 67), el abuso de
+        # funciones (CP 175/176) y los derechos (CRBV 44/49) cubren el caso; el
+        # COPP solo mete ruido aquí.
+        "Código Orgánico Procesal Penal (COPP)",
+    },
     "moneda_curso_legal": {
         # Código de Comercio Arts. 449/489 (letras de cambio/cheques) aparecen como
         # falsos positivos para queries sobre obligatoriedad de petro/dólar.
