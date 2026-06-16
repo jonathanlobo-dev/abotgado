@@ -1122,20 +1122,25 @@ class TestPasadoEnViolencia:
 class TestBancarioArticulosLISBReales:
     """Los articulos del tema bancario deben ser articulos reales de la LISB."""
 
-    def test_bancario_incluye_art_59_debitos_no_autorizados(self):
-        """Art. 59 LISB: prohibicion de debitos sin autorizacion. Critico para 'me quitaron $300'."""
+    def test_bancario_incluye_art_57_debitos_no_autorizados(self):
+        """Art. 57 LISB (2014): prohibe descuentos/debitos sin autorizacion expresa
+        del titular. Critico para 'me debitaron sin permiso'. (Era Art. 59 en la
+        version 2010, renumerado en la reforma vigente de 2014)."""
         from busqueda import ARTICULOS_CLAVE
-        assert 59 in ARTICULOS_CLAVE["bancario"]["articulos"]
+        assert 57 in ARTICULOS_CLAVE["bancario"]["articulos"]
 
-    def test_bancario_incluye_art_62_intereses_comisiones(self):
-        """Art. 62 LISB: intereses, comisiones y tarifas."""
+    def test_bancario_incluye_art_comisiones(self):
+        """LISB 2014: Art. 58 (definicion de comisiones/tarifas) y Art. 59
+        (prohibicion de anatocismo). (Eran Art. 62 en 2010)."""
         from busqueda import ARTICULOS_CLAVE
-        assert 62 in ARTICULOS_CLAVE["bancario"]["articulos"]
+        arts = ARTICULOS_CLAVE["bancario"]["articulos"]
+        assert 58 in arts or 59 in arts
 
-    def test_bancario_incluye_art_71_reclamos(self):
-        """Art. 71 LISB: atencion a reclamos y denuncias de usuarios."""
+    def test_bancario_incluye_art_servicios_usuario(self):
+        """Art. 70 LISB (2014): normativas sobre prestacion de servicios a usuarios.
+        (Sustituye al Art. 71 de reclamos de la version 2010)."""
         from busqueda import ARTICULOS_CLAVE
-        assert 71 in ARTICULOS_CLAVE["bancario"]["articulos"]
+        assert 70 in ARTICULOS_CLAVE["bancario"]["articulos"]
 
     def test_bancario_NO_usa_articulos_redondos_inexistentes(self):
         """Los articulos redondos [100, 220, 250, 260] de la version anterior estaban
