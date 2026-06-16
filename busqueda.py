@@ -96,6 +96,59 @@ _RE_CITA_ENCABEZADO = re.compile(
 )
 
 
+# ─── HEDGE DE AMBIGÜEDAD CROSS-RAMA (opción B) ───────────────────────────────
+_RAMA_LEGIBLE = {
+    "penal": "penal (un delito)",
+    "civil": "civil (contratos, deudas, propiedad)",
+    "laboral": "laboral",
+    "transito": "tránsito",
+    "familia": "familia",
+    "vivienda": "vivienda o arrendamiento",
+    "administrativo": "administrativo o de trámites",
+    "tributario": "tributario (impuestos)",
+    "mercantil": "mercantil",
+    "comercial": "comercial",
+    "bancario": "bancario",
+    "salud": "de salud o médico-legal",
+    "ambiente": "ambiental",
+    "consumidor": "de protección al consumidor",
+}
+# Ramas "transversales": aplican a casi todo y NO cuentan como señal de ambigüedad.
+_RAMAS_TRANSVERSALES = frozenset({"constitucional", "general", "procesal"})
+
+
+def _nota_ambiguedad(relevantes: list) -> str:
+    """Si el top de resultados cruza 2+ ramas sustantivas con scores comparables,
+    devuelve una nota que ofrece la interpretación alternativa. Si no, ''."""
+    top = relevantes[:5]
+    if len(top) < 2:
+        return ""
+    # Rama de cada artículo con su mejor score, ignorando ramas transversales.
+    score_por_rama: dict[str, float] = {}
+    for a in top:
+        rama = rama_de_ley(a["ley"])
+        if rama in _RAMAS_TRANSVERSALES:
+            continue
+        sc = a.get("score_final", a.get("relevance_score", 0.0))
+        if rama not in score_por_rama or sc > score_por_rama[rama]:
+            score_por_rama[rama] = sc
+    if len(score_por_rama) < 2:
+        return ""
+    ordenadas = sorted(score_por_rama.items(), key=lambda kv: kv[1], reverse=True)
+    (rama1, s1), (rama2, s2) = ordenadas[0], ordenadas[1]
+    # Solo si la 2da rama es realmente competitiva (>=70% del score de la 1ra):
+    # evita disparar la nota cuando una rama domina claramente.
+    if s1 <= 0 or s2 < 0.70 * s1:
+        return ""
+    leg1 = _RAMA_LEGIBLE.get(rama1, rama1)
+    leg2 = _RAMA_LEGIBLE.get(rama2, rama2)
+    return (
+        f"💡 <i>Nota: tu caso podría enfocarse como {leg1} o como {leg2}. "
+        f"Respondí por la vía que parece más probable; si en realidad se trata "
+        f"de lo otro, cuéntame un poco más y lo reviso.</i>"
+    )
+
+
 def _citas_fabricadas(respuesta: str, relevantes: list) -> list[int]:
     """Números de artículo citados en la sección 📖 que no están en el contexto."""
     nums_contexto = {
@@ -1918,6 +1971,22 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         "aunque el usuario lo pida."
     )
 
+    # ── CAUCIÓN REFORZADA EN ZONA DE RIESGO ──────────────────────────────────
+    # Cuando NO se detectó un tema curado (temas vacío) o la confianza es baja,
+    # el contexto recuperado puede ser tangencial y el LLM tiende a improvisar
+    # (ej: deducir una prohibición que no existe). Reforzamos la cautela justo
+    # en ese escenario — es donde ocurrió la regresión médica de "no puede grabar".
+    caucion_riesgo = ""
+    if (not temas_detectados) or (mejor_dist >= 0.45):
+        caucion_riesgo = (
+            "\n⚠️ ZONA DE BAJA CERTEZA: el contexto recuperado puede no responder con "
+            "precisión a esta pregunta. NO afirmes que algo es ilegal, prohibido, "
+            "obligatorio o un derecho si NO está dicho EXPRESAMENTE en los artículos de "
+            "arriba. Si los artículos no responden la pregunta concreta, dilo con "
+            "honestidad ('los artículos disponibles no regulan expresamente esto') en "
+            "vez de deducir o inventar una conclusión. Prefiere ser cauto a ser categórico.\n"
+        )
+
     if es_follow_up:
         messages.append({"role": "user", "content":
             f"CONTEXTO LEGAL:\n{contexto}\n\n"
@@ -1927,7 +1996,8 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             f"El usuario hace una pregunta sobre tu respuesta anterior. "
             f"Usa los artículos del contexto para dar más detalles.\n\n"
             f"RECUERDA: Solo cita artículos de la lista. No inventes ninguno.\n"
-            f"{instruccion_guia}\n\n"
+            f"{instruccion_guia}\n"
+            f"{caucion_riesgo}\n"
             f"{recordatorio_seguridad}"})
     else:
         messages.append({"role": "user", "content":
@@ -1936,7 +2006,8 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             f"{pregunta}\n"
             f"--- FIN DE LA PREGUNTA DEL USUARIO ---\n\n"
             f"RECUERDA: Solo cita artículos de la lista anterior. No inventes ninguno.\n"
-            f"{instruccion_guia}\n\n"
+            f"{instruccion_guia}\n"
+            f"{caucion_riesgo}\n"
             f"{recordatorio_seguridad}"})
 
     try:
@@ -2130,6 +2201,19 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             if not reemplazado:
                 # No tiene ningún disclaimer — agregar al final
                 respuesta += f"\n\n{disclaimer_baja}"
+
+        # ── HEDGE DE AMBIGÜEDAD CROSS-RAMA (opción B) ────────────────────────
+        # Si los artículos más relevantes pertenecen a 2+ ramas distintas con
+        # scores comparables y la confianza no es alta, la consulta es ambigua
+        # (ej: "me quitaron el carro" → robo/penal vs embargo/civil vs grúa).
+        # En vez de bloquear con una pregunta, respondemos por la vía más probable
+        # y ofrecemos la alternativa sin fricción. Conservador: solo en consultas
+        # nuevas (no seguimientos) y cuando hay señal real de ambigüedad.
+        if not es_follow_up and confianza != "alta" and relevantes:
+            hedge = _nota_ambiguedad(relevantes)
+            if hedge:
+                logger.info(f"  ⚖️ Ambigüedad cross-rama detectada — añadiendo nota")
+                respuesta += f"\n\n{hedge}"
 
         return {"respuesta": respuesta, "temas": temas_detectados, "confianza": confianza, "distancia": dist}
     except Exception as e:
