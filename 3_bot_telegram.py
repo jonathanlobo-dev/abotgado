@@ -62,24 +62,39 @@ def resolver_targets(args: list[str]) -> tuple[list[int], list[str]]:
     return ids, errores
 
 
+def _dividir_mensaje(texto: str, limite: int = 4000) -> list[str]:
+    """Divide un texto largo en partes <= limite, cortando por LÍNEAS (no a
+    mitad de palabra ni de etiqueta HTML). Telegram corta a 4096; dejamos margen.
+    Una línea individual más larga que el límite se trocea como último recurso."""
+    partes, actual = [], ""
+    for linea in texto.split("\n"):
+        if len(linea) > limite:
+            if actual:
+                partes.append(actual); actual = ""
+            for i in range(0, len(linea), limite):
+                partes.append(linea[i:i + limite])
+            continue
+        if len(actual) + len(linea) + 1 > limite:
+            partes.append(actual); actual = linea
+        else:
+            actual = f"{actual}\n{linea}" if actual else linea
+    if actual:
+        partes.append(actual)
+    return partes
+
+
 async def enviar_respuesta(message, texto: str, reply_markup=None):
-    """Formatea la respuesta a HTML y envía con fallback a texto plano."""
+    """Formatea la respuesta a HTML y envía con fallback a texto plano.
+    Si excede el límite de Telegram, pagina en varios mensajes por líneas."""
     texto = busqueda.formatear_respuesta(texto)
-    if len(texto) > 4096:
-        partes = [texto[i:i+4096] for i in range(0, len(texto), 4096)]
-        for i, parte in enumerate(partes):
-            es_ultima = (i == len(partes) - 1)
-            try:
-                await message.reply_text(parte, parse_mode="HTML",
-                    reply_markup=reply_markup if es_ultima else None)
-            except Exception:
-                await message.reply_text(parte,
-                    reply_markup=reply_markup if es_ultima else None)
-        return
-    try:
-        await message.reply_text(texto, parse_mode="HTML", reply_markup=reply_markup)
-    except Exception:
-        await message.reply_text(texto, reply_markup=reply_markup)
+    partes = _dividir_mensaje(texto) if len(texto) > 4096 else [texto]
+    for i, parte in enumerate(partes):
+        es_ultima = (i == len(partes) - 1)
+        rm = reply_markup if es_ultima else None
+        try:
+            await message.reply_text(parte, parse_mode="HTML", reply_markup=rm)
+        except Exception:
+            await message.reply_text(parte, reply_markup=rm)
 
 
 # ─── ESTADO TEMPORAL ─────────────────────────────────────────────────────────
@@ -593,10 +608,8 @@ async def cmd_stats_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         texto += "\n\n🔍 <b>Sin tema detectado:</b> Sin casos aún ✅\n"
 
-    # Telegram limita mensajes a 4096 chars — truncar si hace falta
-    if len(texto) > 4000:
-        texto = texto[:3990] + "\n\n[…truncado]"
-
+    # enviar_respuesta pagina automáticamente por líneas si excede el límite
+    # de Telegram (4096): ya no se trunca, se envía en varios mensajes.
     await enviar_respuesta(update.message, texto)
 
 
