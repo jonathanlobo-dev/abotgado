@@ -11,6 +11,44 @@ buscarlo por `@username` debe tener su username público en Telegram.
 
 ---
 
+# 👥 Comandos de usuario (los que ve cualquier persona)
+
+Disponibles para todos los que usan el bot. El acceso depende del plan:
+🆓 todos · ⭐ Pionero o superior · 💎 Premium.
+
+| Comando | Plan | Qué hace | Ejemplo |
+|---|---|---|---|
+| `/start` | 🆓 | Inicia el bot y muestra el mensaje de bienvenida. | `/start` |
+| `/ayuda` | 🆓 | Muestra la ayuda y la lista de comandos disponibles. | `/ayuda` |
+| `/leyes` | 🆓 | Lista las leyes disponibles en el sistema (con sus alias). | `/leyes` |
+| `/estado` | 🆓 | Muestra tu plan y cuántas consultas te quedan. | `/estado` |
+| `/nuevo` | 🆓 | Limpia el chat/historial y empieza una conversación de cero. | `/nuevo` |
+| `/referir` | 🆓 | Te da tu enlace de referido (invitar amigos = Pionero gratis). | `/referir` |
+| `/app` | 🆓 | Abre la Mini App (versión web embebida en Telegram). | `/app` |
+| `/soporte` | 🆓 | Inicia un ticket para contactar al equipo de soporte. | `/soporte` |
+| `/opinion` | 🆓 | Deja tu opinión / feedback sobre el bot. | `/opinion` |
+| `/ping` | 🆓 | Verifica que el bot está activo. | `/ping` |
+| `/cancelar` | 🆓 | Cancela un flujo en curso (soporte, opinión, etc.). | `/cancelar` |
+| `/ley` | ⭐ | Busca un artículo específico de una ley. | `/ley constitución 49` |
+| `/comparar` | ⭐ | Compara dos artículos o leyes. | `/comparar LOTTT 79 vs CP 409` |
+| `/guardar` | ⭐ | Guarda la última respuesta recibida. | `/guardar` |
+| `/mis_consultas` | ⭐ | Lista tus respuestas guardadas. | `/mis_consultas` |
+| `/ver_guardado` | ⭐ | Muestra una respuesta guardada por su número. | `/ver_guardado 1` |
+| `/borrar_guardados` | ⭐ | Borra todas tus respuestas guardadas. | `/borrar_guardados` |
+| `/stats` | ⭐ | Tus estadísticas de uso (consultas, favoritos). | `/stats` |
+| `/documento` | 💎 | Genera un documento legal (.docx) a partir de una plantilla. | `/documento` |
+
+> Para hacer una consulta legal NO hace falta ningún comando: el usuario escribe
+> su pregunta en lenguaje normal y el bot responde.
+
+---
+
+# 🔐 Comandos de administrador
+
+Lo que sigue solo responde a los IDs en `ADMIN_IDS`.
+
+---
+
 ## 👁️ Ver la configuración de los usuarios
 
 ### `/usuarios`
