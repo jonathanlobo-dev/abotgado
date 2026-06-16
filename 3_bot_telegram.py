@@ -920,14 +920,15 @@ async def cmd_responder_soporte(update: Update, context: ContextTypes.DEFAULT_TY
     if not es_admin(update.effective_user.id):
         return
     if not context.args or len(context.args) < 2:
-        await update.message.reply_text("Uso: /responder <user_id> <mensaje>")
+        await update.message.reply_text("Uso: /responder <ID o @username> <mensaje>")
         return
-    try:
-        target_id = int(context.args[0])
-        mensaje = " ".join(context.args[1:])
-    except ValueError:
-        await update.message.reply_text("user_id debe ser un numero.")
+    target_id = db.resolver_usuario(context.args[0])
+    if not target_id:
+        await update.message.reply_text(
+            f"No encontré al usuario '{context.args[0]}'.\n"
+            "Debe haber usado el bot al menos una vez (y tener @username público si lo buscas por nombre).")
         return
+    mensaje = " ".join(context.args[1:])
 
     try:
         await context.bot.send_message(
@@ -945,21 +946,21 @@ async def cmd_mensaje_directo(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not es_admin(update.effective_user.id):
         return
     if not context.args or len(context.args) < 2:
-        await update.message.reply_text("Uso: /mensaje <user_id> <texto>")
+        await update.message.reply_text("Uso: /mensaje <ID o @username> <texto>")
         return
-    try:
-        target_id = int(context.args[0])
-        # Preservar saltos de línea del mensaje
-        texto_raw = update.message.text or ""
-        # /mensaje 12345 texto...\nlinea2...
-        resto = texto_raw.split(None, 2)  # ["/mensaje", "ID", "resto..."]
-        mensaje = resto[2] if len(resto) > 2 else ""
-    except (ValueError, IndexError):
-        await update.message.reply_text("user_id debe ser un numero.")
+    target_id = db.resolver_usuario(context.args[0])
+    if not target_id:
+        await update.message.reply_text(
+            f"No encontré al usuario '{context.args[0]}'.\n"
+            "Debe haber usado el bot al menos una vez (y tener @username público si lo buscas por nombre).")
         return
+    # Preservar saltos de línea del mensaje: /mensaje <destino> texto...\nlinea2
+    texto_raw = update.message.text or ""
+    resto = texto_raw.split(None, 2)  # ["/mensaje", "destino", "resto..."]
+    mensaje = resto[2] if len(resto) > 2 else ""
 
     if not mensaje:
-        await update.message.reply_text("Uso: /mensaje <user_id> <texto>")
+        await update.message.reply_text("Uso: /mensaje <ID o @username> <texto>")
         return
 
     try:
@@ -1346,6 +1347,46 @@ async def cmd_usuarios(update: Update, context: ContextTypes.DEFAULT_TYPE):
             extras += f" exp:{u['tester_expira']}"
         texto += (f"{plan_info['icono']} {u['nombre']} (@{u['username']}) "
                   f"— ID: <code>{u['user_id']}</code> — hoy: {u['consultas_hoy']}{extras}\n")
+    await enviar_respuesta(update.message, texto)
+
+
+async def cmd_usuario(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/usuario <ID o @username> — Muestra la configuración completa de un usuario."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text("Uso: /usuario <ID o @username>\nEj: /usuario @DALL970")
+        return
+    target_id = db.resolver_usuario(context.args[0])
+    if not target_id:
+        await update.message.reply_text(
+            f"No encontré al usuario '{context.args[0]}'.\n"
+            "Debe haber usado el bot al menos una vez.")
+        return
+    u = db.obtener_usuario(target_id)
+    if not u:
+        await update.message.reply_text(f"Usuario {target_id} no está registrado.")
+        return
+    plan_info = config.PLANES.get(u["plan_id"], config.PLANES[0])
+    limite, periodo = db._get_limite_y_periodo(target_id)
+    lim_txt = "ilimitado" if limite == -1 else f"{limite} / {_LABEL_PER.get(periodo, periodo)}"
+    s = db.stats_usuario(target_id)
+    restantes = db.consultas_restantes(target_id)
+    mem = "Sí" if (plan_info.get("memoria") or u["bono_memoria"]) else "No (memoria corta de cortesía)"
+    texto = (
+        f"{plan_info['icono']} <b>{u['nombre']}</b> (@{u['username'] or 'N/A'})\n"
+        f"ID: <code>{u['user_id']}</code>\n"
+        f"Registrado: {u['fecha_reg']}\n\n"
+        f"📋 <b>Plan:</b> {plan_info['nombre']}\n"
+        f"🎫 <b>Límite:</b> {lim_txt}\n"
+        f"📊 <b>Consultas:</b> hoy {s['consultas_hoy']} · restantes {restantes} · histórico {s['consultas_total']}\n"
+        f"🧠 <b>Memoria:</b> {mem}\n"
+        f"📄 <b>Documentos disponibles:</b> {u['docs_disponibles']}\n"
+        f"➕ <b>Consultas extra:</b> {u['consultas_extra']}\n"
+        f"⭐ <b>Favoritos:</b> {s['favoritos']}\n"
+    )
+    if u["plan_id"] == config.PLAN_TESTER and u["tester_expira"]:
+        texto += f"⏳ <b>Pionero expira:</b> {u['tester_expira']}\n"
     await enviar_respuesta(update.message, texto)
 
 
@@ -2392,6 +2433,7 @@ def main():
     app.add_handler(CommandHandler("responder",       cmd_responder_soporte))
     app.add_handler(CommandHandler("mensaje",         cmd_mensaje_directo))
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
+    app.add_handler(CommandHandler("usuario",         cmd_usuario))
     app.add_handler(CommandHandler("backup",          cmd_backup))
     app.add_handler(CommandHandler("plan_add",        cmd_plan_add))
     app.add_handler(CommandHandler("plan_del",        cmd_plan_del))

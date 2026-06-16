@@ -685,6 +685,23 @@ def _resetear_docs_mes(user_id: int):
                        (mes_actual, user_id))
 
 
+def obtener_usuario(user_id: int) -> dict | None:
+    """Devuelve la configuración básica de un usuario, o None si no existe."""
+    with get_db() as con:
+        r = con.execute("""
+            SELECT user_id, nombre, username, plan_id, fecha_reg,
+                   bono_memoria, docs_disponibles, tester_expira,
+                   COALESCE(consultas_extra, 0)
+            FROM usuarios WHERE user_id = ?
+        """, (user_id,)).fetchone()
+    if not r:
+        return None
+    return {"user_id": r[0], "nombre": r[1], "username": r[2],
+            "plan_id": r[3] or 0, "fecha_reg": r[4],
+            "bono_memoria": bool(r[5]), "docs_disponibles": r[6] or 0,
+            "tester_expira": r[7] or "", "consultas_extra": r[8]}
+
+
 def listar_usuarios() -> list[dict]:
     with get_db() as con:
         cur = con.execute("""
