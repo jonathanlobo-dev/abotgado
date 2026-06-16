@@ -491,7 +491,7 @@
       "nombre": "Ley Orgánica de Precios Justos",
       "rama": "consumidor",
       "archivos_pdf": [
-        "Ley-Orgánica-de-Precios-Justos.pdf"
+        "ley-precios-justos-2015.pdf"
       ],
       "aliases": [
         "indepabis",
@@ -502,28 +502,28 @@
         "consumidor",
         "proteccion al consumidor"
       ],
-      "gaceta": "G.O. 40.340 del 23-enero-2014"
+      "gaceta": "G.O. 6.202 Extraordinario del 08-11-2015 (Decreto 2.092, vigente)"
     },
     {
       "id": "ley_seguro_social",
       "nombre": "Ley del Seguro Social",
       "rama": "laboral",
       "archivos_pdf": [
-        "ley-del-seguro-social.pdf"
+        "ley-seguro-social-2012.pdf"
       ],
       "aliases": [
         "seguro social",
         "ley del seguro social",
         "ivss"
       ],
-      "gaceta": "G.O. 4.322 Extraordinario del 3-octubre-1991"
+      "gaceta": "G.O. 39.912 del 30-04-2012 (reforma vigente)"
     },
     {
       "id": "islr",
       "nombre": "Ley de Impuesto Sobre la Renta (ISLR)",
       "rama": "tributario",
       "archivos_pdf": [
-        "isrl.pdf"
+        "ley-islr-2015.pdf"
       ],
       "aliases": [
         "islr",
@@ -531,7 +531,7 @@
         "ley de islr",
         "renta"
       ],
-      "gaceta": "G.O. 38.628 del 16-febrero-2007"
+      "gaceta": "G.O. 6.210 Extraordinario del 30-12-2015 (Decreto 2.163, vigente)"
     },
     {
       "id": "ley_delitos_informaticos",
@@ -642,10 +642,10 @@
       "nombre": "Ley Orgánica de Telecomunicaciones",
       "rama": "tecnologia",
       "archivos_pdf": [
-        "ley-organica-de-telecomunicaciones.pdf"
+        "ley-organica-telecomunicaciones-2011.pdf"
       ],
       "aliases": [],
-      "gaceta": "G.O. 36.970 del 12-junio-2000"
+      "gaceta": "G.O. 39.610 del 07-02-2011 (reforma vigente)"
     },
     {
       "id": "ley_actividad_aseguradora",

@@ -12,7 +12,7 @@ ley_contra_odio,Ley Constitucional contra el Odio,G.O. 41.276 del 10-noviembre-2
 ley_propiedad_horizontal,Ley de Propiedad Horizontal,G.O. 3.241 Extraordinario del 18-agosto-1983,gaceta identificada — vigencia por confirmar,
 ley_discapacidad,Ley para la Inclusión de Personas con Discapacidad,G.O. 6.817 Extraordinario del 27-junio-2024,gaceta identificada — vigencia por confirmar,
 ley_fauna_domestica,Ley de Protección de la Fauna Doméstica,G.O. 39.338 del 4-enero-2010,gaceta identificada — vigencia por confirmar,
-ley_corrupcion,Ley contra la Corrupción,G.O. 5.637 Extraordinario del 07-abril-2003,gaceta identificada — vigencia por confirmar,
+ley_corrupcion,Ley contra la Corrupción,"G.O. 6.699 Extraordinario del 02-05-2022 (reforma, texto vigente)",gaceta identificada — vigencia por confirmar,
 ley_contraloria_general,Ley Orgánica de la Contraloría General de la República,G.O. 6.013 Extraordinario del 23-diciembre-2010,gaceta identificada — vigencia por confirmar,
 normas_entrega_cargos_publicos,Normas para Regular la Entrega de los Órganos de la Administración Pública,G.O. 39.229 del 28-julio-2009,gaceta identificada — vigencia por confirmar,
 ley_contraloria_social,Ley Orgánica de Contraloría Social,G.O. 6.748 Extraordinario del 9-junio-2023,gaceta identificada — vigencia por confirmar,
@@ -37,9 +37,9 @@ ley_arrendamientos_vivienda,Ley para la Regularización y Control de los Arrenda
 ley_zonas_economicas,Ley Orgánica de las Zonas Económicas Especiales,G.O. 6.710 Extraordinario del 20-julio-2022,gaceta identificada — vigencia por confirmar,
 ley_antecedentes_penales,Ley de Registro de Antecedentes Penales,G.O. 6.712 Extraordinario del 20-07-2022,VIGENTE (verificada/actualizada jun-2026),
 copp,Código Orgánico Procesal Penal (COPP),G.O. 6.644 Extraordinario del 17-09-2021 (reforma con texto íntegro),VIGENTE (verificada/actualizada jun-2026),
-ley_precios_justos,Ley Orgánica de Precios Justos,G.O. 40.340 del 23-enero-2014,DESACTUALIZADA,"PDF = version 2014 (G.O. 40.340) — Vigente: Decreto 2.092, G.O. 40.787 del 12-11-2015"
-ley_seguro_social,Ley del Seguro Social,G.O. 4.322 Extraordinario del 3-octubre-1991,DESACTUALIZADA,"PDF = ley de 1991 (G.O. 4.322E) — Vigente: reforma 2012, G.O. 39.912 del 30-04-2012"
-islr,Ley de Impuesto Sobre la Renta (ISLR),G.O. 38.628 del 16-febrero-2007,DESACTUALIZADA,"PDF = ley de 2007 (G.O. 38.628) — Vigente: Decreto 2.163, G.O. 6.210E del 30-12-2015"
+ley_precios_justos,Ley Orgánica de Precios Justos,"G.O. 6.202 Extraordinario del 08-11-2015 (Decreto 2.092, vigente)",VIGENTE (actualizada jun-2026: G.O. 6.202/2015),
+ley_seguro_social,Ley del Seguro Social,G.O. 39.912 del 30-04-2012 (reforma vigente),VIGENTE (actualizada jun-2026: G.O. 39.912/2012),
+islr,Ley de Impuesto Sobre la Renta (ISLR),"G.O. 6.210 Extraordinario del 30-12-2015 (Decreto 2.163, vigente)",VIGENTE (actualizada jun-2026: G.O. 6.210/2015),
 ley_delitos_informaticos,Ley Especial contra los Delitos Informáticos,,SIN GACETA DETECTADA — revisar manualmente,
 ley_simplificacion_tramites,Ley Orgánica de Simplificación de Trámites Administrativos,G.O. 6.265 del 22-octubre-1999,gaceta identificada — vigencia por confirmar,
 codigo_etica_abogado,Código de Ética Profesional del Abogado Venezolano,,SIN GACETA DETECTADA — revisar manualmente,
@@ -49,7 +49,7 @@ ley_salud,Ley Orgánica de Salud,G.O. 36579 del 11-noviembre-1998,gaceta identif
 reglamento_general_alimentos,Reglamento General de Alimentos,G.O. 25.864 del 16-enero-1959,gaceta identificada — vigencia por confirmar,
 resolucion_permisos_sanitarios,Resolución SG-403-96 Permisos Sanitarios,,SIN GACETA DETECTADA — revisar manualmente,
 ley_sector_bancario,Ley de las Instituciones del Sector Bancario,G.O. 6.015 Extraordinario del 28-diciembre-2010,gaceta identificada — vigencia por confirmar,
-ley_telecomunicaciones,Ley Orgánica de Telecomunicaciones,G.O. 36.970 del 12-junio-2000,DESACTUALIZADA,"PDF = ley del 2000 (G.O. 36.970) — Vigente: reforma 2011, G.O. 39.610 del 07-02-2011"
+ley_telecomunicaciones,Ley Orgánica de Telecomunicaciones,G.O. 39.610 del 07-02-2011 (reforma vigente),VIGENTE (actualizada jun-2026: G.O. 39.610/2011),
 ley_actividad_aseguradora,Ley de la Actividad Aseguradora,,SIN GACETA DETECTADA — revisar manualmente,
 locti,"Ley Orgánica de Ciencia, Tecnología e Innovación (LOCTI)",,SIN GACETA DETECTADA — revisar manualmente,
 ley_infogobierno,Ley de Infogobierno,,SIN GACETA DETECTADA — revisar manualmente,

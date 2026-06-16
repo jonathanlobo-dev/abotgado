@@ -1886,15 +1886,12 @@
     ],
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
-      39,
-      45,
-      46,
-      47,
       48,
-      50,
-      57,
-      58,
-      62
+      49,
+      51,
+      52,
+      53,
+      55
     ]
   },
   "discapacidad": {
@@ -2571,15 +2568,11 @@
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
       1,
-      7,
-      11,
-      39,
+      31,
+      48,
       49,
       51,
-      53,
-      58,
-      62,
-      63
+      55
     ]
   },
   "bancario": {
@@ -2888,11 +2881,10 @@
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
       1,
-      39,
+      31,
       49,
       53,
-      58,
-      62
+      55
     ]
   },
   "mala_praxis": {
@@ -3257,10 +3249,9 @@
     ],
     "ley": "Ley Orgánica de Precios Justos",
     "articulos": [
+      31,
       49,
-      51,
-      53,
-      62
+      55
     ]
   },
   "moneda_curso_legal": {
@@ -3554,17 +3545,10 @@
     "ley": "Ley Orgánica de Telecomunicaciones",
     "articulos": [
       1,
-      2,
-      3,
+      12,
+      13,
       15,
-      35,
-      50,
-      60,
-      70,
-      190,
-      191,
-      192,
-      200
+      189
     ]
   },
   "seguros": {
