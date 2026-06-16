@@ -962,6 +962,41 @@
         "seguridad y soberania agroalimentaria"
       ],
       "gaceta": "G.O. 5.889 Extraordinario del 31-07-2008 (Decreto 6.071)"
+    },
+    {
+      "id": "ley_ejercicio_medicina",
+      "nombre": "Ley del Ejercicio de la Medicina",
+      "rama": "salud",
+      "archivos_pdf": [
+        "Ley-del-Ejercicio-de-la-Medicina.pdf"
+      ],
+      "aliases": [
+        "ejercicio de la medicina",
+        "ley de medicina",
+        "ley del medico",
+        "ley del médico",
+        "ejercicio medico",
+        "ejercicio médico"
+      ],
+      "gaceta": "G.O. 39.823 del 19-12-2011"
+    },
+    {
+      "id": "codigo_deontologia_medica",
+      "nombre": "Código de Deontología Médica",
+      "rama": "salud",
+      "archivos_pdf": [
+        "codigo-de-deontologia-medica.pdf"
+      ],
+      "aliases": [
+        "deontologia medica",
+        "deontología médica",
+        "etica medica",
+        "ética médica",
+        "codigo de deontologia",
+        "código de deontología",
+        "etica del medico"
+      ],
+      "gaceta": "Federación Médica Venezolana (código gremial, no Gaceta Oficial)"
     }
   ]
 }

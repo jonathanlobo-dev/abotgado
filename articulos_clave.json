@@ -2900,19 +2900,31 @@
       "negligencia médica",
       "negligencia medica",
       "mala praxis",
+      "mala práctica",
       "error médico",
       "error medico",
       "me operaron mal",
       "el médico me",
       "el medico me",
       "daño médico",
+      "daño medico",
       "impericia médica",
-      "impericia medica"
+      "impericia medica",
+      "el doctor me",
+      "negligencia del doctor",
+      "demandar a un medico",
+      "demandar a un médico",
+      "denunciar a un medico",
+      "denunciar a un médico",
+      "el medico fue negligente",
+      "el médico fue negligente",
+      "muerte por negligencia medica"
     ],
-    "ley": "Código Penal",
+    "ley": "Ley del Ejercicio de la Medicina",
     "articulos": [
-      411,
-      422
+      25,
+      107,
+      124
     ]
   },
   "deuda_civil": {
@@ -5685,6 +5697,69 @@
       409,
       405,
       438
+    ]
+  },
+  "secreto_medico": {
+    "keywords": [
+      "secreto médico",
+      "secreto medico",
+      "confidencialidad médica",
+      "confidencialidad medica",
+      "me grabaron en la consulta",
+      "grabar la consulta",
+      "grabaron sin permiso",
+      "me grabaron sin permiso",
+      "me tomaron fotos en la consulta",
+      "fotos sin mi permiso",
+      "fotos sin permiso del medico",
+      "filmar al medico",
+      "filmar al médico",
+      "grabar al medico",
+      "grabar al médico",
+      "me filmaron",
+      "relación médico paciente",
+      "relacion medico paciente",
+      "revelar secreto medico",
+      "revelar secreto médico",
+      "violación del secreto",
+      "violacion del secreto",
+      "divulgar datos del paciente",
+      "privacidad del paciente"
+    ],
+    "ley": "Ley del Ejercicio de la Medicina",
+    "articulos": [
+      46,
+      47,
+      50,
+      52
+    ]
+  },
+  "abuso_policial_transito": {
+    "keywords": [
+      "policía me pide dinero",
+      "policia me pide dinero",
+      "me quieren extorsionar los policias",
+      "me quieren extorsionar los policías",
+      "alcabala me piden plata",
+      "me detuvieron sin razon",
+      "me detuvieron sin razón",
+      "me amenazan con meterme preso",
+      "me amenazan con dejarme preso",
+      "policia corrupto",
+      "policía corrupto",
+      "funcionario me pide dinero",
+      "me piden plata para soltarme",
+      "me quitaron la moto los policias",
+      "me quitaron la moto los policías",
+      "matraqueo",
+      "matraca policial",
+      "me piden coima",
+      "coima policial",
+      "me detuvieron sin orden ni delito"
+    ],
+    "ley": "Ley contra la Corrupción",
+    "articulos": [
+      60
     ]
   }
 }

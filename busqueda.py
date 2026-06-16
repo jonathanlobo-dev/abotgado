@@ -10,6 +10,8 @@ aBOTgado - Motor de busqueda hibrida
 """
 
 import re
+import time
+import random
 import logging
 import unicodedata
 import chromadb
@@ -30,6 +32,55 @@ logger = logging.getLogger(__name__)
 groq_client = Groq(api_key=config.GROQ_API_KEY)
 chroma      = chromadb.PersistentClient(path=config.DB_PATH)
 coleccion   = chroma.get_collection("leyes_venezolanas")
+
+
+# ─── WRAPPER GROQ CON REINTENTOS ANTE 429 ────────────────────────────────────
+# Groq (LPU) es rapidísimo pero su rate limit (peticiones y tokens por minuto)
+# es agresivo. Como el pipeline hace varias llamadas por consulta, un pico de
+# tráfico puede devolver 429. En vez de dejar al usuario "en visto", reintentamos
+# con backoff exponencial + jitter, respetando el header Retry-After si llega.
+# Si se agotan los reintentos, relanzamos: el caller ya tiene su try/except con
+# mensaje amable ("intenta de nuevo en unos minutos").
+
+def _es_rate_limit(e: Exception) -> bool:
+    status = getattr(e, "status_code", None)
+    if status is None:
+        status = getattr(getattr(e, "response", None), "status_code", None)
+    if status == 429:
+        return True
+    msg = str(e).lower()
+    return "429" in msg or ("rate" in msg and "limit" in msg)
+
+
+def _espera_backoff(e: Exception, intento: int) -> float:
+    # Respetar Retry-After del servidor si lo envía
+    resp = getattr(e, "response", None)
+    if resp is not None:
+        try:
+            ra = float(resp.headers.get("retry-after"))
+            return min(ra, 10.0)
+        except (TypeError, ValueError, AttributeError):
+            pass
+    # Backoff exponencial con jitter: ~0.5, 1, 2s (tope 8s)
+    return min(0.5 * (2 ** intento) + random.uniform(0, 0.3), 8.0)
+
+
+def _groq_chat(**kwargs):
+    """Llama a groq_client.chat.completions.create con reintentos ante 429."""
+    max_intentos = 3
+    for intento in range(max_intentos):
+        try:
+            return groq_client.chat.completions.create(**kwargs)
+        except Exception as e:
+            if _es_rate_limit(e) and intento < max_intentos - 1:
+                espera = _espera_backoff(e, intento)
+                logger.warning(
+                    f"  Groq rate limit (429) — reintento {intento + 1}/{max_intentos} "
+                    f"en {espera:.1f}s"
+                )
+                time.sleep(espera)
+                continue
+            raise
 
 # ─── ÍNDICE BM25 ──────────────────────────────────────────────────────────────
 
@@ -329,7 +380,7 @@ def reformular_y_clasificar(pregunta: str) -> tuple[str, str]:
     Retorna: (query_reformulada, tema_clasificado)
     """
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": PROMPT_REFORMULAR_Y_CLASIFICAR},
@@ -401,7 +452,7 @@ def reformular_con_contexto(pregunta: str, historial: list[dict] | None = None
 
     user_msg = f"HISTORIAL:\n{historial_txt}\n\nPREGUNTA ACTUAL:\n{pregunta}"
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": _PROMPT_REFORMULAR_CON_CTX_FULL},
@@ -572,7 +623,7 @@ def router_llm(pregunta: str, historial: list[dict] | None = None) -> dict:
     ) + f"PREGUNTA ACTUAL:\n{pregunta}"
 
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL_ROUTER,
             messages=[
                 {"role": "system", "content": _PROMPT_ROUTER_FULL},
@@ -619,7 +670,7 @@ def _reformular_juridico_profundo(pregunta: str) -> str | None:
     buscar_articulos_nuevos() devuelve lista vacía.
     """
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": PROMPT_REFORMULAR_PROFUNDO},
@@ -645,7 +696,7 @@ def _descomponer_consulta(pregunta: str) -> list[str] | None:
     query parece tener múltiples preguntas legales.
     """
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": PROMPT_DESCOMPONER_CONSULTA},
@@ -881,7 +932,7 @@ def buscar_articulo_directo(pregunta: str) -> list[dict]:
 def explicar_articulo(texto_articulo: str, ley: str, num: int) -> str:
     """Usa el LLM para dar una explicación breve de un artículo."""
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": PROMPT_EXPLICAR_ARTICULO},
@@ -965,7 +1016,7 @@ def verificar_relevancia_articulos(
     )
 
     try:
-        r = groq_client.chat.completions.create(
+        r = _groq_chat(
             model=config.LLM_MODEL_FAST,
             messages=[
                 {"role": "system", "content": _PROMPT_VERIFICADOR_SYSTEM},
@@ -1626,7 +1677,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
     if tipo_routing == "saludo":
         logger.info(f"  → Router: saludo, respondiendo sin RAG")
         try:
-            response = groq_client.chat.completions.create(
+            response = _groq_chat(
                 model=config.LLM_MODEL,
                 messages=[
                     {"role": "system", "content": "Eres aBOTgado, asistente jurídico venezolano en Telegram. "
@@ -1859,7 +1910,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             f"{recordatorio_seguridad}"})
 
     try:
-        response = groq_client.chat.completions.create(
+        response = _groq_chat(
             model=config.LLM_MODEL,
             messages=messages,
             max_tokens=1800,
@@ -1898,7 +1949,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                     ),
                 }
                 try:
-                    response2 = groq_client.chat.completions.create(
+                    response2 = _groq_chat(
                         model=config.LLM_MODEL,
                         messages=messages + [
                             {"role": "assistant", "content": respuesta},
