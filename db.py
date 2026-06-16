@@ -216,6 +216,14 @@ def inicializar_db():
         """)
         con.execute("CREATE INDEX IF NOT EXISTS idx_consultas_log_fecha ON consultas_log(fecha)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_consultas_log_user ON consultas_log(user_id, timestamp)")
+        # Migración: guardar la RESPUESTA y la distancia para poder auditar todas
+        # las consultas (no solo las que generan feedback). Permite revisar
+        # respuestas que nadie reportó.
+        _cols_cl = {r[1] for r in con.execute("PRAGMA table_info(consultas_log)").fetchall()}
+        if "respuesta" not in _cols_cl:
+            con.execute("ALTER TABLE consultas_log ADD COLUMN respuesta TEXT DEFAULT ''")
+        if "distancia" not in _cols_cl:
+            con.execute("ALTER TABLE consultas_log ADD COLUMN distancia REAL DEFAULT 0")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS abogados (
@@ -1757,23 +1765,41 @@ def registrar_consulta_metrica(user_id: int, temas: list[str]):
 
 
 def registrar_consulta_log(user_id: int, pregunta: str, temas: list[str],
-                           leyes: list[str], confianza: str = "") -> int:
+                           leyes: list[str], confianza: str = "",
+                           respuesta: str = "", distancia: float = 0.0) -> int:
     """Registra una consulta enriquecida en consultas_log.
 
-    Guarda pregunta (truncada a 500 chars), temas y leyes (coma-separados).
+    Guarda pregunta (truncada a 500), temas/leyes, confianza, distancia y la
+    RESPUESTA (truncada a 6000) para poder auditar todas las consultas.
     Retorna el id de la fila insertada.
     """
     pregunta = (pregunta or "").strip()[:500]
     temas_str = ",".join(temas) if temas else ""
     leyes_str = " | ".join(leyes) if leyes else ""
+    respuesta = (respuesta or "").strip()[:6000]
     hoy = date.today().isoformat()
     with get_db() as con:
         cur = con.execute(
-            "INSERT INTO consultas_log (user_id, pregunta, temas, leyes, confianza, fecha) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, pregunta, temas_str, leyes_str, confianza, hoy)
+            "INSERT INTO consultas_log (user_id, pregunta, temas, leyes, confianza, "
+            "fecha, respuesta, distancia) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (user_id, pregunta, temas_str, leyes_str, confianza, hoy, respuesta, distancia)
         )
         return cur.lastrowid
+
+
+def exportar_consultas_log(dias: int = 7) -> list[dict]:
+    """Devuelve las consultas (con respuesta) de los últimos `dias` días, para
+    auditar. Más recientes primero."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT timestamp, user_id, confianza, distancia, temas, leyes, pregunta, respuesta "
+            "FROM consultas_log "
+            "WHERE fecha >= date('now', ?) "
+            "ORDER BY id DESC",
+            (f"-{int(dias)} days",)
+        )
+        cols = ["timestamp", "user_id", "confianza", "distancia", "temas", "leyes", "pregunta", "respuesta"]
+        return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 
 def obtener_ultima_consulta_log(user_id: int) -> dict | None:

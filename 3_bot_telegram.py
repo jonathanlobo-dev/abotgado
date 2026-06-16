@@ -1310,6 +1310,43 @@ async def cmd_anuncio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def cmd_auditar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/auditar [días] — Exporta TODAS las consultas (pregunta + respuesta) de los
+    últimos N días (default 7) como CSV descargable, para revisar respuestas que
+    nadie reportó."""
+    if not es_admin(update.effective_user.id):
+        return
+    dias = 7
+    if context.args:
+        try:
+            dias = max(1, min(90, int(context.args[0])))
+        except ValueError:
+            await update.message.reply_text("Uso: /auditar [días]\nEj: /auditar 3")
+            return
+    filas = db.exportar_consultas_log(dias)
+    if not filas:
+        await update.message.reply_text(f"No hay consultas registradas en los últimos {dias} días.")
+        return
+    import csv as _csv, io as _io
+    buf = _io.StringIO()
+    w = _csv.writer(buf)
+    w.writerow(["fecha_hora", "user_id", "confianza", "distancia", "temas", "leyes", "pregunta", "respuesta"])
+    for f in filas:
+        w.writerow([f["timestamp"], f["user_id"], f["confianza"], f["distancia"],
+                    f["temas"], f["leyes"], f["pregunta"], f["respuesta"]])
+    # BOM para que Excel abra bien los acentos
+    data = ("﻿" + buf.getvalue()).encode("utf-8")
+    from datetime import datetime as _dt
+    nombre = f"auditoria_consultas_{_dt.now().strftime('%Y%m%d_%H%M')}.csv"
+    bio = _io.BytesIO(data); bio.name = nombre
+    await update.message.reply_document(
+        document=bio, filename=nombre,
+        caption=(f"📋 {len(filas)} consultas de los últimos {dias} días.\n"
+                 f"Ábrelo en Excel/Sheets para revisar pregunta + respuesta. "
+                 f"Ordena por 'confianza' o 'distancia' para hallar las dudosas.")
+    )
+
+
 async def cmd_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Envía la base de datos SQLite como archivo por Telegram."""
     if not es_admin(update.effective_user.id):
@@ -2075,12 +2112,16 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             for t in (temas or [])
             if t in busqueda.ARTICULOS_CLAVE and "ley" in busqueda.ARTICULOS_CLAVE[t]
         })
+        import re as _re_log
+        resp_log = _re_log.sub(r"<[^>]+>", "", respuesta or "").strip()
         db.registrar_consulta_log(
             user_id=user_id,
             pregunta=pregunta,
             temas=temas or [],
             leyes=leyes_ctx,
             confianza=str(confianza) if confianza else "",
+            respuesta=resp_log,
+            distancia=float(distancia) if distancia else 0.0,
         )
         db.registrar_consulta_metrica(user_id, temas or [])
     except Exception as _log_err:
@@ -2448,6 +2489,7 @@ def main():
     app.add_handler(CommandHandler("usuarios",        cmd_usuarios))
     app.add_handler(CommandHandler("usuario",         cmd_usuario))
     app.add_handler(CommandHandler("backup",          cmd_backup))
+    app.add_handler(CommandHandler("auditar",         cmd_auditar))
     app.add_handler(CommandHandler("plan_add",        cmd_plan_add))
     app.add_handler(CommandHandler("plan_del",        cmd_plan_del))
     app.add_handler(CommandHandler("abogados",        cmd_abogados))

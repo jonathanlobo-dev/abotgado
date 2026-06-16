@@ -189,6 +189,19 @@ responde mal.
 /debug un paciente me grabó en la consulta
 ```
 
+### `/auditar [días]`  ← revisar TODAS las preguntas y respuestas
+Exporta un CSV descargable con **todas las consultas** (pregunta + respuesta
+completa + confianza + distancia + temas + leyes) de los últimos N días (default
+7, máx 90). No depende del feedback: te deja revisar respuestas que nadie reportó.
+Ábrelo en Excel/Sheets y ordena por `confianza` o `distancia` para encontrar las
+respuestas dudosas primero.
+
+```
+/auditar          → últimos 7 días
+/auditar 3        → últimos 3 días
+/auditar 30       → último mes
+```
+
 ### `/feedback`
 Lista los tickets de feedback negativo (👎) que dejaron los usuarios.
 
