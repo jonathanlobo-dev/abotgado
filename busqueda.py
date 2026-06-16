@@ -1291,7 +1291,7 @@ from scoring import (
     SCORE_ARTICULO_CLAVE, SCORE_DIRECTO,
     DOMAIN_BOOST, DOMAIN_NEUTRAL, DOMAIN_PENALTY,
     MAX_POR_LEY, MAX_TOTAL,
-    _domain_multiplier,
+    _domain_multiplier, ley_excluida_por_falta_de_contexto,
 )
 
 
@@ -1439,12 +1439,18 @@ def buscar_articulos_nuevos(pregunta: str, escenario: str = "",
     for tema in temas_detectados:
         leyes_excluidas |= LEYES_EXCLUIR_POR_TEMA.get(tema, set())
 
+    # Texto del usuario (normalizado) para decidir leyes que requieren contexto
+    # explícito (ej: Justicia Militar solo si la consulta es militar).
+    _texto_ctx = normalizar(f"{pregunta_original or pregunta} {escenario}")
+
     # Diversidad: max 4 por ley, max 10 total — sobre lista ya ordenada por score
     por_ley: dict = {}
     relevantes_finales = []
     for art in relevantes_sorted:
         ley = art["ley"]
         if ley in leyes_excluidas:
+            continue
+        if ley_excluida_por_falta_de_contexto(ley, _texto_ctx):
             continue
         por_ley.setdefault(ley, 0)
         if por_ley[ley] < MAX_POR_LEY:

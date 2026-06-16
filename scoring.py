@@ -98,6 +98,31 @@ LEYES_EXCLUIR_POR_TEMA: dict[str, set[str]] = {
     },
 }
 
+# ─── LEYES QUE REQUIEREN CONTEXTO EXPLÍCITO ──────────────────────────────────
+# Leyes especializadas cuyo articulado usa términos genéricos (sobreseimiento,
+# expediente, reposición, sentencia) que coinciden con consultas comunes, pero
+# que NO aplican salvo que la consulta mencione su contexto. Sin esto, el Código
+# Orgánico de Justicia Militar contaminaba consultas penales CIVILES (caso real:
+# "la fiscalía cerró el expediente" → citaba justicia militar).
+LEYES_REQUIEREN_CONTEXTO: dict[str, tuple] = {
+    "Código Orgánico de Justicia Militar": (
+        "militar", "militares", "cuartel", "fuerza armada", "fanb",
+        "castrense", "marcial", "tropa", "soldado", "guardia nacional",
+        "tribunal militar", "consejo de guerra", "desercion", "efectivo militar",
+        "componente militar", "ejercito", "ejército", "armada", "aviacion militar",
+    ),
+}
+
+
+def ley_excluida_por_falta_de_contexto(nombre_ley: str, texto_norm: str) -> bool:
+    """True si `nombre_ley` es especializada y `texto_norm` (normalizado, sin
+    acentos) NO menciona ninguna de sus palabras de contexto → debe excluirse."""
+    kws = LEYES_REQUIEREN_CONTEXTO.get(nombre_ley)
+    if not kws:
+        return False
+    return not any(k in texto_norm for k in kws)
+
+
 # ─── MAPEO LEY → RAMA (desde leyes_config.json) ───────────────────────────────
 # Fuente única de verdad: leyes_config.json define nombre canónico → rama.
 import json as _json
