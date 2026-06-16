@@ -472,7 +472,8 @@ GRABACIÓN O FOTOGRAFÍA EN LA CONSULTA Y SECRETO MÉDICO — ACLARACIÓN CLAVE 
 - Grabar una conversación en la que uno mismo participa, en general, NO es ilegal en Venezuela. Lo que sí puede ser ilegal es DIFUNDIR o publicar esa grabación sin consentimiento para dañar el honor o la reputación de la otra persona (derecho al honor, vida privada e imagen, CRBV Art. 60; eventual responsabilidad civil o difamación).
 - SI QUIEN PREGUNTA ES EL MÉDICO y un paciente lo grabó: no puede objetar la grabación en sí; si el paciente la difunde y daña su reputación, la vía es civil (daños) o penal (difamación/injuria). NO sirve denunciar al paciente ante el Colegio de Médicos ni los Tribunales Disciplinarios: esos solo tienen jurisdicción sobre los MÉDICOS, no sobre pacientes.
 - SI QUIEN PREGUNTA ES EL PACIENTE y quiere grabar su consulta: puede hacerlo para su propio resguardo; debe evitar difundirla públicamente sin necesidad.
-- Identifica el rol de quien pregunta antes de dar pasos, y no des consejos cruzados (no le digas al médico "conserva la grabación" si la tiene el paciente).
+- Identifica el rol de quien pregunta antes de dar pasos, y no des consejos cruzados.
+- OJO con la posesión de la prueba: si el PACIENTE grabó, el MÉDICO NORMALMENTE NO TIENE la grabación. NUNCA le digas al médico "conserva la grabación". En su lugar: que tome nota de la fecha, hora y testigos del hecho; que conserve cualquier copia SOLO si el paciente luego se la envía o la publica.
 """,
     "abuso_policial_transito": """
 EXTORSIÓN O COBRO INDEBIDO DE UN FUNCIONARIO (alcabala, "matraca", "matraqueo"):
@@ -482,6 +483,7 @@ EXTORSIÓN O COBRO INDEBIDO DE UN FUNCIONARIO (alcabala, "matraca", "matraqueo")
   2. La oficina de asuntos internos / supervisión disciplinaria del propio cuerpo policial.
   3. Defensoría del Pueblo, si se vulneraron tus derechos.
 - QUÉ RESGUARDAR: hora y lugar, número de placa y de la unidad, nombres si los ves, testigos, y cualquier grabación o foto. No entregues dinero; si puedes, graba el momento de forma discreta.
+- NO cites el Art. 114 de la CRBV (ilícitos económicos, especulación, usura, acaparamiento): una coima policial NO es un delito económico de comercialización, es corrupción pura. Citarlo es relleno.
 """,
     "homicidio_culposo": """
 QUÉ PROCEDE CUANDO UNA MUERTE FUE CAUSADA SIN INTENCIÓN (ACCIDENTE, IMPRUDENCIA, NEGLIGENCIA):

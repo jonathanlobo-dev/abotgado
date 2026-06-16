@@ -65,6 +65,13 @@ ROUTER_HABILITADO = os.getenv("ROUTER_HABILITADO", "1") == "1"
 VERIFICADOR_HABILITADO = os.getenv("VERIFICADOR_HABILITADO", "1") == "1"
 VERIFICADOR_TIMEOUT_S  = float(os.getenv("VERIFICADOR_TIMEOUT_S", "2.5"))
 
+# Guardrail de validación de salida (Self-RAG ligero): tras generar la respuesta,
+# verifica que los artículos citados existan en el contexto recuperado. Si detecta
+# una cita fabricada (número de artículo que no estaba en el contexto), regenera
+# una vez con la lista de artículos permitidos. Detectable + verificable contra la
+# fuente — no elimina alucinaciones, las atrapa cuando ocurren.
+GUARDRAIL_CITAS_HABILITADO = os.getenv("GUARDRAIL_CITAS_HABILITADO", "1") == "1"
+
 # ─── NIVELES DE PLAN ─────────────────────────────────────────────────────────
 # 0 = Gratis, 1 = Tester/Pionero, 2 = Premium
 

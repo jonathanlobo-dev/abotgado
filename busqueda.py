@@ -82,6 +82,36 @@ def _groq_chat(**kwargs):
                 continue
             raise
 
+
+# ─── GUARDRAIL DE VALIDACIÓN DE CITAS (Self-RAG ligero) ──────────────────────
+# Detecta citas fabricadas: números de artículo citados como FUENTE en la
+# respuesta que NO están en el contexto recuperado. No detecta cross-atribución
+# (citar un art. real bajo la ley equivocada) — solo fabricación de números, que
+# es la alucinación más grave. Conservador para evitar falsos positivos:
+#   - Solo mira encabezados de cita ("<Ley>, Art. N") — la coma antes de "Art."
+#     distingue la cita de las referencias intratexto ("...en el artículo 39...").
+#   - Solo marca números AUSENTES del contexto (no penaliza atribución dudosa).
+_RE_CITA_ENCABEZADO = re.compile(
+    r"[,;]\s*Art(?:[íi]culos?)?\.?\s*(\d{1,4})", re.IGNORECASE
+)
+
+
+def _citas_fabricadas(respuesta: str, relevantes: list) -> list[int]:
+    """Números de artículo citados en la sección 📖 que no están en el contexto."""
+    nums_contexto = {
+        int(a["articulo"]) for a in relevantes
+        if str(a.get("articulo", "")).isdigit()
+    }
+    if not nums_contexto:
+        return []
+    ini = respuesta.find("📖")
+    if ini == -1:
+        return []
+    fin = respuesta.find("💡", ini)
+    seccion = respuesta[ini: fin if fin != -1 else len(respuesta)]
+    citados = {int(m.group(1)) for m in _RE_CITA_ENCABEZADO.finditer(seccion)}
+    return sorted(n for n in citados if n not in nums_contexto)
+
 # ─── ÍNDICE BM25 ──────────────────────────────────────────────────────────────
 
 logger.info("Construyendo índice BM25...")
@@ -1962,6 +1992,47 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                     logger.info(f"  ✓ Auto-corrección regenerada")
                 except Exception as e_corr:
                     logger.warning(f"  Auto-corrección falló: {e_corr} — uso respuesta original")
+
+        # ── GUARDRAIL DE CITAS (Self-RAG ligero) ─────────────────────────────
+        # Si la respuesta cita un artículo cuyo número NO está en el contexto
+        # recuperado, es una cita fabricada. Regeneramos UNA vez forzando la
+        # lista de artículos permitidos. Si tras regenerar sigue fabricando, nos
+        # quedamos con la versión regenerada (no peor) y lo dejamos logueado.
+        if config.GUARDRAIL_CITAS_HABILITADO and relevantes:
+            fabricadas = _citas_fabricadas(respuesta, relevantes)
+            if fabricadas:
+                permitidos = ", ".join(
+                    f"{a['ley'].split('(')[0].strip()[:45]} Art. {a['articulo']}"
+                    for a in relevantes[:12]
+                )
+                logger.warning(
+                    f"  🛡️ Guardrail: citas fuera de contexto {fabricadas} — "
+                    f"regenerando con lista permitida"
+                )
+                try:
+                    resp_g = _groq_chat(
+                        model=config.LLM_MODEL,
+                        messages=messages + [
+                            {"role": "assistant", "content": respuesta},
+                            {"role": "user", "content": (
+                                f"Citaste artículo(s) que NO están en la lista de contexto "
+                                f"(números {fabricadas}). Eso está PROHIBIDO. Reescribe la "
+                                f"respuesta citando ÚNICAMENTE artículos de esta lista exacta:\n"
+                                f"{permitidos}\n"
+                                f"Mantén el formato HTML (📌📖💡⚠️). Si ninguno aplica a algo "
+                                f"que dijiste, omite esa parte. NO inventes números."
+                            )},
+                        ],
+                        max_tokens=1800,
+                        temperature=0.0,
+                    )
+                    respuesta = resp_g.choices[0].message.content
+                    if _citas_fabricadas(respuesta, relevantes):
+                        logger.warning("  🛡️ Guardrail: la regeneración aún cita fuera de contexto")
+                    else:
+                        logger.info("  ✓ Guardrail: citas corregidas")
+                except Exception as e_g:
+                    logger.warning(f"  🛡️ Guardrail regeneración falló: {e_g} — uso respuesta original")
 
         # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
