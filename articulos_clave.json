@@ -455,7 +455,17 @@
       "duelo laboral",
       "días pagados por muerte",
       "cuántos días de permiso",
-      "cuantos dias de permiso"
+      "cuantos dias de permiso",
+      "no me dan el contrato",
+      "no nos dan el contrato",
+      "no me entregan el contrato",
+      "no me dieron el contrato",
+      "no me dan contrato",
+      "trabajo sin contrato",
+      "sin contrato de trabajo",
+      "copia del contrato",
+      "me deben dar el contrato",
+      "no me dan copia del contrato"
     ],
     "ley": "Ley Orgánica del Trabajo (LOTTT)",
     "articulos": [
@@ -475,7 +485,10 @@
       175,
       339,
       193,
-      194
+      194,
+      58,
+      59,
+      60
     ]
   },
   "laboral_contratista": {
