@@ -258,14 +258,20 @@
     },
     {
       "id": "ley_residuos_desechos",
-      "nombre": "Ley de Residuos y Desechos Sólidos",
+      "nombre": "Ley de Gestión Integral de la Basura",
       "rama": "ambiente",
       "archivos_pdf": [
-        "LEY DE RESIDUOS Y DESECHOS SOLIDOS.pdf"
+        "ley-gestion-integral-basura-2010.pdf"
       ],
       "aliases": [
-        "ley de residuos"
-      ]
+        "ley de residuos",
+        "gestion integral de la basura",
+        "desechos solidos",
+        "manejo de basura",
+        "residuos",
+        "basura"
+      ],
+      "gaceta": "G.O. 6.017 Extraordinario del 30-12-2010 (derogó la Ley de Residuos y Desechos Sólidos)"
     },
     {
       "id": "ley_gestion_comunitaria",
@@ -808,13 +814,16 @@
       "id": "ley_procesos_electorales",
       "nombre": "Ley Orgánica de Procesos Electorales",
       "rama": "general",
-      "archivos_pdf": [],
+      "archivos_pdf": [
+        "ley-procesos-electorales-2009.pdf"
+      ],
       "aliases": [
         "procesos electorales",
         "ley electoral",
         "elecciones",
         "voto"
-      ]
+      ],
+      "gaceta": "G.O. 5.928 Extraordinario del 12-08-2009 (vigente)"
     },
     {
       "id": "ley_organica_de_aduanas",

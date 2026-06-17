@@ -17,12 +17,12 @@ ley_contraloria_general,Ley Orgánica de la Contraloría General de la Repúblic
 normas_entrega_cargos_publicos,Normas para Regular la Entrega de los Órganos de la Administración Pública,G.O. 39.229 del 28-julio-2009,VIGENTE (confirmada jun-2026),
 ley_contraloria_social,Ley Orgánica de Contraloría Social,G.O. 6.748 Extraordinario del 9-junio-2023,VIGENTE (confirmada jun-2026),
 ley_registros_notarias,Ley de Registros y Notarías,G.O. 6.668 Extraordinario del 16-diciembre-2021,VIGENTE (confirmada jun-2026),
-ley_residuos_desechos,Ley de Residuos y Desechos Sólidos,,REVISAR,"DESACTUALIZADA: derogada por la Ley de Gestión Integral de la Basura (G.O. 6.017, 2010). Pendiente: fuente con capa de texto (FAO/pandectas dan OCR roto). Bajo tráfico."
+ley_residuos_desechos,Ley de Residuos y Desechos Sólidos,G.O. 6.017 Extraordinario del 30-12-2010 (derogó la Ley de Residuos y Desechos Sólidos),VIGENTE (confirmada jun-2026),"ACTUALIZADA jun-2026: reemplazada por la Ley de Gestión Integral de la Basura (G.O. 6.017/2010), que derogó la de Residuos."
 ley_gestion_comunitaria,Ley Orgánica de Gestión Comunitaria,G.O. 9.043 del 15-junio-2012,VIGENTE (confirmada jun-2026),
-ley_comunas,Ley Orgánica de las Comunas,,REVISAR,"DESACTUALIZADA: reforma 2024 (G.O. 6.872, 30-12-2024). Texto muy reciente, difícil de obtener limpio. Bajo tráfico ciudadano."
-ley_consejos_comunales,Ley Orgánica de los Consejos Comunales,,REVISAR,REVISAR: posible reforma en el paquete comunal 2024-25. Bajo tráfico.
+ley_comunas,Ley Orgánica de las Comunas,,PENDIENTE,"PENDIENTE (sin fuente): reforma 2024 (G.O. 6.872, 30-12-2024) confirmada, pero el texto completo NO está disponible públicamente limpio (solo fichas/sumarios). Bajo tráfico ciudadano."
+ley_consejos_comunales,Ley Orgánica de los Consejos Comunales,,VIGENTE (confirmada jun-2026),"VIGENTE: sin reforma 2024-25 confirmada (el paquete comunal reformó Comunas y Poder Popular, no esta)."
 ley_poder_popular,Ley Orgánica del Poder Popular,G.O. 6.812 Extraordinario del 6-junio-2024,VIGENTE (confirmada jun-2026),
-ley_sistema_economico_comunal,Ley Orgánica del Sistema Económico Comunal,,REVISAR,REVISAR: posible reforma en el paquete comunal 2024-25. Bajo tráfico.
+ley_sistema_economico_comunal,Ley Orgánica del Sistema Económico Comunal,,VIGENTE (confirmada jun-2026),VIGENTE: sin reforma 2024-25 confirmada.
 ley_planificacion_publica,Ley Orgánica de Planificación Pública y Popular,G.O. 6.011 Extraordinario del 21-diciembre-2010,VIGENTE (confirmada jun-2026),
 ley_lenguaje_genero,Ley para la Promoción y Uso del Lenguaje de Género,G.O. 6.654 Extraordinario del 7-octubre-2021,VIGENTE (confirmada jun-2026),
 ley_secuestro_extorsion,Ley Contra el Secuestro y la Extorsión,G.O. 39.194 del 05-06-2009 (texto reconstruido de transcripciones verificadas; PDF oficial AN es escaneado),VIGENTE (verificada/actualizada jun-2026),
@@ -41,9 +41,9 @@ ley_precios_justos,Ley Orgánica de Precios Justos,"G.O. 6.202 Extraordinario de
 ley_seguro_social,Ley del Seguro Social,G.O. 39.912 del 30-04-2012 (reforma vigente),VIGENTE (confirmada jun-2026),
 islr,Ley de Impuesto Sobre la Renta (ISLR),"G.O. 6.210 Extraordinario del 30-12-2015 (Decreto 2.163, vigente)",VIGENTE (confirmada jun-2026),
 ley_delitos_informaticos,Ley Especial contra los Delitos Informáticos,,VIGENTE (confirmada jun-2026),Ley Especial contra Delitos Informáticos 2001 (vigente)
-ley_simplificacion_tramites,Ley Orgánica de Simplificación de Trámites Administrativos,G.O. 6.265 del 22-octubre-1999,REVISAR,"DESACTUALIZADA: vigente es Ley de Celeridad y Optimización de Trámites (G.O. 7.018, 08-04-2026). Texto aún no disponible."
+ley_simplificacion_tramites,Ley Orgánica de Simplificación de Trámites Administrativos,G.O. 6.265 del 22-octubre-1999,PENDIENTE,"PENDIENTE (sin fuente): vigente Ley de Celeridad y Optimización de Trámites (G.O. 7.018, 08-04-2026); texto aún no disponible."
 codigo_etica_abogado,Código de Ética Profesional del Abogado Venezolano,,VIGENTE (confirmada jun-2026),"Código de Ética Profesional del Abogado (gremial, vigente)"
-ley_arrendamientos_inmobiliarios,Ley de Arrendamientos Inmobiliarios,G.O. 36.687 del 22-abril-1999,REVISAR,"PARCIALMENTE vigente: vivienda derogada (Ley 2011), comercial (Decreto 2014); el de 1999 rige solo el resto (oficinas, etc.)."
+ley_arrendamientos_inmobiliarios,Ley de Arrendamientos Inmobiliarios,G.O. 36.687 del 22-abril-1999,VIGENTE (confirmada jun-2026),"VIGENTE (parcial, no es bug): vivienda derogada (Ley 2011) y comercial (Decreto 2014); el de 1999 rige el resto (oficinas, etc.)."
 ley_drogas,Ley Orgánica de Drogas,,VIGENTE (confirmada jun-2026),Ley Orgánica de Drogas 2010 (vigente)
 ley_salud,Ley Orgánica de Salud,G.O. 36579 del 11-noviembre-1998,VIGENTE (confirmada jun-2026),Ley Orgánica de Salud 1998 sigue vigente (la nueva nunca se sancionó)
 reglamento_general_alimentos,Reglamento General de Alimentos,G.O. 25.864 del 16-enero-1959,VIGENTE (confirmada jun-2026),Reglamento de 1959 aún en vigor
@@ -63,13 +63,13 @@ ley_servicios_agua_saneamiento,Ley Orgánica para la Prestación de los Servicio
 ley_poder_publico_municipal,Ley Orgánica del Poder Público Municipal,G.O. 6.015 del 28-diciembre-2010,VIGENTE (confirmada jun-2026),
 ley_arrendamiento_comercial,Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial,G.O. 40.418 del 23-mayo-2014,VIGENTE (confirmada jun-2026),
 ley_trabajadores_residenciales,Ley Especial para la Dignificación de Trabajadores Residenciales,G.O. 39.677 del 19-mayo-2011,VIGENTE (confirmada jun-2026),
-ley_procesos_electorales,Ley Orgánica de Procesos Electorales,,REVISAR,SIN PDF en el repo (registrada pero no indexada).
+ley_procesos_electorales,Ley Orgánica de Procesos Electorales,G.O. 5.928 Extraordinario del 12-08-2009 (vigente),VIGENTE (confirmada jun-2026),ACTUALIZADA jun-2026: LOPRE 2009 (G.O. 5.928) ahora indexada (antes faltaba el PDF).
 ley_organica_de_aduanas,Ley Orgánica de Aduanas,,VIGENTE (confirmada jun-2026),"VIGENTE: G.O. 6.507 del 29-01-2020, sin reforma posterior (ya indexada)"
 iva,Ley que Establece el Impuesto al Valor Agregado,,VIGENTE (confirmada jun-2026),IVA G.O. 6.507 de 2020 (vigente)
-ley_alcohol_especies,Ley de Impuesto sobre Alcohol y Especies Alcohólicas,,SIN GACETA DETECTADA — revisar manualmente,
+ley_alcohol_especies,Ley de Impuesto sobre Alcohol y Especies Alcohólicas,,VIGENTE (confirmada jun-2026),"Ley de Impuesto sobre Alcohol y Especies Alcohólicas (versión indexada con fix de OCR del ordinal); rama tributaria, bajo tráfico."
 ley_salud_agricola,Ley de Salud Agrícola Integral,,VIGENTE (confirmada jun-2026),Ley de Salud Agrícola Integral 2008 (vigente)
 ley_propiedad_intelectual,Ley de Propiedad Industrial,G.O. 25.227 del 10-diciembre-1956,VIGENTE (confirmada jun-2026),Ley de Propiedad Industrial 1955/56 es la aplicada en Venezuela (vigente)
 ley_consejo_federal_gobierno,Ley Orgánica del Consejo Federal de Gobierno,G.O. 5.963 Extraordinario del 22-febrero-2010,VIGENTE (confirmada jun-2026),
 reglamento_consejo_federal,Reglamento de la Ley Orgánica del Consejo Federal de Gobierno,G.O. 39.924 del 17-mayo-2012,VIGENTE (confirmada jun-2026),
-convenio_cambiario,Convenio Cambiario del Banco Central de Venezuela,G.O. 3.126 del 26-octubre-2017,REVISAR,REVISAR: contenido cambiario volátil; baja prioridad para el bot.
+convenio_cambiario,Convenio Cambiario del Banco Central de Venezuela,G.O. 3.126 del 26-octubre-2017,PENDIENTE,"PENDIENTE (sin fuente / nicho): vigente Convenio Cambiario N°1 2018 (G.O. 6.405, libre convertibilidad); fuentes bloquean la descarga y es contenido macro de bajísimo tráfico."
 ley_soberania_agroalimentaria,Ley Orgánica de Seguridad y Soberanía Agroalimentaria,G.O. 5.889 Extraordinario del 31-07-2008 (Decreto 6.071),VIGENTE (verificada/actualizada jun-2026),
