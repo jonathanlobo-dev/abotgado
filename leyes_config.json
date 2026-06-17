@@ -661,9 +661,10 @@
       "nombre": "Ley Orgánica de Ciencia, Tecnología e Innovación (LOCTI)",
       "rama": "tecnologia",
       "archivos_pdf": [
-        "ley ciencia y tecnologia.pdf"
+        "locti-2022.pdf"
       ],
-      "aliases": []
+      "aliases": [],
+      "gaceta": "G.O. 6.693 Extraordinario del 01-04-2022 (reforma vigente)"
     },
     {
       "id": "ley_infogobierno",
