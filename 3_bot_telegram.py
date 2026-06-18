@@ -11,15 +11,13 @@ import os
 from datetime import date
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    InlineQueryResultArticle, InputTextMessageContent,
-    InlineQueryResultsButton, WebAppInfo, MenuButtonWebApp
+    WebAppInfo, MenuButtonWebApp
 )
 from telegram.ext import (
     Application, CommandHandler, ConversationHandler, MessageHandler,
-    CallbackQueryHandler, InlineQueryHandler, filters, ContextTypes
+    CallbackQueryHandler, filters, ContextTypes
 )
 from telegram.error import NetworkError, TimedOut
-import hashlib
 import config
 import db
 import documentos
@@ -38,6 +36,28 @@ logger = logging.getLogger(__name__)
 
 def es_admin(user_id: int) -> bool:
     return user_id in config.ADMIN_IDS
+
+
+# ─── ANTI-FLOOD (límite de ráfaga por usuario) ────────────────────────────────
+# Ventana deslizante en memoria: marca las consultas RAG recientes de cada
+# usuario y rechaza si superó RATE_LIMIT_MAX_CONSULTAS en RATE_LIMIT_VENTANA_SEG.
+# Es independiente de la cuota diaria del plan (esa se cobra; esto solo frena
+# ráfagas/scripts). Se reinicia con el proceso.
+_flood_consultas: dict[int, list[float]] = {}
+
+
+def _excede_rate_limit(user_id: int) -> bool:
+    """True si el usuario superó el límite de ráfaga. Registra la marca si no."""
+    import time
+    ahora = time.monotonic()
+    ventana = config.RATE_LIMIT_VENTANA_SEG
+    marcas = [t for t in _flood_consultas.get(user_id, []) if ahora - t < ventana]
+    if len(marcas) >= config.RATE_LIMIT_MAX_CONSULTAS:
+        _flood_consultas[user_id] = marcas  # mantener solo las vigentes
+        return True
+    marcas.append(ahora)
+    _flood_consultas[user_id] = marcas
+    return False
 
 
 async def notificar_admins(context, texto: str):
@@ -2116,6 +2136,15 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # ── Consulta jurídica normal ─────────────────────────────────────────
     logger.info(f"Consulta recibida del usuario ID: {user_id}")
 
+    # Anti-flood: frena ráfagas/scripts antes de gastar RAG+LLM (admins exentos).
+    if not es_admin(user_id) and _excede_rate_limit(user_id):
+        logger.warning(f"Rate limit (ráfaga) alcanzado por user {user_id}")
+        await enviar_respuesta(
+            update.message,
+            "⏳ Vas muy rápido. Espera unos segundos y vuelve a enviar tu consulta, por favor."
+        )
+        return
+
     if not db.puede_consultar(user_id):
         limite, periodo = db._get_limite_y_periodo(user_id)
         _periodo_labels = {
@@ -2341,101 +2370,6 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ─── MODO INLINE ─────────────────────────────────────────────────────────────
 
-async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Maneja consultas inline: @abotgado pregunta legal."""
-    query = update.inline_query
-    texto = (query.query or "").strip()
-    user_id = query.from_user.id
-
-    # Registrar usuario si es nuevo
-    db.registrar_usuario(user_id, query.from_user.first_name, query.from_user.username or "")
-
-    # Si no hay texto suficiente, mostrar instrucción
-    if len(texto) < 20:
-        await query.answer(
-            results=[],
-            cache_time=3,
-            button=InlineQueryResultsButton(
-                text="Escribe tu consulta legal completa..." if len(texto) < 5
-                     else "Sigue escribiendo tu pregunta...",
-                start_parameter="inline"
-            )
-        )
-        return
-
-    # Verificar límite de consultas
-    if not db.puede_consultar(user_id):
-        resultado = InlineQueryResultArticle(
-            id="limite",
-            title="Límite de consultas alcanzado",
-            description="Has usado todas tus consultas de hoy.",
-            input_message_content=InputTextMessageContent(
-                message_text="⏰ He alcanzado mi límite de consultas diarias. "
-                             "Usa /estado en @abotgadoBOT para ver tu plan."
-            )
-        )
-        await query.answer(results=[resultado], cache_time=5)
-        return
-
-    # Filtro de seguridad
-    if detectar_inyeccion(texto):
-        await query.answer(results=[], cache_time=5)
-        return
-
-    # Buscar respuesta (en thread para no bloquear)
-    try:
-        resultado = await asyncio.to_thread(
-            busqueda.buscar_y_responder, texto, None, user_id
-        )
-        respuesta = resultado["respuesta"]
-        confianza = resultado.get("confianza", "n/a")
-    except Exception as e:
-        logger.error(f"Error en inline query: {e}")
-        await query.answer(results=[], cache_time=5)
-        return
-
-    # Registrar consulta
-    db.registrar_consulta(user_id)
-    db.guardar_ultima_respuesta(user_id, texto, respuesta)
-
-    # Limpiar HTML para el preview
-    import re as _re_inline
-    resp_limpia = _re_inline.sub(r'<[^>]+>', '', respuesta)
-
-    # Extraer primera línea para el título (max 60 chars)
-    primera_linea = resp_limpia.split("\n")[0][:60]
-    if primera_linea.startswith("📌"):
-        primera_linea = primera_linea[2:].strip()
-    if primera_linea.startswith("Respuesta:"):
-        primera_linea = primera_linea[10:].strip()
-
-    # Descripción: primeras 2-3 líneas
-    lineas = [l.strip() for l in resp_limpia.split("\n") if l.strip()]
-    descripcion = " ".join(lineas[1:3])[:150] if len(lineas) > 1 else resp_limpia[:150]
-
-    # Formatear para enviar
-    respuesta_formateada = busqueda.formatear_respuesta(respuesta)
-    # Agregar crédito al final
-    ref_link = f"https://t.me/{config.BOT_USERNAME}?start=ref_{user_id}"
-    respuesta_formateada += f'\n\n<i>Consultado via <a href="{ref_link}">@{config.BOT_USERNAME}</a></i>'
-
-    # ID único para este resultado
-    result_id = hashlib.md5(f"{user_id}_{texto}".encode()).hexdigest()
-
-    resultado_inline = InlineQueryResultArticle(
-        id=result_id,
-        title=f"⚖️ {primera_linea}",
-        description=descripcion,
-        input_message_content=InputTextMessageContent(
-            message_text=respuesta_formateada,
-            parse_mode="HTML"
-        )
-    )
-
-    resultados = [resultado_inline]
-    await query.answer(results=resultados, cache_time=30)
-
-
 # ─── COMANDO DESCONOCIDO ──────────────────────────────────────────────────────
 
 async def cmd_desconocido(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -2576,9 +2510,6 @@ def main():
     # Feedback buttons (👍/👎)
     app.add_handler(CallbackQueryHandler(handle_feedback))
 
-    # Modo inline (@abotgado_bot consulta)
-    app.add_handler(InlineQueryHandler(handle_inline))
-
     # Mensajes normales
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
@@ -2619,7 +2550,7 @@ def main():
     app.add_error_handler(error_handler)
 
     app.run_polling(
-        allowed_updates=["message", "callback_query", "inline_query"],
+        allowed_updates=["message", "callback_query"],
         drop_pending_updates=True
     )
 

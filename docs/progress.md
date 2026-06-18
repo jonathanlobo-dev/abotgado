@@ -38,7 +38,7 @@ Bot jurídico venezolano en Telegram con RAG híbrido (keywords + BM25 + embeddi
 - [ ] **Corregir `1_procesar_leyes.py` línea 54**: Cambiar `"Ley de Transporte Terrestre"` → `"Ley de Tránsito Terrestre"` ANTES de reindexar
 
 ### Mejoras
-- [ ] Reducir spam de alertas en inline mode (cada tecla dispara búsqueda)
+- [x] Inline mode eliminado (quemaba cuota/costo por keystroke + riesgo reputacional)
 - [ ] 12 PDFs escaneados necesitan versiones con texto (OCR o reemplazo)
 - [ ] Agregar más temas a ARTICULOS_CLAVE según pruebas con usuarios reales
 - [ ] Implementar generación de documentos (DOCS_HABILITADOS = False actualmente)

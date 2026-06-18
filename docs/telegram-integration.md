@@ -67,11 +67,14 @@ Usuario: {nombre} (@{username}, ID: {id})
 Pregunta: {pregunta[:200]}
 ```
 
-## Inline mode
-- Handler: `InlineQueryHandler(handle_inline)`
-- Busca leyes directamente desde cualquier chat
-- Retorna `InlineQueryResultArticle`
-- **Problema**: Cada tecla dispara una búsqueda → spam de alertas
+## Inline mode (ELIMINADO)
+El modo inline (`@abotgadoBOT consulta`) fue **eliminado**. Disparaba un RAG+LLM
+completo y un `registrar_consulta` por cada pulsación tras 20 caracteres (quemaba
+la cuota del usuario y generaba costo + spam de alertas), y exponía respuestas
+legales de un solo tiro compartidas en público — riesgo reputacional para un bot
+jurídico en pruebas. Si se quiere recuperar el canal de descubrimiento, hacerlo
+como "lanzador" (una tarjeta que abre el bot con la pregunta precargada, sin
+ejecutar RAG mientras se escribe).
 
 ## Seguridad
 

@@ -101,6 +101,15 @@ MAX_HISTORIAL_GRATIS = int(os.getenv("MAX_HISTORIAL_GRATIS", "4"))
 # rate limit del LLM—. El pipeline internamente ya trunca a 500 para la búsqueda.
 MAX_CONSULTA_CHARS = int(os.getenv("MAX_CONSULTA_CHARS", "1000"))
 
+# ─── ANTI-FLOOD (límite de ráfaga) ───────────────────────────────────────────
+# Independiente de la cuota diaria del plan: limita cuántas consultas RAG puede
+# disparar un mismo usuario en una ventana corta, para frenar abuso/scripts/DoS
+# (cada consulta cuesta llamadas a Groq + HuggingFace). Un humano con preguntas
+# legítimas no lo alcanza; un bucle automatizado sí. En memoria (se reinicia con
+# el proceso); los admins están exentos.
+RATE_LIMIT_MAX_CONSULTAS = int(os.getenv("RATE_LIMIT_MAX_CONSULTAS", "5"))
+RATE_LIMIT_VENTANA_SEG = int(os.getenv("RATE_LIMIT_VENTANA_SEG", "20"))
+
 # ─── AUTO TESTERS ─────────────────────────────────────────────────────────────
 MAX_AUTO_TESTERS = 50  # primeros N usuarios reciben 14 días de Pionero gratis
 
