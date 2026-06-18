@@ -58,7 +58,7 @@ def main():
 
     # Detectar cambios en PDFs + config (nombre + tamaño + leyes_config.json → hash)
     # Incrementar REINDEX_VERSION para forzar reindex en el próximo deploy
-    REINDEX_VERSION = "9"  # bump: CP 2005 + COPP 2021 vigentes, fix artículos-preámbulo de reforma, dedup CPC/antecedentes/justicia de paz
+    REINDEX_VERSION = "10"  # bump: garantiza que prod reindexe con el extractor corregido (0b803f7) — articulos con cuerpo completo (fix "Artículo N....")
     import hashlib
     pdf_hash_file = os.path.join(str(config.DATA_DIR), ".pdf_hash")
     pdfs_actuales = 0

@@ -114,6 +114,56 @@ LEYES_REQUIEREN_CONTEXTO: dict[str, tuple] = {
 }
 
 
+# La Ley de Simplificación de Trámites Administrativos tiene vocabulario
+# distintivo (trámite, requisitos, apostilla, ventanilla, alcaldía, ordenanza…)
+# que NO se solapa con consultas de otros dominios. Sin contexto, el motor la
+# arrastraba por mera cercanía semántica (caso real: "¿es legal OnlyFans?" →
+# citaba esta ley de relleno). Construimos su set de contexto como SUPERSET de
+# las keywords de sus temas curados en articulos_clave.json: así, cualquier
+# consulta que legítimamente active esos temas contiene una keyword de contexto
+# y NUNCA queda excluida (el invariante se mantiene solo si se editan los temas).
+#
+# NOTA: NO se incluye la Ley de Precios Justos aquí a propósito. Su vocabulario
+# de consumidor ("celular/teléfono dañado") se solapa con consultas legítimas de
+# otro tipo, y filtrarla por contexto rompería casos válidos.
+def _normalizar_kw(texto: str) -> str:
+    import unicodedata as _ud
+    texto = texto.lower()
+    texto = _ud.normalize("NFD", texto)
+    return "".join(c for c in texto if _ud.category(c) != "Mn")
+
+
+def _contexto_tramites() -> tuple:
+    _LEY = "Ley Orgánica de Simplificación de Trámites Administrativos"
+    # Extras defensivos: vocabulario del dominio de Trámites (procedimientos
+    # administrativos, permisos municipales y reexpedición de documentos
+    # personales — Art. 20) que puede no estar en las keywords de los temas.
+    # Solo amplían los casos donde la ley SE MANTIENE (dirección segura).
+    kws = {"tramite", "tramites", "tramitar", "tramitacion", "tramitando",
+           "administracion publica", "ente publico", "organo publico",
+           "constancia", "partida", "registro civil", "documento personal",
+           "reexpedicion", "renovar documento", "renovacion de documento",
+           "funcionario", "no me atiende", "no quiere atender", "no me atienden",
+           "cedula", "pasaporte", "licencia de conducir", "saren", "saime"}
+    try:
+        ac = _json.loads(
+            _pathlib.Path(__file__).parent.joinpath("articulos_clave.json")
+            .read_text(encoding="utf-8")
+        )
+        for v in ac.values():
+            if v.get("ley") == _LEY:
+                for kw in v.get("keywords", []):
+                    kws.add(_normalizar_kw(kw))
+    except Exception:
+        pass  # si falla la lectura, queda solo el set base (degradación segura)
+    return tuple(sorted(kws))
+
+
+import json as _json
+import pathlib as _pathlib
+LEYES_REQUIEREN_CONTEXTO["Ley Orgánica de Simplificación de Trámites Administrativos"] = _contexto_tramites()
+
+
 def ley_excluida_por_falta_de_contexto(nombre_ley: str, texto_norm: str) -> bool:
     """True si `nombre_ley` es especializada y `texto_norm` (normalizado, sin
     acentos) NO menciona ninguna de sus palabras de contexto → debe excluirse."""
