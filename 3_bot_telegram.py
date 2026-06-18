@@ -1310,10 +1310,92 @@ async def cmd_anuncio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+def _construir_auditoria_xlsx(filas: list[dict]) -> bytes:
+    """Arma un .xlsx formateado (encabezado fijo, autofiltro, anchos, ajuste de
+    texto, fecha y distancia con formato) a partir de las filas de consultas_log."""
+    import io as _io
+    from datetime import datetime as _dt
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Auditoría"
+
+    encabezados = ["Fecha y hora", "Usuario (ID)", "Confianza", "Distancia",
+                   "Temas", "Leyes", "Pregunta", "Respuesta"]
+    ws.append(encabezados)
+
+    # Estilo del encabezado
+    azul = PatternFill("solid", fgColor="1F4E78")
+    blanco_bold = Font(bold=True, color="FFFFFF")
+    for col in range(1, len(encabezados) + 1):
+        c = ws.cell(row=1, column=col)
+        c.fill = azul
+        c.font = blanco_bold
+        c.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Colores por nivel de confianza
+    fill_alta = PatternFill("solid", fgColor="C6EFCE")   # verde
+    fill_media = PatternFill("solid", fgColor="FFEB9C")  # ámbar
+    fill_baja = PatternFill("solid", fgColor="FFC7CE")   # rojo
+    fills_conf = {"alta": fill_alta, "media": fill_media, "baja": fill_baja}
+
+    borde = Border(bottom=Side(style="thin", color="D9D9D9"))
+    top_wrap = Alignment(vertical="top", wrap_text=True)
+    top_center = Alignment(vertical="top", horizontal="center")
+
+    for f in filas:
+        # Parsear el timestamp "2026-06-18 00:41:22" a datetime real para Excel
+        fecha = f.get("timestamp") or ""
+        try:
+            fecha = _dt.strptime(fecha, "%Y-%m-%d %H:%M:%S")
+        except (ValueError, TypeError):
+            pass  # se queda como texto si no parsea
+        try:
+            dist = round(float(f.get("distancia") or 0), 4)
+        except (ValueError, TypeError):
+            dist = f.get("distancia")
+        ws.append([
+            fecha, f.get("user_id"), f.get("confianza") or "", dist,
+            f.get("temas") or "", f.get("leyes") or "",
+            f.get("pregunta") or "", f.get("respuesta") or "",
+        ])
+        fila = ws.max_row
+        # Formatos por celda
+        ws.cell(row=fila, column=1).number_format = "yyyy-mm-dd hh:mm:ss"
+        ws.cell(row=fila, column=1).alignment = top_center
+        ws.cell(row=fila, column=2).alignment = top_center
+        celda_conf = ws.cell(row=fila, column=3)
+        celda_conf.alignment = top_center
+        celda_conf.fill = fills_conf.get((f.get("confianza") or "").lower(), PatternFill())
+        celda_dist = ws.cell(row=fila, column=4)
+        celda_dist.number_format = "0.0000"
+        celda_dist.alignment = top_center
+        for col in (5, 6, 7, 8):
+            ws.cell(row=fila, column=col).alignment = top_wrap
+        for col in range(1, len(encabezados) + 1):
+            ws.cell(row=fila, column=col).border = borde
+
+    # Anchos de columna
+    anchos = {1: 19, 2: 13, 3: 11, 4: 11, 5: 24, 6: 34, 7: 50, 8: 80}
+    for col, ancho in anchos.items():
+        ws.column_dimensions[get_column_letter(col)].width = ancho
+
+    # Encabezado fijo + autofiltro para ordenar por confianza/distancia
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(len(encabezados))}{ws.max_row}"
+
+    bio = _io.BytesIO()
+    wb.save(bio)
+    return bio.getvalue()
+
+
 async def cmd_auditar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/auditar [días] — Exporta TODAS las consultas (pregunta + respuesta) de los
-    últimos N días (default 7) como CSV descargable, para revisar respuestas que
-    nadie reportó."""
+    últimos N días (default 7) como Excel (.xlsx) descargable y formateado, para
+    revisar respuestas que nadie reportó."""
     if not es_admin(update.effective_user.id):
         return
     dias = 7
@@ -1327,23 +1409,18 @@ async def cmd_auditar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not filas:
         await update.message.reply_text(f"No hay consultas registradas en los últimos {dias} días.")
         return
-    import csv as _csv, io as _io
-    buf = _io.StringIO()
-    w = _csv.writer(buf)
-    w.writerow(["fecha_hora", "user_id", "confianza", "distancia", "temas", "leyes", "pregunta", "respuesta"])
-    for f in filas:
-        w.writerow([f["timestamp"], f["user_id"], f["confianza"], f["distancia"],
-                    f["temas"], f["leyes"], f["pregunta"], f["respuesta"]])
-    # BOM para que Excel abra bien los acentos
-    data = ("﻿" + buf.getvalue()).encode("utf-8")
+    import io as _io
     from datetime import datetime as _dt
-    nombre = f"auditoria_consultas_{_dt.now().strftime('%Y%m%d_%H%M')}.csv"
+    data = _construir_auditoria_xlsx(filas)
+    nombre = f"auditoria_consultas_{_dt.now().strftime('%Y%m%d_%H%M')}.xlsx"
     bio = _io.BytesIO(data); bio.name = nombre
     await update.message.reply_document(
         document=bio, filename=nombre,
         caption=(f"📋 {len(filas)} consultas de los últimos {dias} días.\n"
-                 f"Ábrelo en Excel/Sheets para revisar pregunta + respuesta. "
-                 f"Ordena por 'confianza' o 'distancia' para hallar las dudosas.")
+                 f"La columna <b>Confianza</b> está coloreada (verde/ámbar/rojo). "
+                 f"Usa el filtro del encabezado para ordenar por confianza o distancia "
+                 f"y hallar las respuestas dudosas primero."),
+        parse_mode="HTML"
     )
 
 

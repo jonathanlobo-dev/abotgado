@@ -228,11 +228,13 @@ responde mal.
 ```
 
 ### `/auditar [días]`  ← revisar TODAS las preguntas y respuestas
-Exporta un CSV descargable con **todas las consultas** (pregunta + respuesta
-completa + confianza + distancia + temas + leyes) de los últimos N días (default
-7, máx 90). No depende del feedback: te deja revisar respuestas que nadie reportó.
-Ábrelo en Excel/Sheets y ordena por `confianza` o `distancia` para encontrar las
-respuestas dudosas primero.
+Exporta un **Excel (.xlsx)** descargable y formateado con **todas las consultas**
+(pregunta + respuesta completa + confianza + distancia + temas + leyes) de los
+últimos N días (default 7, máx 90). No depende del feedback: te deja revisar
+respuestas que nadie reportó. El archivo trae encabezado fijo, autofiltro, la
+columna **Confianza** coloreada (verde=alta, ámbar=media, rojo=baja) y la fecha y
+la distancia ya formateadas. Usa el filtro del encabezado para ordenar por
+`Confianza` o `Distancia` y hallar las respuestas dudosas primero.
 
 ```
 /auditar          → últimos 7 días
