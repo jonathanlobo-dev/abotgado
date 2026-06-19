@@ -49,7 +49,9 @@ LLM_MODEL       = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
 
 # Modelo LLM rápido para tareas auxiliares (verificador de relevancia, clasificador OOD)
 # Debe ser barato y rápido — solo decide "sí/no/lista de números", no genera texto largo.
-LLM_MODEL_FAST  = os.getenv("LLM_MODEL_FAST", "llama-3.1-8b-instant")
+# llama-3.1-8b-instant fue deprecado por Groq (decommission 16-ago-2026); reemplazo
+# recomendado: openai/gpt-oss-20b (~1000 tok/s, 20B, maneja mejor el JSON del verificador).
+LLM_MODEL_FAST  = os.getenv("LLM_MODEL_FAST", "openai/gpt-oss-20b")
 
 # Modelo LLM para el router unificado de routing/clasificación.
 # Reemplaza 6 funciones hardcoded (es_consulta_no_legal, es_fuera_de_dominio,
