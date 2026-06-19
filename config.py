@@ -97,6 +97,12 @@ MAX_HISTORIAL = 10
 # (MAX_HISTORIAL) y la persistencia de contexto siguen siendo premium.
 MAX_HISTORIAL_GRATIS = int(os.getenv("MAX_HISTORIAL_GRATIS", "4"))
 
+# Fase de pruebas: dar memoria de conversación (larga, MAX_HISTORIAL) a TODOS los
+# usuarios, no solo a premium/bono. Mejora los seguimientos ("y si insiste?",
+# "no hay expediente") que de otro modo flotan sin contexto. Cuando se monetice
+# la memoria como feature premium, basta poner MEMORIA_PARA_TODOS=0 en el entorno.
+MEMORIA_PARA_TODOS = os.getenv("MEMORIA_PARA_TODOS", "1").lower() in ("1", "true", "si")
+
 # Longitud máxima de una consulta (caracteres). Una pregunta legal real cabe
 # de sobra; el tope evita que peguen leyes/textos completos —que Telegram parte
 # en varios mensajes y disparan varias consultas RAG fragmentadas, quemando el

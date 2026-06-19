@@ -2226,10 +2226,10 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
         chat_id=update.effective_chat.id, action="typing"
     )
 
-    con_memoria = db.tiene_memoria(user_id)
-    # Memoria larga (premium) vs. memoria corta de cortesía (gratis): ambos
-    # cargan historial, pero el gratis solo ve los últimos MAX_HISTORIAL_GRATIS
-    # mensajes para que los seguimientos inmediatos no se rompan.
+    # En fase de pruebas (MEMORIA_PARA_TODOS) todos tienen memoria larga para que
+    # los seguimientos no se rompan. Si se apaga, vuelve a ser premium/bono con
+    # memoria corta de cortesía para el resto (últimos MAX_HISTORIAL_GRATIS).
+    con_memoria = db.tiene_memoria(user_id) or config.MEMORIA_PARA_TODOS
     historial = db.cargar_historial(user_id)
     if not con_memoria:
         historial = historial[-config.MAX_HISTORIAL_GRATIS:] if historial else None
