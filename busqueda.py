@@ -23,6 +23,7 @@ import embeddings
 from seguridad import (
     es_prompt_injection, sanitizar_input,
     _filtrar_telefonos_inventados, _filtrar_montos_inventados,
+    _corregir_nomenclatura,
 )
 
 logger = logging.getLogger(__name__)
@@ -2114,6 +2115,9 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         # Post-filtros: eliminar teléfonos y montos inventados por el LLM
         respuesta = _filtrar_telefonos_inventados(respuesta)
         respuesta = _filtrar_montos_inventados(respuesta)
+        # Corregir nomenclatura de órganos (Corte Suprema → TSJ, Tribunal de
+        # Circuito → tribunal competente) de forma determinista.
+        respuesta = _corregir_nomenclatura(respuesta)
 
         # ── INYECCIÓN DETERMINÍSTICA DE LA SECCIÓN 📖 ─────────────────────────
         # Si pese a la auto-corrección el LLM SIGUE emitiendo el fallback

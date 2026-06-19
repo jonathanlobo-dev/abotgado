@@ -1802,6 +1802,23 @@ def exportar_consultas_log(dias: int = 7) -> list[dict]:
         return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 
+def historial_consultas_usuario(user_id: int, limite: int = 20) -> list[dict]:
+    """Devuelve las últimas `limite` consultas (pregunta + respuesta + meta) de UN
+    usuario, en orden cronológico (más antigua primero), para revisar el hilo
+    completo de una conversación. Lee de consultas_log (no del ring-buffer de
+    historial, que se recorta por plan)."""
+    with get_db() as con:
+        cur = con.execute(
+            "SELECT timestamp, confianza, distancia, temas, leyes, pregunta, respuesta "
+            "FROM consultas_log WHERE user_id = ? ORDER BY id DESC LIMIT ?",
+            (user_id, int(limite))
+        )
+        cols = ["timestamp", "confianza", "distancia", "temas", "leyes", "pregunta", "respuesta"]
+        filas = [dict(zip(cols, row)) for row in cur.fetchall()]
+    filas.reverse()  # cronológico: más antigua primero
+    return filas
+
+
 def obtener_ultima_consulta_log(user_id: int) -> dict | None:
     """Devuelve el contexto (pregunta/temas/leyes) de la última consulta del
     usuario. Usado para enriquecer /opinion y /soporte.

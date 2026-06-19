@@ -242,6 +242,19 @@ la distancia ya formateadas. Usa el filtro del encabezado para ordenar por
 /auditar 30       → último mes
 ```
 
+### `/historial <ID o @username> [N]`  ← ver la conversación completa de UN usuario
+Muestra el hilo de las últimas N consultas (default 20, máx 50) de un usuario en
+orden cronológico, con la pregunta y el resumen (📌) de cada respuesta, más la
+confianza (🟢/🟡/🔴) y los temas. Ideal para **depurar** cuando una alerta de
+confianza media/baja se ve mal y quieres entender de dónde viene el hilo (los
+seguimientos solo tienen sentido viendo la conversación completa). Lee de
+`consultas_log`, así que muestra el histórico real, no el ring-buffer recortado.
+
+```
+/historial @milygc        → últimas 20 consultas de esa usuaria
+/historial 754152388 15   → últimas 15 de ese ID
+```
+
 ### `/feedback`
 Lista los tickets de feedback negativo (👎) que dejaron los usuarios.
 

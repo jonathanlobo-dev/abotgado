@@ -263,3 +263,34 @@ def _filtrar_montos_inventados(texto: str) -> str:
     texto = re.sub(r',\s*\.', '.', texto)
     texto = re.sub(r'  +', ' ', texto)
     return texto
+
+
+# Nomenclatura institucional que el LLM a veces emite mal pese al system prompt
+# (sobre todo en seguimientos, donde reusa el historial). Corrección DETERMINISTA
+# de salida: no depende de que el modelo obedezca la regla.
+# Con artículo femenino previo ("la Corte") → corregir a masculino ("el Tribunal")
+_RE_CORTE_SUPREMA_ART = re.compile(r"\b([Ll]a)\s+Corte\s+Suprema(?:\s+de\s+Justicia)?\b")
+_RE_CORTE_SUPREMA = re.compile(r"\bCorte\s+Suprema(?:\s+de\s+Justicia)?\b", re.IGNORECASE)
+_RE_TRIB_CIRCUITO_PL = re.compile(r"\bTribunales\s+del?\s+Circuito\b", re.IGNORECASE)
+_RE_TRIB_CIRCUITO = re.compile(r"\bTribunal\s+del?\s+Circuito\b", re.IGNORECASE)
+
+
+def _corregir_nomenclatura(texto: str) -> str:
+    """Corrige nombres de órganos que el LLM emite mal:
+    - "Corte Suprema de Justicia" → "Tribunal Supremo de Justicia (TSJ)"
+      (ese órgano dejó de existir en 1999; el actual es el TSJ).
+    - "Tribunal de Circuito" → "tribunal competente"
+      (no es la denominación correcta en Venezuela; el prompt pide el genérico).
+    Mantiene la concordancia de artículo/número ("la Corte"→"el Tribunal",
+    "Tribunales de Circuito"→"tribunales competentes").
+    """
+    def _con_articulo(m):
+        art = "El" if m.group(1)[0] == "L" else "el"
+        return f"{art} Tribunal Supremo de Justicia (TSJ)"
+    texto = _RE_CORTE_SUPREMA_ART.sub(_con_articulo, texto)
+    texto = _RE_CORTE_SUPREMA.sub("Tribunal Supremo de Justicia (TSJ)", texto)
+    # Evitar "(TSJ) (TSJ)" si el original ya traía TSJ contiguo
+    texto = re.sub(r"\(TSJ\)\s*\(TSJ\)", "(TSJ)", texto)
+    texto = _RE_TRIB_CIRCUITO_PL.sub("tribunales competentes", texto)
+    texto = _RE_TRIB_CIRCUITO.sub("tribunal competente", texto)
+    return texto

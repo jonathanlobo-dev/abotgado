@@ -1444,6 +1444,65 @@ async def cmd_auditar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def cmd_historial(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/historial <ID o @username> [N] — Muestra el hilo completo de las últimas
+    N consultas (default 20, máx 50) de un usuario, para depurar conversaciones
+    que se vieron mal en las alertas. Lee de consultas_log."""
+    if not es_admin(update.effective_user.id):
+        return
+    if not context.args:
+        await update.message.reply_text(
+            "Uso: /historial <ID o @username> [N]\nEj: /historial @milygc 15")
+        return
+    target_id = db.resolver_usuario(context.args[0])
+    if not target_id:
+        await update.message.reply_text(
+            f"No encontré al usuario '{context.args[0]}'.\n"
+            "Debe haber usado el bot al menos una vez (y tener @username público si lo buscas por nombre).")
+        return
+    limite = 20
+    if len(context.args) > 1:
+        try:
+            limite = max(1, min(50, int(context.args[1])))
+        except ValueError:
+            pass
+    filas = db.historial_consultas_usuario(target_id, limite)
+    if not filas:
+        await update.message.reply_text(
+            f"El usuario {target_id} no tiene consultas registradas en el log.")
+        return
+
+    import html as _html
+    u = db.obtener_usuario(target_id) or {}
+    nombre = u.get("nombre") or "Usuario"
+    username = u.get("username") or "N/A"
+    _icono = {"alta": "🟢", "media": "🟡", "baja": "🔴"}
+
+    lineas = [f"🧵 <b>Historial de {_html.escape(nombre)}</b> (@{_html.escape(username)}, "
+              f"ID <code>{target_id}</code>)\nÚltimas {len(filas)} consultas (cronológico):\n"]
+    for i, f in enumerate(filas, 1):
+        ts = (f.get("timestamp") or "")[:16]
+        ic = _icono.get((f.get("confianza") or "").lower(), "⚪")
+        temas = f.get("temas") or "ninguno"
+        preg = _html.escape((f.get("pregunta") or "").strip())
+        resp = (f.get("respuesta") or "").strip()
+        # Resumen: la línea 📌 Respuesta (o la primera línea no vacía)
+        resumen = ""
+        for ln in resp.split("\n"):
+            ln = ln.strip()
+            if ln.startswith("📌"):
+                resumen = ln
+                break
+        if not resumen and resp:
+            resumen = next((l.strip() for l in resp.split("\n") if l.strip()), "")
+        resumen = _html.escape(resumen[:300])
+        lineas.append(
+            f"<b>{i}.</b> {ic} <i>{ts}</i> · temas: {temas}\n"
+            f"❓ {preg}\n🤖 {resumen}\n")
+
+    await enviar_respuesta(update.message, "\n".join(lineas))
+
+
 async def cmd_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Envía la base de datos SQLite como archivo por Telegram."""
     if not es_admin(update.effective_user.id):
@@ -2501,6 +2560,7 @@ def main():
     app.add_handler(CommandHandler("usuario",         cmd_usuario))
     app.add_handler(CommandHandler("backup",          cmd_backup))
     app.add_handler(CommandHandler("auditar",         cmd_auditar))
+    app.add_handler(CommandHandler("historial",       cmd_historial))
     app.add_handler(CommandHandler("plan_add",        cmd_plan_add))
     app.add_handler(CommandHandler("plan_del",        cmd_plan_del))
     app.add_handler(CommandHandler("abogados",        cmd_abogados))
