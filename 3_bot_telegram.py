@@ -2405,9 +2405,22 @@ async def handle_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif tipo == "down":
             comentario_db = f"{pregunta_original[:200]}\n---\n{resp_crudo[:300]}"
             db.guardar_feedback(feedback_user_id, "negativo", comentario_db)
-            await query.answer("👎 Gracias. Revisaremos esta respuesta.")
+            await query.answer("👎 Gracias por avisarnos.")
             try:
                 await query.edit_message_reply_markup(reply_markup=None)
+            except Exception:
+                pass
+            # Acuse visible y tranquilizador (automático para todo 👎 — escala sin
+            # trabajo manual y no deja al usuario con la sensación de error sin más).
+            try:
+                await query.message.reply_text(
+                    "🙏 Gracias por tu reporte. Esta respuesta pasó a <b>revisión del equipo</b> "
+                    "para mejorar el bot. Si quieres, cuéntanos en una frase qué faltó o estuvo "
+                    "mal con /opinion, o reformula tu pregunta e inténtalo de nuevo.\n\n"
+                    "Recuerda que aBOTgado está en fase de pruebas y da orientación general; "
+                    "no sustituye a un abogado.",
+                    parse_mode="HTML"
+                )
             except Exception:
                 pass
             # Notificar admin sobre feedback negativo
