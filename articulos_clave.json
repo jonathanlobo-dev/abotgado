@@ -3020,6 +3020,57 @@
       38
     ]
   },
+  "constituir_organizacion": {
+    "keywords": [
+      "crear un colegio",
+      "crear el colegio",
+      "registrar un colegio",
+      "registrar el colegio",
+      "colegio profesional",
+      "colegio de psicologos",
+      "colegio de psicólogos",
+      "crear una asociacion",
+      "crear una asociación",
+      "registrar una asociacion",
+      "registrar una asociación",
+      "constituir una asociacion",
+      "constituir una asociación",
+      "fundar una asociacion",
+      "asociacion civil",
+      "asociación civil",
+      "crear una fundacion",
+      "crear una fundación",
+      "constituir una fundacion",
+      "registrar una fundacion",
+      "crear una ong",
+      "registrar una ong",
+      "fundar una ong",
+      "crear un gremio",
+      "constituir un gremio",
+      "crear una organizacion sin fines de lucro",
+      "organizacion sin fines de lucro",
+      "personalidad juridica",
+      "personalidad jurídica",
+      "acta constitutiva"
+    ],
+    "excluir": [
+      "empresa",
+      "compania",
+      "compañia",
+      "compañía",
+      "sociedad anonima",
+      "sociedad mercantil",
+      "cooperativa",
+      "marca",
+      "patente",
+      "sindicato"
+    ],
+    "ley": "Código Civil venezolano",
+    "articulos": [
+      19,
+      20
+    ]
+  },
   "robo_vehiculo": {
     "keywords": [
       "me robaron el carro",

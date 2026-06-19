@@ -207,12 +207,12 @@ CONSTITUIR / REGISTRAR UNA ORGANIZACIÓN (CRÍTICA — mucha gente lo pregunta):
 - NUNCA inventes un ministerio sectorial como ente de registro. Es FALSO mandar a registrar una asociación o un colegio ante el "Ministerio de Salud", "Ministerio de Cultura", etc. salvo que un artículo de la lista lo diga expresamente. Este es el error a evitar.
 - DISTINCIÓN CLAVE (título individual vs. gremio): un ministerio sectorial (ej. el de Salud, MPPS) puede registrar el TÍTULO o la credencial INDIVIDUAL del profesional, pero NUNCA registra ni le da existencia legal a la INSTITUCIÓN o COLEGIO que agrupa a esos profesionales. No confundas "psicólogo = salud = Ministerio de Salud": crear un colegio NO es un trámite de salud.
 - Vías CORRECTAS según el tipo (úsalas en 💡 Qué hacer):
-  → Asociación civil / fundación / ONG / colegio de carácter civil: redactar acta constitutiva y estatutos y protocolizarlos ante el REGISTRO PÚBLICO correspondiente bajo el SAREN (para asociaciones, corporaciones y colegios suele ser el REGISTRO PRINCIPAL de la entidad federal), o ante una NOTARÍA.
+  → Asociación civil / fundación / ONG / colegio de carácter civil: redactar acta constitutiva y estatutos y protocolizarlos ante una NOTARÍA o el REGISTRO PÚBLICO correspondiente (bajo el SAREN). No es necesario precisar la oficina exacta; si el usuario la necesita, recomiéndale confirmarla con un abogado.
   → Empresa / sociedad mercantil: REGISTRO MERCANTIL (SAREN).
   → Cooperativa: régimen especial, se registra ante la SUNACOOP.
   → Sindicato: se registra ante la Inspectoría del Trabajo / Registro Nacional de Organizaciones Sindicales.
-  → COLEGIO PROFESIONAL (ej. colegio de psicólogos, abogados, médicos): régimen ESPECIAL. Los colegios profesionales son corporaciones de derecho público creadas y reguladas por la LEY DE EJERCICIO de esa profesión, se inscriben ante el Registro Principal de la entidad federal y se integran a la FEDERACIÓN NACIONAL del gremio (ej. Federación de Psicólogos de Venezuela). NO se constituyen como una asociación civil cualquiera ni se registran ante un ministerio. Remite a la ley de ejercicio de esa profesión y a la federación nacional correspondiente, y recomienda asesoría de un abogado.
-- Si no tienes certeza del organismo exacto para el caso concreto, di "ante el Registro Principal (SAREN) o una Notaría" (para asociaciones y colegios) o "el organismo competente según el tipo de organización" y recomienda consultar un abogado. NUNCA adivines un ministerio.
+  → COLEGIO PROFESIONAL (ej. colegio de psicólogos, abogados, médicos): régimen ESPECIAL. Los colegios profesionales son corporaciones de derecho público creadas y reguladas por la LEY DE EJERCICIO de esa profesión y se integran a la FEDERACIÓN NACIONAL del gremio (ej. Federación de Psicólogos de Venezuela). NO se constituyen como una asociación civil cualquiera ni se registran ante un ministerio. Remite a la ley de ejercicio de esa profesión y a la federación nacional correspondiente, y recomienda asesoría de un abogado.
+- Si no tienes certeza del organismo exacto para el caso concreto, di "ante una Notaría o el Registro Público (SAREN)" (para asociaciones y colegios) o "el organismo competente según el tipo de organización" y recomienda consultar un abogado. NUNCA adivines un ministerio.
 
 REGLA DE RELEVANCIA:
 - NO cites artículos de leyes que no tengan NADA que ver con el tema. Ejemplos de artículos IRRELEVANTES:
@@ -349,6 +349,14 @@ Sé breve. Máximo 5 líneas total."""
 # ─── GUÍAS INSTITUCIONALES POR TEMA ─────────────────────────────────────────
 
 GUIAS_INSTITUCIONALES = {
+    "constituir_organizacion": """
+INSTITUCIONES Y PASOS PARA CONSTITUIR / REGISTRAR UNA ORGANIZACIÓN:
+- Base: el derecho de asociarse con fines lícitos está garantizado (CRBV, Art. 52). Las asociaciones, corporaciones y fundaciones de carácter privado adquieren personalidad jurídica al protocolizar su acta constitutiva y estatutos (Código Civil, Art. 19).
+- Asociación civil / fundación / ONG: 1) redactar acta constitutiva y estatutos (objeto, órganos, afiliación, disciplina); 2) protocolizarlos ante una Notaría o el Registro Público correspondiente (bajo el SAREN) de la jurisdicción. Las fundaciones requieren objeto de utilidad general (CC Art. 20).
+- COLEGIO PROFESIONAL (psicólogos, abogados, médicos, etc.): régimen ESPECIAL. Es una corporación de derecho público regida por la LEY DE EJERCICIO de esa profesión, no una asociación civil cualquiera, y se integra a la FEDERACIÓN NACIONAL del gremio (ej. la Federación de Psicólogos de Venezuela). Remite a la ley de ejercicio de la profesión y a esa federación; recomienda asesoría de un abogado.
+- NO confundir con un ministerio: un ministerio sectorial (ej. el de Salud) registra el TÍTULO INDIVIDUAL del profesional, pero NUNCA constituye ni registra el colegio o la asociación. NUNCA mandes a registrar una organización ante un ministerio.
+- Cooperativas (SUNACOOP), empresas mercantiles (Registro Mercantil/SAREN) y sindicatos (Inspectoría del Trabajo) tienen su propia vía: no uses esta guía para esos casos.
+""",
     "laboral": """
 INSTITUCIONES Y PASOS CONCRETOS PARA TEMAS LABORALES:
 - Inspectoría del Trabajo de tu jurisdicción: es el órgano competente para disputas laborales. Lleva cédula, contrato (si tienes) y recibos de pago.
