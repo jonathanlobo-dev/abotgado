@@ -1850,7 +1850,10 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
     # ── Función de retry agéntico (Nivel 2) ────────────────────────────────
     # Mensaje ESTÁTICO (no pasa por el LLM → imposible que invente leyes o
     # instituciones). Solo menciona ÁREAS/categorías, nunca normas concretas.
-    _SIN_RESULTADOS = {"respuesta": (
+    # Dead-end en 2 niveles. AMBOS son texto ESTÁTICO (no pasan por el LLM → no
+    # pueden inventar leyes ni instituciones; solo nombran áreas genéricas).
+    # (a) Pregunta corta/vaga y nueva → pedir contexto UNA vez.
+    _PEDIR_CONTEXTO = {"respuesta": (
                        "🤔 <b>Cuéntame un poco más para ayudarte bien.</b>\n\n"
                        "No logré identificar con claridad el tema legal de tu mensaje. "
                        "Para darte una respuesta útil necesito un poco más de contexto:\n"
@@ -1859,6 +1862,23 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        "• ¿Qué pasó y qué necesitas resolver?\n\n"
                        "Mientras más concreto seas, más preciso te respondo. ⚖️"),
                        "temas": [], "confianza": "ninguna"}
+    # (b) Pregunta detallada o seguimiento (ya elaboró) y aún sin nada → admitir
+    # honesto, SIN volver a preguntar (evita el loop) y SIN inventar.
+    _SIN_COBERTURA = {"respuesta": (
+                       "📭 <b>No tengo información sobre esto en mi base todavía.</b>\n\n"
+                       "Prefiero decírtelo con honestidad antes que darte una respuesta que "
+                       "podría estar equivocada. Tu consulta quedó registrada para evaluar "
+                       "incorporar esa normativa.\n\n"
+                       "Mientras tanto, lo mejor es consultar con un abogado. Y si quieres, "
+                       "puedo ayudarte con otro tema (laboral, arrendamiento, familia, "
+                       "tránsito, penal, trámites…)."),
+                       "temas": [], "confianza": "ninguna"}
+
+    def _dead_end(es_seguimiento: bool):
+        """Elige el mensaje: si ya elaboró (seguimiento) o la pregunta es detallada
+        (>6 palabras), admite honesto; si es corta/vaga y nueva, pide contexto."""
+        detallada = len((pregunta or "").split()) > 6
+        return _SIN_COBERTURA if (es_seguimiento or detallada) else _PEDIR_CONTEXTO
 
     def _buscar_con_retry(query_inicial: str, escenario: str = "",
                           sub_queries_pre: list[str] | None = None,
@@ -1970,7 +1990,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                 logger.info(f"  → Sin resultados nuevos — usando contexto previo como fallback")
                 contexto = contexto_previo
             else:
-                return _SIN_RESULTADOS
+                return _dead_end(es_seguimiento=True)
 
     elif es_follow_up:
         relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
@@ -1978,7 +1998,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             pregunta_original=pregunta,
         )
         if not relevantes:
-            return _SIN_RESULTADOS
+            return _dead_end(es_seguimiento=True)
 
     else:
         relevantes, contexto, temas_detectados, mejor_dist = _buscar_con_retry(
@@ -1986,7 +2006,7 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
             pregunta_original=pregunta,
         )
         if not relevantes:
-            return _SIN_RESULTADOS
+            return _dead_end(es_seguimiento=False)
 
     # ── REPREGUNTA: arrendamiento de régimen indeterminado (vivienda vs comercial) ──
     # Si el retrieval trajo ambos regímenes y la conversación no aclara cuál, en
