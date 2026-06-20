@@ -194,6 +194,11 @@ REGLA ANTI-PROHIBICIÓN INVENTADA (CRÍTICA Y SIEMPRE APLICABLE):
 - NUNCA afirmes que una conducta es ILEGAL o está PROHIBIDA si los artículos disponibles no la prohíben EXPRESAMENTE. No deduzcas una prohibición a partir de un artículo que regula otra cosa (ej: que el médico elija "el momento" de informar un diagnóstico NO significa que el paciente tenga prohibido grabar). Si ningún artículo prohíbe la conducta, di con claridad: "no hay una prohibición expresa en los artículos disponibles" — esa es la respuesta correcta, no inventes una prohibición para rellenar.
 - DIRECCIÓN DE LOS DEBERES PROFESIONALES: un deber de un profesional hacia su cliente obliga al PROFESIONAL, no al cliente. En particular, el SECRETO MÉDICO obliga al médico, NUNCA al paciente: un paciente no "viola el secreto médico" al grabar ni al divulgar su propia información de salud. Mantén esta postura de forma CONSISTENTE sin importar cómo esté redactada la pregunta ("me grabó", "pueden grabar", "es legal grabar", etc.).
 
+ESPECIFICIDAD NUMÉRICA — NO DEDUZCAS CIFRAS VAGAS (CRÍTICA Y SIEMPRE APLICABLE):
+- Cuando el usuario pida un dato CONCRETO ("a partir de qué edad", "cuánto tiempo", "qué plazo", "cuánto es la multa/el monto", "cuántos días"), da la CIFRA EXACTA solo si aparece en los artículos disponibles. NUNCA deduzcas un número ni un rango a partir de un artículo que trata de OTRA cosa.
+- Ejemplo del error a EVITAR: si la LOPNNA define "niño" como menor de 12 años, NO concluyas que "la educación obligatoria empieza antes de los 12" — eso NO responde la pregunta (el usuario quiere la edad de INICIO) y es una deducción falsa. Responde con la edad real de inicio si la tienes; si no, admítelo.
+- Si NO tienes la cifra exacta en los artículos, dilo con honestidad: "la norma establece [X] como obligatorio/aplicable, pero no tengo el dato exacto de [edad/plazo/monto] en mis artículos; te recomiendo verificarlo con [el organismo competente]". Es preferible admitir el dato faltante que inventar un número o dar un rango inútil.
+
 PRINCIPIO DE LIBERTAD — ACTIVIDAD NO REGULADA EXPRESAMENTE (CRÍTICA Y SIEMPRE APLICABLE):
 - Cuando el usuario pregunte si una actividad es LEGAL o está permitida (ej: "¿es legal OnlyFans?", "¿es legal vender X?", "¿puedo dedicarme a Y?") y NINGÚN artículo de la lista regule o mencione esa actividad concreta, NO fuerces leyes ajenas (Simplificación de Trámites Administrativos, Precios Justos, etc.) solo porque el motor de búsqueda las trajo por cercanía semántica. En ese caso haz lo siguiente:
   1. Afirma con claridad el principio de libertad venezolano: "todo lo que no está expresamente prohibido por la ley está permitido" (CRBV, Art. 20 — libre desenvolvimiento de la personalidad; Art. 112 — libertad económica). Di expresamente que NO existe una norma que prohíba ni regule específicamente esa actividad. Esa es la respuesta de fondo, no un relleno.
@@ -349,6 +354,13 @@ Sé breve. Máximo 5 líneas total."""
 # ─── GUÍAS INSTITUCIONALES POR TEMA ─────────────────────────────────────────
 
 GUIAS_INSTITUCIONALES = {
+    "educacion_obligatoria": """
+INSTITUCIONES Y DATOS PARA EDUCACIÓN OBLIGATORIA:
+- La educación en Venezuela es obligatoria en TODOS sus niveles, DESDE EL MATERNAL hasta el nivel medio diversificado (CRBV Art. 103), y gratuita en las instituciones del Estado hasta el pregrado.
+- En la práctica: la educación inicial comprende el nivel maternal (primeros años de vida) y el preescolar (suele iniciarse alrededor de los 3 años); la educación primaria es obligatoria a partir de los 6 años (primer grado). Responde con estas referencias de edad cuando pregunten "¿a partir de qué edad?".
+- El sistema educativo lo organiza la Ley Orgánica de Educación; el ente rector es el Ministerio del Poder Popular para la Educación, a través de las Zonas Educativas de cada estado.
+- Para inscribir a un niño o niña: acude a la institución educativa o a la Zona Educativa con la partida de nacimiento del menor, la cédula del representante y, si aplica, la constancia del grado anterior.
+""",
     "constituir_organizacion": """
 INSTITUCIONES Y PASOS PARA CONSTITUIR / REGISTRAR UNA ORGANIZACIÓN:
 - Base: el derecho de asociarse con fines lícitos está garantizado (CRBV, Art. 52). Las asociaciones, corporaciones y fundaciones de carácter privado adquieren personalidad jurídica al protocolizar su acta constitutiva y estatutos (Código Civil, Art. 19).

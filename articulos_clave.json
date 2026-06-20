@@ -3071,6 +3071,47 @@
       20
     ]
   },
+  "educacion_obligatoria": {
+    "keywords": [
+      "escuela",
+      "ir a la escuela",
+      "mandar a la escuela",
+      "mandar a mi hijo a la escuela",
+      "mandar a mi hija a la escuela",
+      "edad escolar",
+      "edad para la escuela",
+      "educacion obligatoria",
+      "educación obligatoria",
+      "es obligatoria la educacion",
+      "es obligatoria la escuela",
+      "preescolar",
+      "educacion inicial",
+      "educación inicial",
+      "educacion primaria",
+      "derecho a la educacion",
+      "derecho a la educación",
+      "educacion gratuita",
+      "educación gratuita",
+      "educacion de mi hijo",
+      "educacion de mi hija",
+      "inscribir en la escuela",
+      "matricula escolar",
+      "inscripcion escolar",
+      "bachillerato"
+    ],
+    "excluir": [
+      "crear una escuela",
+      "abrir una escuela",
+      "registrar una escuela",
+      "fundar una escuela",
+      "colegio profesional"
+    ],
+    "ley": "Constitución de la República Bolivariana de Venezuela",
+    "articulos": [
+      102,
+      103
+    ]
+  },
   "robo_vehiculo": {
     "keywords": [
       "me robaron el carro",
