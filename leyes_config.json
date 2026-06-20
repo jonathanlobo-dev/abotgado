@@ -611,6 +611,21 @@
       "gaceta": "G.O. 36579 del 11-noviembre-1998"
     },
     {
+      "id": "ley_educacion",
+      "nombre": "Ley Orgánica de Educación",
+      "rama": "educacion",
+      "archivos_pdf": [
+        "LeyOrganicadeEducacion.pdf"
+      ],
+      "aliases": [
+        "ley de educacion",
+        "ley organica de educacion",
+        "loe",
+        "ley de educación"
+      ],
+      "gaceta": "G.O. 5.929 Extraordinario del 15-agosto-2009"
+    },
+    {
       "id": "reglamento_general_alimentos",
       "nombre": "Reglamento General de Alimentos",
       "rama": "salud",

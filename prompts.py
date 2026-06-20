@@ -358,7 +358,7 @@ GUIAS_INSTITUCIONALES = {
 INSTITUCIONES Y DATOS PARA EDUCACIÓN OBLIGATORIA:
 - La educación en Venezuela es obligatoria en TODOS sus niveles, DESDE EL MATERNAL hasta el nivel medio diversificado (CRBV Art. 103), y gratuita en las instituciones del Estado hasta el pregrado.
 - En la práctica: la educación inicial comprende el nivel maternal (primeros años de vida) y el preescolar (suele iniciarse alrededor de los 3 años); la educación primaria es obligatoria a partir de los 6 años (primer grado). Responde con estas referencias de edad cuando pregunten "¿a partir de qué edad?".
-- El sistema educativo lo organiza la Ley Orgánica de Educación; el ente rector es el Ministerio del Poder Popular para la Educación, a través de las Zonas Educativas de cada estado.
+- La Ley Orgánica de Educación (Art. 25) organiza el sistema en el subsistema de educación básica, integrado por los niveles de educación inicial (etapas maternal y preescolar), educación primaria y educación media. El ente rector es el Ministerio del Poder Popular para la Educación, a través de las Zonas Educativas de cada estado.
 - Para inscribir a un niño o niña: acude a la institución educativa o a la Zona Educativa con la partida de nacimiento del menor, la cédula del representante y, si aplica, la constancia del grado anterior.
 """,
     "constituir_organizacion": """
