@@ -1734,6 +1734,47 @@ def debug_busqueda(pregunta: str) -> str:
 
 
 
+# ── REPREGUNTA POR MATERIA INDETERMINADA (arrendamiento: vivienda vs comercial) ──
+# Caso real (Luis): el bot citaba a la vez la Ley de Arrendamiento de Vivienda Y la
+# de Uso Comercial porque no sabía cuál aplica. En vez de volcar las dos leyes
+# ("parece buscador"), preguntamos UNA cosa y respondemos con la ley correcta.
+_LEY_ARR_VIVIENDA = "Ley para la Regularización y Control de los Arrendamientos de Vivienda"
+_LEY_ARR_COMERCIAL = "Ley de Regulación del Arrendamiento Inmobiliario para el Uso Comercial"
+_RE_REGIMEN_VIVIENDA = re.compile(
+    r"\b(vivienda|casa|apartament\w*|aparta\b|habitaci[oó]n|donde vivo|donde resido|"
+    r"resido|mi hogar|residencial|donde vive)\b", re.IGNORECASE)
+_RE_REGIMEN_COMERCIAL = re.compile(
+    r"\b(local|comercial|negocio|fondo de comercio|oficina|galp[oó]n|tienda|abasto|"
+    r"restaurant\w*|comercio)\b", re.IGNORECASE)
+_REPREGUNTA_ARRENDAMIENTO = (
+    "🏠 Para orientarte bien necesito un dato, porque <b>la ley aplicable cambia</b> "
+    "según el caso:\n\n"
+    "¿El inmueble es una <b>vivienda</b> (casa o apartamento donde vives) "
+    "o un <b>local comercial</b> (negocio, oficina, local)?\n\n"
+    "Dime cuál es y te respondo con la ley que corresponde. 🙂"
+)
+
+
+def _necesita_aclarar_arrendamiento(pregunta: str, historial, relevantes) -> bool:
+    """True si el retrieval trajo a la vez los dos regímenes de arrendamiento
+    (vivienda y comercial) y la conversación no especifica cuál, y aún no hemos
+    preguntado. En ese caso conviene repreguntar en vez de citar ambas leyes."""
+    leyes_ctx = {a.get("ley", "") for a in (relevantes or [])}
+    if _LEY_ARR_VIVIENDA not in leyes_ctx or _LEY_ARR_COMERCIAL not in leyes_ctx:
+        return False  # no aparecieron ambos regímenes → no hay ambigüedad de este tipo
+    texto = pregunta + " " + " ".join(m.get("content", "") for m in (historial or []))
+    if _RE_REGIMEN_VIVIENDA.search(texto) or _RE_REGIMEN_COMERCIAL.search(texto):
+        return False  # el usuario ya dijo si es vivienda o comercial
+    # Evitar repreguntar dos veces: si lo último que dijo el asistente fue la repregunta
+    for m in reversed(historial or []):
+        if m.get("role") == "assistant":
+            cont = m.get("content", "").lower()
+            if "vivienda" in cont and "local comercial" in cont:
+                return False
+            break
+    return True
+
+
 def buscar_y_responder(pregunta: str, historial: list[dict] = None,
                        user_id: int = None) -> str:
     """Pipeline híbrido con seguimiento de conversación para premium."""
@@ -1937,6 +1978,14 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         )
         if not relevantes:
             return _SIN_RESULTADOS
+
+    # ── REPREGUNTA: arrendamiento de régimen indeterminado (vivienda vs comercial) ──
+    # Si el retrieval trajo ambos regímenes y la conversación no aclara cuál, en
+    # lugar de volcar las dos leyes preguntamos UNA cosa (la ley aplicable cambia).
+    if _necesita_aclarar_arrendamiento(pregunta, historial, relevantes):
+        logger.info("  → Arrendamiento de régimen indeterminado — repreguntando vivienda/comercial")
+        return {"respuesta": _REPREGUNTA_ARRENDAMIENTO, "temas": temas_detectados,
+                "confianza": "media", "distancia": 0.0, "es_repregunta": True}
 
     # Determinar nivel de confianza (keyword + embedding combinados)
     dist = mejor_dist if not seguimiento_premium else 0.0

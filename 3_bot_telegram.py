@@ -2253,6 +2253,16 @@ async def responder_consulta(update: Update, context: ContextTypes.DEFAULT_TYPE)
             "Hubo un error procesando tu consulta. Intenta de nuevo o reformula tu pregunta.")
         return
 
+    # ── Repregunta de desambiguación (no es una respuesta real) ──────────────
+    # No consume cuota, no se audita ni alerta; pero SÍ se guarda en el historial
+    # para que el contexto se conserve y no se vuelva a preguntar lo mismo.
+    if resultado.get("es_repregunta"):
+        _limite_hist = config.MAX_HISTORIAL if con_memoria else config.MAX_HISTORIAL_GRATIS
+        db.guardar_mensaje(user_id, "user", pregunta, _limite_hist)
+        db.guardar_mensaje(user_id, "assistant", respuesta, _limite_hist)
+        await enviar_respuesta(update.message, respuesta)
+        return
+
     db.registrar_consulta(user_id)
     # Guardar historial para todos; el ring buffer se recorta según el plan
     # (largo para premium, corto para gratis — memoria de cortesía).
