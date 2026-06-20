@@ -137,9 +137,10 @@ def _nota_ambiguedad(relevantes: list) -> str:
         return ""
     ordenadas = sorted(score_por_rama.items(), key=lambda kv: kv[1], reverse=True)
     (rama1, s1), (rama2, s2) = ordenadas[0], ordenadas[1]
-    # Solo si la 2da rama es realmente competitiva (>=70% del score de la 1ra):
-    # evita disparar la nota cuando una rama domina claramente.
-    if s1 <= 0 or s2 < 0.70 * s1:
+    # Solo si la 2da rama es realmente competitiva (>=78% del score de la 1ra):
+    # evita disparar la nota cuando una rama domina claramente o cuando el
+    # retrieval va a tientas (la 2da rama es ruido semántico, no una alternativa real).
+    if s1 <= 0 or s2 < 0.78 * s1:
         return ""
     leg1 = _RAMA_LEGIBLE.get(rama1, rama1)
     leg2 = _RAMA_LEGIBLE.get(rama2, rama2)
@@ -1847,8 +1848,16 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         return f"{tema_previo}. {pregunta_orig}" if tema_previo else pregunta_orig
 
     # ── Función de retry agéntico (Nivel 2) ────────────────────────────────
-    _SIN_RESULTADOS = {"respuesta": "No tengo artículos específicos sobre este tema en mi base actual.\n\n"
-                       "⚠️ Consulta con un abogado.",
+    # Mensaje ESTÁTICO (no pasa por el LLM → imposible que invente leyes o
+    # instituciones). Solo menciona ÁREAS/categorías, nunca normas concretas.
+    _SIN_RESULTADOS = {"respuesta": (
+                       "🤔 <b>Cuéntame un poco más para ayudarte bien.</b>\n\n"
+                       "No logré identificar con claridad el tema legal de tu mensaje. "
+                       "Para darte una respuesta útil necesito un poco más de contexto:\n"
+                       "• ¿De qué área es? Por ejemplo: trabajo, alquiler/vivienda, familia, "
+                       "tránsito, un trámite, o un asunto penal.\n"
+                       "• ¿Qué pasó y qué necesitas resolver?\n\n"
+                       "Mientras más concreto seas, más preciso te respondo. ⚖️"),
                        "temas": [], "confianza": "ninguna"}
 
     def _buscar_con_retry(query_inicial: str, escenario: str = "",
@@ -2268,7 +2277,10 @@ def buscar_y_responder(pregunta: str, historial: list[dict] = None,
         # En vez de bloquear con una pregunta, respondemos por la vía más probable
         # y ofrecemos la alternativa sin fricción. Conservador: solo en consultas
         # nuevas (no seguimientos) y cuando hay señal real de ambigüedad.
-        if not es_follow_up and confianza != "alta" and relevantes:
+        # Requiere temas_detectados: si NINGÚN tema curado disparó, el retrieval fue
+        # a tientas y la 2da rama suele ser ruido (caso real del misfire "civil o
+        # bancario" en la pregunta de crear un colegio). Solo hedge con anclaje real.
+        if not es_follow_up and confianza != "alta" and relevantes and temas_detectados:
             hedge = _nota_ambiguedad(relevantes)
             if hedge:
                 logger.info(f"  ⚖️ Ambigüedad cross-rama detectada — añadiendo nota")
