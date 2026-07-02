@@ -31,7 +31,7 @@ busqueda.py::buscar_y_responder()
     │     → Elimina duplicados por ID de artículo
     │     → Ordena por relevancia combinada
     │
-    └─► 5. LLM (Groq - llama-3.3-70b)
+    └─► 5. LLM (Groq - openai/gpt-oss-120b, ver config.py)
           → SYSTEM_PROMPT con reglas estrictas de formato y precisión
           → Contexto: artículos encontrados + historial (si tiene memoria)
           → Respuesta en HTML con estructura 📌📖💡⚠️

@@ -3,7 +3,7 @@ aBOTgado - Paso 2: Consultar la base vectorial (RAG)
 =====================================================
 Stack gratuito para fase de pruebas:
   - Embeddings: Ollama + mxbai-embed-large (local, $0)
-  - LLM:        Groq + llama-3.3-70b (gratis en tier gratuito)
+  - LLM:        Groq + openai/gpt-oss-120b (gratis en tier gratuito; ver config.py)
   - Vector DB:  ChromaDB local ($0)
 
 Requisitos previos:

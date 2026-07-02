@@ -57,8 +57,11 @@ LLM_MODEL_FAST  = os.getenv("LLM_MODEL_FAST", "openai/gpt-oss-20b")
 # Reemplaza 6 funciones hardcoded (es_consulta_no_legal, es_fuera_de_dominio,
 # _tiene_tema_legal, es_seguimiento, reformular_y_clasificar, _descomponer_consulta).
 # Salida: JSON estructurado. Necesita razonamiento + adherencia a JSON estricto.
-# Posición intermedia entre LLM_MODEL_FAST (8B, falla JSON) y LLM_MODEL (120B, overkill).
-LLM_MODEL_ROUTER = os.getenv("LLM_MODEL_ROUTER", "llama-3.3-70b-versatile")
+# Posición intermedia entre LLM_MODEL_FAST (20B) y LLM_MODEL (120B, overkill).
+# Historial: llama-3.3-70b-versatile (deprecado jul-2026, decommission 16-ago-2026)
+# → qwen/qwen3.6-27b (reemplazo recomendado por Groq; en preview — si falla,
+# fallback seguro: openai/gpt-oss-120b).
+LLM_MODEL_ROUTER = os.getenv("LLM_MODEL_ROUTER", "qwen/qwen3.6-27b")
 ROUTER_TIMEOUT_S = float(os.getenv("ROUTER_TIMEOUT_S", "4.0"))
 ROUTER_HABILITADO = os.getenv("ROUTER_HABILITADO", "1") == "1"
 

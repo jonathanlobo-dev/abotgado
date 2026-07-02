@@ -707,6 +707,12 @@ def router_llm(pregunta: str, historial: list[dict] | None = None) -> dict:
         f"HISTORIAL:\n{historial_txt}\n\n" if historial_txt else "HISTORIAL: (vacío)\n\n"
     ) + f"PREGUNTA ACTUAL:\n{pregunta}"
 
+    # Los modelos Qwen en Groq son razonadores: sin esto anteponen un bloque
+    # <think> que rompe el parseo JSON. "none" solo es válido en Qwen; los
+    # gpt-oss usan low/medium/high, por eso el kwarg es condicional al modelo.
+    kwargs_razonador = (
+        {"reasoning_effort": "none"} if "qwen" in config.LLM_MODEL_ROUTER.lower() else {}
+    )
     try:
         r = _groq_chat(
             model=config.LLM_MODEL_ROUTER,
@@ -718,6 +724,7 @@ def router_llm(pregunta: str, historial: list[dict] | None = None) -> dict:
             temperature=0.0,
             timeout=config.ROUTER_TIMEOUT_S,
             response_format={"type": "json_object"},
+            **kwargs_razonador,
         )
         raw = r.choices[0].message.content
     except Exception as e:
