@@ -47,6 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Panel de administración web (endpoints /admin/*, exigen X-Admin-Key).
+from api_admin import admin_router  # noqa: E402
+app.include_router(admin_router)
+
 # ─── Modelos ─────────────────────────────────────────────────────────────────
 
 class MensajeHistorial(BaseModel):
