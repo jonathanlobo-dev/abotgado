@@ -82,7 +82,8 @@ def usuario_detalle(user_id: int, x_admin_key: str = Header("")):
 
 
 class PlanReq(BaseModel):
-    plan_id: int  # 0 Gratis · 1 Pionero · 2 Premium
+    plan_id: int          # 0 Gratis · 1 Pionero · 2 Premium
+    notificar: bool = True
 
 
 @admin_router.post("/usuarios/{user_id}/plan")
@@ -91,12 +92,27 @@ def cambiar_plan(user_id: int, req: PlanReq, x_admin_key: str = Header("")):
     if req.plan_id not in config.PLANES:
         raise HTTPException(400, f"plan_id inválido. Opciones: {list(config.PLANES)}")
     database.cambiar_plan(user_id, req.plan_id)
-    return {"ok": True, "user_id": user_id, "plan": config.PLANES[req.plan_id]["nombre"]}
+    plan = config.PLANES[req.plan_id]
+    if req.notificar:
+        _tg_enviar(user_id,
+                   f"{plan['icono']} <b>Tu plan en aBOTgado cambió</b>\n\n"
+                   f"Ahora tienes el plan <b>{plan['nombre']}</b>. "
+                   f"Escribe /estado para ver tus beneficios.")
+    return {"ok": True, "user_id": user_id, "plan": plan["nombre"]}
 
 
 class RegaloReq(BaseModel):
-    tipo: str            # consultas | doc | memoria | tester
-    cantidad: int = 5    # consultas/docs; días para tester
+    tipo: str             # consultas | doc | memoria | tester
+    cantidad: int = 5     # consultas/docs; días para tester
+    notificar: bool = True
+
+
+_MSG_REGALO = {
+    "consultas": "🎁 <b>¡Regalo de aBOTgado!</b>\n\nTe regalamos <b>{n} consultas</b> extra. ¡Aprovéchalas!",
+    "doc":       "🎁 <b>¡Regalo de aBOTgado!</b>\n\nTe regalamos <b>{n} documento(s)</b> para generar. Escribe /documento para usarlo.",
+    "memoria":   "🎁 <b>¡Regalo de aBOTgado!</b>\n\nActivamos la <b>memoria de conversación</b> en tu cuenta: el bot recordará el hilo de tus consultas.",
+    "tester":    "⭐ <b>¡Bienvenido al plan Pionero!</b>\n\nTienes acceso Pionero por <b>{n} días</b>. Escribe /estado para ver tus beneficios.",
+}
 
 
 @admin_router.post("/usuarios/{user_id}/regalo")
@@ -112,6 +128,8 @@ def regalo(user_id: int, req: RegaloReq, x_admin_key: str = Header("")):
         database.activar_tester_temporal(user_id, req.cantidad)
     else:
         raise HTTPException(400, "tipo inválido: consultas | doc | memoria | tester")
+    if req.notificar:
+        _tg_enviar(user_id, _MSG_REGALO[req.tipo].format(n=req.cantidad))
     return {"ok": True, "user_id": user_id, "tipo": req.tipo, "cantidad": req.cantidad}
 
 
