@@ -23,8 +23,10 @@ admin_router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 def _check(key: str) -> None:
+    import hmac
     admin_key = os.getenv("ADMIN_KEY", "")
-    if not admin_key or key != admin_key:
+    # compare_digest = tiempo constante (evita timing attacks sobre la clave)
+    if not admin_key or not hmac.compare_digest(key, admin_key):
         raise HTTPException(status_code=403, detail="No autorizado")
 
 
