@@ -42,3 +42,7 @@ Thumbs.db
 leyes_obsoletas/
 .ca_bundle_local.pem
 abotgado-web.zip
+
+# Corpus curado y docs de negocio (no se publican)
+leyes/
+docs/monetization.md
