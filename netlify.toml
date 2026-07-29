@@ -1,7 +1,38 @@
-# Configuración de despliegue de Netlify para el landing de aBOTgado.
-# El sitio estático vive en landing/ (no en la raíz del repo), así que hay
-# que indicarle explícitamente a Netlify cuál es el directorio a publicar.
-# Sin esto, Netlify publica la raíz del repo —que no tiene index.html— y el
-# landing nunca aparece.
+# Configuración de despliegue de Netlify.
+#
+# OJO: este archivo está en la RAÍZ del repo, así que Netlify lo aplica a TODOS
+# los sitios que construyen desde este repositorio (salvo que el sitio tenga un
+# "Base directory" con su propio netlify.toml). Eso ya causó un bug: se creó con
+# publish = "landing" para arreglar el landing (jun-2026) y de paso le impuso esa
+# carpeta al sitio de la Mini App, dejándolo sin desplegar.
+#
+# Hoy la única cosa que Netlify necesita servir es la MINI APP (tma/):
+#   - El landing de producción vive en Hostinger (abotgado.net).
+#   - El bot abre la Mini App desde el sitio de Netlify (TMA_URL en el bot).
+# Por eso se publica tma/. Efecto colateral conocido: el sitio legacy
+# abotgado.netlify.app (que antes mostraba el landing) también servirá la Mini
+# App. Si algún día hay que separarlos, la forma correcta es darle a ese sitio un
+# "Base directory" = landing con su propio landing/netlify.toml.
 [build]
-  publish = "landing"
+  publish = "tma"
+
+# La Mini App es una SPA de un solo index.html: cualquier ruta desconocida debe
+# resolver al index en vez de dar 404 (importante para la PWA instalada, que
+# puede arrancar en /?pwa=1 o rutas guardadas por el navegador).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# El service worker no debe quedar cacheado por el CDN: si se cachea, los
+# usuarios se quedan pegados con una versión vieja del shell y las
+# actualizaciones no llegan.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
