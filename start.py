@@ -96,7 +96,27 @@ def main():
     hay_leyes_nuevas = pdf_fingerprint != fingerprint_anterior
     forzar_reindex = os.getenv("REINDEX", "").lower() in ("1", "true", "si")
 
-    if not chroma_existe or forzar_reindex or hay_leyes_nuevas:
+    # ── GUARDA DE SEGURIDAD: SIN PDFs NO SE REINDEXA NUNCA ───────────────────
+    # El corpus (leyes/) ya NO viaja en el repo — vive solo en la máquina del
+    # dueño. Si el contenedor arranca sin PDFs, el flujo de reindex borraría la
+    # ChromaDB del Volume y la reconstruiría con 0 artículos: bot caído y corpus
+    # perdido, sin forma de recuperarlo desde el contenedor. Esta guarda va
+    # ANTES de cualquier borrado y también anula REINDEX=1 (que sin PDFs sería
+    # destructivo). Cuando los PDFs vuelvan a estar presentes, el fingerprint
+    # cambia y el reindex normal se dispara solo.
+    if pdfs_actuales == 0:
+        if chroma_existe:
+            print(f"\n[OK] No hay PDFs en {config.PDF_FOLDER} — se CONSERVA la ChromaDB existente.")
+            print("     El corpus no viaja en el repo. Para reindexar: subir los PDFs y usar REINDEX=1.")
+            # No se reescribe el fingerprint a propósito: así, si algún día los
+            # PDFs vuelven al contenedor, se detecta el cambio y se reindexa.
+        else:
+            print(f"\n[X] No hay PDFs en {config.PDF_FOLDER} y la ChromaDB no está sana.")
+            print("    NO se borra nada para poder recuperar. Sube el corpus de leyes")
+            print("    al contenedor (o restaura el Volume) y reinicia.")
+            sys.exit(1)
+
+    elif not chroma_existe or forzar_reindex or hay_leyes_nuevas:
         if hay_leyes_nuevas:
             razon = f"Cambios en PDFs detectados ({pdfs_actuales} PDFs, fingerprint cambió)"
         elif forzar_reindex:
