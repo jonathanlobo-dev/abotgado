@@ -1,0 +1,34 @@
+# Configuración de Netlify para el sitio de la MINI APP (PWA).
+#
+# Este sitio tiene "Base directory" = tma en la UI de Netlify, así que Netlify
+# lee ESTE archivo (no el de la raíz) y resuelve las rutas relativas a tma/.
+# Por eso publish = "." → publica el contenido de tma/.
+#
+# El netlify.toml de la raíz publica "landing" y es para el sitio del landing;
+# si este archivo no existiera, Netlify aplicaría esa config aquí y el build
+# fallaría con "Deploy directory 'tma/tma' does not exist".
+[build]
+  publish = "."
+
+# La Mini App es una SPA de un solo index.html: cualquier ruta desconocida debe
+# resolver al index en vez de dar 404 (importante para la PWA instalada, que
+# puede arrancar en /?pwa=1 o en rutas que el navegador recuerde).
+# Los archivos que SÍ existen (manifest.json, sw.js, icons/*) tienen precedencia
+# sobre este rewrite, así que se sirven normal.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# El service worker y el manifest no deben quedar cacheados por el CDN: si se
+# cachean, los usuarios se quedan pegados con un shell viejo y las
+# actualizaciones nunca llegan.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
