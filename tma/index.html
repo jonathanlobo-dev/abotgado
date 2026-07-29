@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>aBOTgado — Asistente Jurídico Venezolano</title>
+  <!-- PWA: manifest, tema e íconos (permite "Agregar a pantalla de inicio" fuera de Telegram) -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d1b3e" />
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="icons/favicon-16.png" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="aBOTgado" />
   <!-- SDK oficial de Telegram Mini Apps -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
@@ -1595,6 +1604,18 @@ if (tg) {
 } else {
   window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
   window._tgInitData = '';
+}
+
+// PWA: registrar el service worker solo FUERA de Telegram real. El SDK de
+// Telegram crea un objeto Telegram.WebApp "stub" incluso en un navegador
+// normal (platform:"unknown", initData:""), así que "tg" solo no basta para
+// detectar Telegram real — se exige initData no vacío (siempre presente y
+// firmado cuando la app corre de verdad dentro de Telegram).
+const enTelegramReal = !!(tg && tg.initData);
+if (!enTelegramReal && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
 }
 
 // Querystring de autenticación para llamadas GET/DELETE con identidad
