@@ -203,6 +203,33 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except (ValueError, IndexError):
                 pass
 
+    # ── Vinculación de la PWA (deep link t.me/bot?start=link_<codigo>) ────────
+    # FUERA del bloque `es_nuevo`: quien vincula la app normalmente ya usa el
+    # bot. No toca la lógica de referidos ni el mensaje de bienvenida normal.
+    if context.args and context.args[0].startswith("link_"):
+        codigo = context.args[0][5:]
+        try:
+            vinculado = db.pwa_vincular_codigo(codigo, user_id)
+        except Exception as e:
+            logger.error(f"Error vinculando PWA para {user_id}: {e}")
+            vinculado = False
+        if vinculado:
+            await enviar_respuesta(
+                update.message,
+                "✅ <b>App vinculada</b>\n\n"
+                "Ya puedes volver a la app y hacer tus consultas: usa la misma "
+                "cuenta, el mismo plan y el mismo historial que aquí.\n\n"
+                "<i>Si no fuiste tú quien lo pidió, escribe /soporte y lo revisamos.</i>"
+            )
+        else:
+            await enviar_respuesta(
+                update.message,
+                "⚠️ <b>Enlace de vinculación vencido o inválido</b>\n\n"
+                "Por seguridad, el enlace dura unos minutos y sirve una sola vez.\n"
+                "Vuelve a la app y toca <b>Vincular con Telegram</b> de nuevo."
+            )
+        return  # No mostrar el mensaje de bienvenida tras vincular
+
     plan_info = db.info_plan(user_id)
     plan_txt  = f"{plan_info['icono']} {plan_info['nombre']}"
 

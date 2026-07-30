@@ -310,6 +310,39 @@ def inicializar_db():
         con.execute("CREATE INDEX IF NOT EXISTS idx_tma_conv_user ON tma_conversaciones(user_id)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_tma_msg_conv ON tma_mensajes(conv_id)")
 
+        # ── Vinculación de la PWA con la cuenta de Telegram ───────────────
+        # Fuera de Telegram no existe initData, así que la PWA se vincula por
+        # deep link al bot y obtiene un token de sesión. Seguridad:
+        #   - Solo se guardan HASHES (SHA-256), nunca códigos ni tokens en claro:
+        #     una filtración de la DB no permite entrar.
+        #   - Código de vinculación: aleatorio, expira en minutos y es de un solo
+        #     uso (`entregado`).
+        #   - Estilo PKCE: quien inicia el flujo guarda un `verificador` secreto y
+        #     debe presentarlo para canjear el token, así el código visible en el
+        #     chat de Telegram no le sirve a un tercero que lo vea.
+        #   - El token mapea al user_id REAL, así que cuotas, planes y memoria son
+        #     los mismos que en el bot (no hay forma de esquivar límites).
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS pwa_link_codigos (
+                codigo_hash      TEXT PRIMARY KEY,
+                verificador_hash TEXT NOT NULL,
+                user_id          INTEGER,
+                entregado        INTEGER DEFAULT 0,
+                creado_en        TEXT DEFAULT CURRENT_TIMESTAMP,
+                expira_en        TEXT NOT NULL
+            )
+        """)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS pwa_sesiones (
+                token_hash  TEXT PRIMARY KEY,
+                user_id     INTEGER NOT NULL,
+                creado_en   TEXT DEFAULT CURRENT_TIMESTAMP,
+                expira_en   TEXT NOT NULL,
+                ultimo_uso  TEXT
+            )
+        """)
+        con.execute("CREATE INDEX IF NOT EXISTS idx_pwa_ses_user ON pwa_sesiones(user_id)")
+
     # Log de ruta para diagnóstico
     import logging
     logger = logging.getLogger(__name__)
@@ -1977,3 +2010,102 @@ def stats_usuarios() -> dict:
         "premium": por_plan.get(2, 0),
         "activos_hoy": activos_hoy,
     }
+
+
+# ─── VINCULACIÓN PWA ↔ TELEGRAM ───────────────────────────────────────────────
+# Flujo (ver comentarios del CREATE TABLE en inicializar_db):
+#   1. La PWA llama a /auth/pwa/iniciar → se guarda hash(codigo) + hash(verificador)
+#   2. El usuario abre t.me/<bot>?start=link_<codigo> → el bot llama a
+#      pwa_vincular_codigo() y queda asociado su user_id real
+#   3. La PWA sondea /auth/pwa/estado con (codigo, verificador) → canjea UNA vez
+#      el código por un token de sesión
+# Solo se persisten hashes; los valores en claro viven en el cliente.
+
+def _sha256(texto: str) -> str:
+    import hashlib
+    return hashlib.sha256((texto or "").encode()).hexdigest()
+
+
+def pwa_crear_codigo(codigo: str, verificador_hash: str, minutos: int = 10) -> None:
+    """Registra un código de vinculación pendiente (expira en `minutos`)."""
+    from datetime import timedelta
+    expira = (datetime.now() + timedelta(minutes=int(minutos))).isoformat(timespec="seconds")
+    with get_db() as con:
+        # Limpieza oportunista de códigos vencidos (evita que la tabla crezca).
+        con.execute("DELETE FROM pwa_link_codigos WHERE expira_en < ?",
+                    (datetime.now().isoformat(timespec="seconds"),))
+        con.execute(
+            "INSERT OR REPLACE INTO pwa_link_codigos "
+            "(codigo_hash, verificador_hash, user_id, entregado, expira_en) "
+            "VALUES (?, ?, NULL, 0, ?)",
+            (_sha256(codigo), verificador_hash, expira)
+        )
+
+
+def pwa_vincular_codigo(codigo: str, user_id: int) -> bool:
+    """El bot asocia su user_id real al código. True si el código era válido
+    (existe, no vencido y sin canjear todavía)."""
+    ahora = datetime.now().isoformat(timespec="seconds")
+    with get_db() as con:
+        cur = con.execute(
+            "UPDATE pwa_link_codigos SET user_id = ? "
+            "WHERE codigo_hash = ? AND entregado = 0 AND expira_en >= ?",
+            (int(user_id), _sha256(codigo), ahora)
+        )
+        return cur.rowcount > 0
+
+
+def pwa_canjear_codigo(codigo: str, verificador: str) -> int | None:
+    """Canjea el código por el user_id vinculado. Devuelve None si el código no
+    existe, venció, ya se canjeó, aún no fue vinculado por el bot, o el
+    verificador no coincide (defensa contra quien solo vio el código).
+    Marca el código como entregado para que sea de un solo uso."""
+    ahora = datetime.now().isoformat(timespec="seconds")
+    ch = _sha256(codigo)
+    with get_db() as con:
+        fila = con.execute(
+            "SELECT user_id, verificador_hash FROM pwa_link_codigos "
+            "WHERE codigo_hash = ? AND entregado = 0 AND expira_en >= ?",
+            (ch, ahora)
+        ).fetchone()
+        if not fila or fila[0] is None:
+            return None
+        import hmac
+        if not hmac.compare_digest(str(fila[1]), _sha256(verificador)):
+            return None
+        con.execute("UPDATE pwa_link_codigos SET entregado = 1 WHERE codigo_hash = ?", (ch,))
+        return int(fila[0])
+
+
+def pwa_crear_sesion(token: str, user_id: int, dias: int = 90) -> None:
+    """Guarda una sesión de PWA (solo el hash del token)."""
+    from datetime import timedelta
+    expira = (datetime.now() + timedelta(days=int(dias))).isoformat(timespec="seconds")
+    with get_db() as con:
+        con.execute(
+            "INSERT OR REPLACE INTO pwa_sesiones (token_hash, user_id, expira_en) VALUES (?, ?, ?)",
+            (_sha256(token), int(user_id), expira)
+        )
+
+
+def pwa_uid_por_token(token: str) -> int | None:
+    """user_id de una sesión de PWA válida, o None si el token no existe o venció."""
+    if not token:
+        return None
+    ahora = datetime.now().isoformat(timespec="seconds")
+    th = _sha256(token)
+    with get_db() as con:
+        fila = con.execute(
+            "SELECT user_id FROM pwa_sesiones WHERE token_hash = ? AND expira_en >= ?",
+            (th, ahora)
+        ).fetchone()
+        if not fila:
+            return None
+        con.execute("UPDATE pwa_sesiones SET ultimo_uso = ? WHERE token_hash = ?", (ahora, th))
+        return int(fila[0])
+
+
+def pwa_revocar_token(token: str) -> None:
+    """Cierra la sesión de la PWA (logout)."""
+    with get_db() as con:
+        con.execute("DELETE FROM pwa_sesiones WHERE token_hash = ?", (_sha256(token),))

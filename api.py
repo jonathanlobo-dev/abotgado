@@ -434,15 +434,42 @@ def _conv_pertenece_a(conv_id: int, uid: int) -> bool:
         return False
 
 
+# La PWA fuera de Telegram no tiene initData: se autentica con un token de
+# sesión obtenido al vincularse con el bot (ver /auth/pwa/*). Viaja por el MISMO
+# campo init_data con este prefijo, para no cambiar la firma de las decenas de
+# llamadas que ya existen. Un initData real es un query string con "hash=", así
+# que nunca empieza por este prefijo: no hay ambigüedad.
+_PREFIJO_TOKEN_PWA = "tok:"
+
+
+def _uid_por_token_pwa(valor: str) -> int | None:
+    """user_id real si `valor` es un token de sesión de PWA válido; None si no.
+    El token se valida contra la DB (se guarda solo su hash)."""
+    if not valor or not valor.startswith(_PREFIJO_TOKEN_PWA):
+        return None
+    try:
+        import db as database
+        return database.pwa_uid_por_token(valor[len(_PREFIJO_TOKEN_PWA):])
+    except Exception as e:
+        logger.error(f"Error validando token de PWA: {e}")
+        return None
+
+
 def _uid_autenticado(init_data: str, user_id_declarado: str = "") -> int | None:
-    """user_id REAL del solicitante, autenticado por la firma HMAC del initData.
+    """user_id REAL del solicitante, autenticado por la firma HMAC del initData
+    o por un token de sesión de la PWA.
 
     NUNCA confiar en el user_id que declara el cliente (path/query/body): es
     suplantable. Esta función es la única fuente válida de identidad en la API.
     En DEV_MODE=1 (desarrollo local en browser, sin Telegram) se acepta el
     user_id declarado como fallback.
     """
+    # 1) initData de Telegram (camino original, intacto)
     uid = _user_id_from_init_data(init_data)
+    if uid is not None:
+        return uid
+    # 2) Token de sesión de la PWA (mismo user_id real → mismas cuotas y planes)
+    uid = _uid_por_token_pwa(init_data)
     if uid is not None:
         return uid
     if config.DEV_MODE:
@@ -459,6 +486,10 @@ def _admin_from_init_data(init_data: str) -> int | None:
     En DEV_MODE permite saltear la validación HMAC (útil para browser desktop).
     """
     uid = _user_id_from_init_data(init_data)
+    if uid is None:
+        # También vale un token de sesión de PWA: resuelve al user_id real y se
+        # comprueba contra ADMIN_IDS igual que con initData (mismo criterio).
+        uid = _uid_por_token_pwa(init_data)
     if uid is not None and uid in config.ADMIN_IDS:
         return uid
     # Escape de desarrollo local: DEV_MODE=1 usa el primer ADMIN_ID
@@ -640,6 +671,91 @@ def perfil_usuario(user_id: str, init_data: str = ""):
 @app.get("/health")
 def health():
     return {"status": "ok", "servicio": "aBOTgado API"}
+
+
+# ─── VINCULACIÓN DE LA PWA CON TELEGRAM ──────────────────────────────────────
+# Fuera de Telegram no hay initData, así que la PWA se vincula por deep link al
+# bot. Flujo tipo PKCE:
+#   1. La PWA guarda un `verificador` secreto y envía solo su SHA-256 → recibe un
+#      `codigo` y el deep link del bot.
+#   2. El usuario abre el deep link; el bot asocia su user_id real al código.
+#   3. La PWA sondea con (codigo, verificador) y canjea UNA vez el código por un
+#      token de sesión. Sin el verificador, quien vea el código en el chat no
+#      puede robar la sesión.
+# El token resuelve al user_id REAL, así que cuotas, plan y memoria son los
+# mismos que en el bot: no hay forma de esquivar límites por esta vía.
+PWA_LINK_MINUTOS = 10
+PWA_SESION_DIAS = 90
+
+
+class PwaIniciarRequest(BaseModel):
+    verificador_hash: str = ""
+
+
+class PwaEstadoRequest(BaseModel):
+    codigo: str = ""
+    verificador: str = ""
+
+
+class PwaSalirRequest(BaseModel):
+    token: str = ""
+
+
+@app.post("/auth/pwa/iniciar")
+def pwa_iniciar(req: PwaIniciarRequest):
+    """Crea un código de vinculación y devuelve el deep link del bot."""
+    vh = (req.verificador_hash or "").strip().lower()
+    # Debe ser un SHA-256 en hex (64 chars). Evita basura en la tabla.
+    if len(vh) != 64 or any(c not in "0123456789abcdef" for c in vh):
+        raise HTTPException(status_code=400, detail="verificador_hash inválido")
+    import secrets
+    # token_urlsafe(32) → 43 chars de [A-Za-z0-9_-]; con "link_" son 48, dentro
+    # del límite de 64 del parámetro start de Telegram y con su alfabeto válido.
+    codigo = secrets.token_urlsafe(32)
+    try:
+        import db as database
+        database.pwa_crear_codigo(codigo, vh, minutos=PWA_LINK_MINUTOS)
+    except Exception as e:
+        logger.error(f"Error creando código de vinculación PWA: {e}")
+        raise HTTPException(status_code=500, detail="No se pudo iniciar la vinculación")
+    return {
+        "codigo": codigo,
+        "deep_link": f"https://t.me/{config.BOT_USERNAME}?start=link_{codigo}",
+        "expira_min": PWA_LINK_MINUTOS,
+    }
+
+
+@app.post("/auth/pwa/estado")
+def pwa_estado(req: PwaEstadoRequest):
+    """Sondeo: si el usuario ya abrió el deep link, canjea el código por un token."""
+    try:
+        import db as database
+        uid = database.pwa_canjear_codigo(req.codigo or "", req.verificador or "")
+        if uid is None:
+            return {"vinculado": False}
+        import secrets
+        token = secrets.token_urlsafe(32)
+        database.pwa_crear_sesion(token, uid, dias=PWA_SESION_DIAS)
+        logger.info(f"PWA vinculada para user_id {uid}")
+        # El token en claro se devuelve UNA sola vez (en la DB solo vive su hash).
+        return {"vinculado": True, "token": token, "user_id": str(uid)}
+    except Exception as e:
+        logger.error(f"Error canjeando código de vinculación PWA: {e}")
+        raise HTTPException(status_code=500, detail="Error verificando la vinculación")
+
+
+@app.post("/auth/pwa/salir")
+def pwa_salir(req: PwaSalirRequest):
+    """Cierra la sesión de la PWA (revoca el token)."""
+    tok = (req.token or "").strip()
+    if tok.startswith(_PREFIJO_TOKEN_PWA):
+        tok = tok[len(_PREFIJO_TOKEN_PWA):]
+    try:
+        import db as database
+        database.pwa_revocar_token(tok)
+    except Exception as e:
+        logger.error(f"Error revocando sesión de PWA: {e}")
+    return {"ok": True}
 
 
 @app.get("/directorio")

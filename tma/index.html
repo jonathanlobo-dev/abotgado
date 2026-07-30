@@ -1602,8 +1602,21 @@ if (tg) {
     document.documentElement.setAttribute('data-theme', 'light');
   }
 } else {
-  window._tgUserId = 'tma_anonimo'; // Acceso directo (browser normal)
-  window._tgInitData = '';
+  // ── Fuera de Telegram (navegador / PWA instalada) ───────────────────────
+  // Si el usuario ya vinculó su cuenta, se usa el token de sesión guardado.
+  // Viaja por el MISMO campo init_data con el prefijo "tok:" que la API
+  // reconoce, así que todas las llamadas existentes funcionan sin cambios.
+  const _ses = (() => {
+    try { return JSON.parse(localStorage.getItem('abg_sesion') || 'null'); }
+    catch (e) { return null; }
+  })();
+  if (_ses && _ses.token && _ses.user_id) {
+    window._tgUserId   = String(_ses.user_id);
+    window._tgInitData = 'tok:' + _ses.token;
+  } else {
+    window._tgUserId = 'tma_anonimo'; // Sin sesión: la API responde 401
+    window._tgInitData = '';
+  }
 }
 
 // PWA: registrar el service worker solo FUERA de Telegram real. El SDK de
@@ -1620,6 +1633,100 @@ if (!enTelegramReal && 'serviceWorker' in navigator) {
 
 // Querystring de autenticación para llamadas GET/DELETE con identidad
 window._authQS = () => `init_data=${encodeURIComponent(window._tgInitData || '')}`;
+
+// ═══════════════════════════════════════════════════════════════════
+// VINCULACIÓN DE LA PWA CON TELEGRAM (deep link, estilo PKCE)
+// ═══════════════════════════════════════════════════════════════════
+// Fuera de Telegram no existe initData. El usuario toca "Vincular con
+// Telegram": se crea un código, se abre el bot, el bot asocia su cuenta y la
+// app canjea el código por un token de sesión. El `verificador` secreto nunca
+// sale de este navegador, así que si alguien ve el código en el chat de
+// Telegram no puede robar la sesión.
+window._pwaVinculada = () => !!(window._tgInitData || '').startsWith('tok:');
+
+async function _sha256Hex(texto) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function _aleatorioUrlSafe(bytes = 32) {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+let _pwaSondeo = null;   // intervalo del sondeo activo
+
+async function iniciarVinculacionPWA() {
+  const estado = document.getElementById('pwa-link-estado');
+  const setEstado = (html) => { if (estado) estado.innerHTML = html; };
+  try {
+    setEstado('<span class="sb-uso-txt">Generando enlace…</span>');
+    const verificador = _aleatorioUrlSafe(32);
+    const res = await fetch(`${API}/auth/pwa/iniciar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verificador_hash: await _sha256Hex(verificador) }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { codigo, deep_link } = await res.json();
+
+    // Abrir el bot (pestaña nueva para no perder el estado de la app)
+    window.open(deep_link, '_blank');
+    setEstado('<span class="sb-uso-txt">Abriendo Telegram… confirma allí y vuelve. '
+            + 'Esperando…</span>');
+
+    // Sondear hasta que el bot confirme (máx ~3 min). El código expira solo.
+    if (_pwaSondeo) clearInterval(_pwaSondeo);
+    let intentos = 0;
+    _pwaSondeo = setInterval(async () => {
+      intentos++;
+      if (intentos > 90) {                 // 90 × 2s = 3 min
+        clearInterval(_pwaSondeo); _pwaSondeo = null;
+        setEstado('<span class="sb-uso-txt">El enlace expiró. Intenta de nuevo.</span>');
+        return;
+      }
+      try {
+        const r = await fetch(`${API}/auth/pwa/estado`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codigo, verificador }),
+        });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d.vinculado && d.token) {
+          clearInterval(_pwaSondeo); _pwaSondeo = null;
+          localStorage.setItem('abg_sesion',
+            JSON.stringify({ token: d.token, user_id: d.user_id }));
+          setEstado('<span class="sb-uso-txt">✅ Vinculado. Recargando…</span>');
+          setTimeout(() => location.reload(), 600);
+        }
+      } catch (e) { /* red intermitente: se reintenta en el próximo tick */ }
+    }, 2000);
+  } catch (e) {
+    setEstado('<span class="sb-uso-txt">No se pudo iniciar la vinculación. '
+            + 'Revisa tu conexión.</span>');
+  }
+}
+
+async function desvincularPWA() {
+  const ses = (() => {
+    try { return JSON.parse(localStorage.getItem('abg_sesion') || 'null'); }
+    catch (e) { return null; }
+  })();
+  try {
+    if (ses && ses.token) {
+      await fetch(`${API}/auth/pwa/salir`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: ses.token }),
+      });
+    }
+  } catch (e) { /* igual limpiamos localmente */ }
+  localStorage.removeItem('abg_sesion');
+  location.reload();
+}
 
 // NO auto-crear conversación al cargar — se crea lazily al primer mensaje
 
@@ -2340,9 +2447,23 @@ function _initPerfilSDK() {
 
 async function cargarPerfil() {
   if (window._tgUserId === 'tma_anonimo') {
-    document.getElementById('sb-profile-name').textContent = 'Modo sin sesión';
-    document.getElementById('sb-profile-meta').innerHTML =
-      '<span class="sb-uso-txt">Abre desde Telegram para ver tu perfil</span>';
+    document.getElementById('sb-profile-name').textContent = 'Sin vincular';
+    // Fuera de Telegram se ofrece vincular la cuenta (así la app puede
+    // consultar). Dentro de Telegram esto no debería ocurrir, pero si ocurre
+    // se muestra el mensaje de siempre.
+    const meta = document.getElementById('sb-profile-meta');
+    if (enTelegramReal) {
+      meta.innerHTML = '<span class="sb-uso-txt">Abre desde Telegram para ver tu perfil</span>';
+    } else {
+      meta.innerHTML =
+        '<button id="pwa-link-btn" class="btn-a btn-primary" '
+        + 'style="width:100%;margin:6px 0;padding:9px 12px;font-weight:600">'
+        + '🔗 Vincular con Telegram</button>'
+        + '<div id="pwa-link-estado"><span class="sb-uso-txt">'
+        + 'Vincula tu cuenta para consultar con tu plan e historial.</span></div>';
+      const btn = document.getElementById('pwa-link-btn');
+      if (btn) btn.onclick = iniciarVinculacionPWA;
+    }
     return;
   }
 
@@ -2372,7 +2493,15 @@ async function cargarPerfil() {
         // Rojo si >85%
         fill.style.background = pct > 85 ? '#ef4444' : 'var(--accent)';
       }
+      // En navegador con sesión vinculada: permitir cerrar sesión.
+      if (window._pwaVinculada && window._pwaVinculada()) {
+        html += '<button id="pwa-unlink-btn" class="btn-a" '
+              + 'style="width:100%;margin-top:8px;padding:6px 10px;font-size:12px">'
+              + 'Desvincular esta app</button>';
+      }
       meta.innerHTML = html;
+      const btnU = document.getElementById('pwa-unlink-btn');
+      if (btnU) btnU.onclick = desvincularPWA;
     }
   } catch { /* silencioso — el perfil no bloquea el sidebar */ }
 }
