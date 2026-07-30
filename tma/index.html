@@ -1710,6 +1710,27 @@ async function iniciarVinculacionPWA() {
   }
 }
 
+// Inserta en el chat un botón grande para vincular (mismo handler que el del
+// sidebar). Se usa cuando la API responde 401 por falta de vinculación: la
+// acción tiene que estar donde el usuario está mirando.
+function mostrarCtaVinculacion() {
+  const chat = document.getElementById('chat');
+  if (!chat || document.getElementById('pwa-cta-wrap')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'pwa-cta-wrap';
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;'
+    + 'gap:8px;margin:4px 0 18px';
+  wrap.innerHTML =
+    '<button id="pwa-cta-btn" class="btn-a btn-primary" '
+    + 'style="padding:12px 20px;font-size:15px;font-weight:600;border-radius:10px">'
+    + '🔗 Vincular con Telegram</button>'
+    + '<div id="pwa-link-estado" style="text-align:center"></div>';
+  chat.appendChild(wrap);
+  const b = document.getElementById('pwa-cta-btn');
+  if (b) b.onclick = iniciarVinculacionPWA;
+  chat.scrollTop = chat.scrollHeight;
+}
+
 async function desvincularPWA() {
   const ses = (() => {
     try { return JSON.parse(localStorage.getItem('abg_sesion') || 'null'); }
@@ -2008,9 +2029,19 @@ async function enviar(texto) {
     hideTyping();
 
     if (res.status === 401 || res.status === 429) {
-      // Mensajes de auth/cuota del backend — mostrarlos tal cual al usuario
       const err = await res.json().catch(() => ({}));
-      addMessage('bot', `⚠️ ${err.detail || 'No autorizado.'}`, []);
+      // Si el 401 es por falta de vinculación (navegador/PWA fuera de
+      // Telegram), no sirve mostrar el mensaje crudo del backend: hay que
+      // ofrecer la acción concreta ahí mismo, no escondida en el menú lateral.
+      if (res.status === 401 && !enTelegramReal && !window._pwaVinculada()) {
+        addMessage('bot',
+          '🔗 <b>Vincula tu cuenta para consultar</b>\n\n'
+          + 'Con un toque conectas esta app con tu cuenta de Telegram y usas tu '
+          + 'mismo plan, historial y consultas.', []);
+        mostrarCtaVinculacion();
+      } else {
+        addMessage('bot', `⚠️ ${err.detail || 'No autorizado.'}`, []);
+      }
       enviando = false;
       btnSend.disabled = false;
       return;

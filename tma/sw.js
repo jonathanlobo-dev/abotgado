@@ -4,7 +4,12 @@
 // La API vive en otro origen (railway.app) y ni siquiera pasa por este SW,
 // pero además se excluye explícitamente por seguridad.
 
-const CACHE_VERSION = "abotgado-shell-v1";
+// v2: el HTML pasa a NETWORK-FIRST. Con cache-first, un usuario con la PWA
+// instalada seguía viendo la versión guardada del index.html (p. ej. sin el
+// botón de vincular) hasta recargar dos veces. Ahora el HTML se pide siempre a
+// la red y el caché queda solo como respaldo sin conexión. Subir el número
+// invalida los cachés viejos en el activate.
+const CACHE_VERSION = "abotgado-shell-v2";
 const SHELL_FILES = [
   "/",
   "/index.html",
@@ -46,7 +51,35 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Shell: cache-first con actualización en segundo plano (stale-while-revalidate).
+  // ¿Es el documento HTML (navegación)? Ahí NO se puede servir caché primero:
+  // el usuario se quedaría con una versión vieja de la app (bug real: la PWA
+  // instalada seguía sin el botón de vincular). NETWORK-FIRST con el caché solo
+  // como respaldo si no hay conexión.
+  const esNavegacion =
+    req.mode === "navigate" ||
+    req.destination === "document" ||
+    (req.headers.get("accept") || "").includes("text/html");
+
+  if (esNavegacion) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
+          }
+          return res;
+        })
+        .catch(async () =>
+          // Sin conexión: servir lo último guardado (o el index como fallback).
+          (await caches.match(req)) || (await caches.match("/index.html"))
+        )
+    );
+    return;
+  }
+
+  // Resto del shell (iconos, manifest): cache-first con refresco en segundo
+  // plano. Son archivos estables y así la app abre rápido y funciona offline.
   event.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req)
